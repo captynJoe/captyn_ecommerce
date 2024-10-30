@@ -1,3 +1,4 @@
+//product cards
 import { TProductCard } from "@/types/common";
 import { TProduct } from "@/types/product";
 
