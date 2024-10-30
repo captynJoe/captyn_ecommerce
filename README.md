@@ -7,6 +7,8 @@ Authentication and Security: Employs NextAuth for secure authentication, enablin
 Data Validation: Zod is integrated for robust input validation, ensuring data accuracy and security.
 Image Management: Utilizes Cloudinary, a third-party service, to efficiently store and serve images, reducing server load and improving site performance.
 Configuration: Environment variables provide a secure and customizable setup, managing sensitive information like API keys and database connections.
+Backend: Node.js Next.js is built on top of Node.js, which is a JavaScript runtime.
+Authentication: Configuration of node.js env to handle sessions
 
 Key Features
 Product Management: Comprehensive management of phone inventories, including categorization, descriptions, and image support.
