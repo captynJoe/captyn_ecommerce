@@ -7,44 +7,63 @@ import { useState } from "react";
 const Login = () => {
   const router = useRouter();
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const [loginData, setLoginData] = useState({
     email: "",
     password: "",
   });
 
   const handleLogin = async () => {
-    signIn("credentials", {
+    if (!loginData.email || !loginData.password) {
+      setError("Please fill in both fields.");
+      return;
+    }
+
+    setLoading(true);
+    setError(""); // Clear previous errors
+
+    const callback = await signIn("credentials", {
       ...loginData,
       redirect: false,
-    }).then((callback) => {
-      if (callback?.ok) {
-        router.push("/admin");
-      }
-
-      if (callback?.error) {
-        setError(callback.error);
-      }
     });
+
+    setLoading(false);
+
+    if (callback?.ok) {
+      router.push("/admin");
+    }
+
+    if (callback?.error) {
+      setError(callback.error);
+    }
   };
 
   return (
     <div>
-      <input
-        type="text"
-        value={loginData.email}
-        onChange={(e) =>
-          setLoginData({ ...loginData, email: e.currentTarget.value })
-        }
-      />
-      <input
-        type="password"
-        value={loginData.password}
-        onChange={(e) =>
-          setLoginData({ ...loginData, password: e.currentTarget.value })
-        }
-      />
-      <Button text="LOGIN" onClick={handleLogin} />
-      <span style={{ color: "red" }}>{error}</span>
+      <div>
+        <label htmlFor="email">Email:</label>
+        <input
+          type="text"
+          id="email"
+          value={loginData.email}
+          onChange={(e) =>
+            setLoginData({ ...loginData, email: e.currentTarget.value })
+          }
+        />
+      </div>
+      <div>
+        <label htmlFor="password">Password:</label>
+        <input
+          type="password"
+          id="password"
+          value={loginData.password}
+          onChange={(e) =>
+            setLoginData({ ...loginData, password: e.currentTarget.value })
+          }
+        />
+      </div>
+      <Button text={loading ? "Logging in..." : "LOGIN"} onClick={handleLogin} disabled={loading} />
+      {error && <span style={{ color: "red" }}>{error}</span>}
     </div>
   );
 };
