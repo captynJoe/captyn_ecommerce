@@ -114,7 +114,7 @@ enum PageType {
   PRODUCT
 }
 
-// ---------------------- USER MANAGEMENT SECTION ---------------------- 
+// ---------------------- USER MANAGEMENT SECTION; ---------------------- 
 model Account {
   id                String  @id @default(auto()) @map("_id") @db.ObjectId
   userId            String  @db.ObjectId
