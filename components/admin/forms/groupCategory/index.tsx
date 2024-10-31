@@ -61,6 +61,7 @@ const GroupCategory = ({ errorMsg, data, onChange }: IProps) => {
               placeholder="0"
               value={data.iconSize[0]}
             />
+            
             <input
               name="iconSize2"
               type="number"
