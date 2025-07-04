@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -42,12 +42,11 @@ export default function CheckoutPage() {
   const [removing, setRemoving] = useState<string | null>(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
-
   const [showLogin, setShowLogin] = useState(false);
-  const [deliveryDetails, setDeliveryDetails] = useState<any>(null);
-  const [deliveryFee, setDeliveryFee] = useState(300); // Base delivery fee for Nairobi
 
-  // Listen for auth state
+  const [deliveryDetails, setDeliveryDetails] = useState<any>(null);
+  const [deliveryFee, setDeliveryFee] = useState(300); // Base local delivery fee
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (!user) {
@@ -60,7 +59,6 @@ export default function CheckoutPage() {
     return () => unsubscribe();
   }, [auth]);
 
-  // Fetch cart items
   useEffect(() => {
     if (!user) return;
     setLoading(true);
@@ -78,7 +76,6 @@ export default function CheckoutPage() {
     fetchCart();
   }, [user, db]);
 
-  // Remove item from cart
   const handleRemove = async (item: CartItem) => {
     if (!user) return;
     setRemoving(item.itemId + "-" + item.addedAt);
@@ -86,26 +83,21 @@ export default function CheckoutPage() {
     await updateDoc(cartRef, {
       items: arrayRemove(item),
     });
-    setCartItems((prev) => prev.filter((i) => i.itemId + "-" + i.addedAt !== item.itemId + "-" + item.addedAt));
+    setCartItems((prev) =>
+      prev.filter(
+        (i) => i.itemId + "-" + i.addedAt !== item.itemId + "-" + item.addedAt
+      )
+    );
     setRemoving(null);
   };
 
-  // Handle successful payment
   const handlePaymentComplete = async () => {
     if (!user) return;
-    
     try {
-      // Clear the cart
       const cartRef = doc(db, "carts", user.uid);
       await updateDoc(cartRef, { items: [] });
-      
-      // Store the order in orders collection (you would implement this)
-      // await storeOrder(user.uid, cartItems, total);
-      
       setCartItems([]);
       setShowPayment(false);
-      
-      // Show success message and redirect
       alert("Payment successful! Thank you for your purchase.");
       router.push("/");
     } catch (error) {
@@ -114,18 +106,18 @@ export default function CheckoutPage() {
     }
   };
 
-  // Calculate total with profit margins
   const total = cartItems.reduce((sum, item) => {
     if (!item.price?.value) return sum;
     const priceInfo = calculateProfitPrice(
       parseFloat(item.price.value),
-      "", // condition not available in cart
+      "",
       item.title
     );
-    return sum + (priceInfo.finalPrice * (item.quantity || 1));
+    return sum + priceInfo.finalPrice * (item.quantity || 1);
   }, 0);
 
-  // Show loading only when checking auth or fetching cart
+  const paymentAmount = total + (deliveryDetails?.intlShippingAmount || 0);
+
   if (loading && !showLogin) return <LoadingAnimation />;
 
   return (
@@ -153,12 +145,16 @@ export default function CheckoutPage() {
         </button>
         <div className="flex items-center gap-3 mb-8">
           <ShoppingCart className="w-8 h-8 text-blue-600 dark:text-blue-400" />
-          <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white">Checkout</h1>
+          <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white">
+            Checkout
+          </h1>
         </div>
         {cartItems.length === 0 ? (
           <div className="flex flex-col items-center py-16">
             <ShoppingCart className="w-16 h-16 text-gray-300 dark:text-gray-700 mb-4" />
-            <div className="text-xl font-semibold text-gray-400 dark:text-gray-600 mb-2">Your cart is empty.</div>
+            <div className="text-xl font-semibold text-gray-400 dark:text-gray-600 mb-2">
+              Your cart is empty.
+            </div>
             <button
               className="mt-4 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow transition"
               onClick={() => router.push("/")}
@@ -180,32 +176,42 @@ export default function CheckoutPage() {
                     className="w-20 h-20 object-contain rounded-xl border border-blue-100 dark:border-gray-800 bg-white dark:bg-gray-800 shadow"
                   />
                   <div className="flex-1">
-                    <div className="font-bold text-lg text-gray-900 dark:text-white line-clamp-2">{item.title}</div>
-                    
-                    {/* Configuration Details */}
+                    <div className="font-bold text-lg text-gray-900 dark:text-white line-clamp-2">
+                      {item.title}
+                    </div>
                     {item.configuration && (
                       <div className="text-sm text-gray-600 dark:text-gray-400 mt-1 space-y-1">
                         {item.configuration.storage && (
-                          <div>Storage: <span className="font-medium text-gray-800 dark:text-gray-300">{item.configuration.storage}</span></div>
+                          <div>
+                            Storage:{" "}
+                            <span className="font-medium text-gray-800 dark:text-gray-300">
+                              {item.configuration.storage}
+                            </span>
+                          </div>
                         )}
                         {item.configuration.color && (
-                          <div>Color: <span className="font-medium text-gray-800 dark:text-gray-300">{item.configuration.color}</span></div>
+                          <div>
+                            Color:{" "}
+                            <span className="font-medium text-gray-800 dark:text-gray-300">
+                              {item.configuration.color}
+                            </span>
+                          </div>
                         )}
                         {item.configuration.network && (
-                          <div>Network: <span className="font-medium text-gray-800 dark:text-gray-300">{item.configuration.network}</span></div>
+                          <div>
+                            Network:{" "}
+                            <span className="font-medium text-gray-800 dark:text-gray-300">
+                              {item.configuration.network}
+                            </span>
+                          </div>
                         )}
                       </div>
                     )}
-                    
                     <div className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                       Quantity: <span className="font-semibold">{item.quantity}</span>
                     </div>
                     <div className="text-base text-green-700 dark:text-green-400 font-bold mt-1">
-                      {convertToKESWithProfit(
-                        item.price?.value,
-                        "", // condition not available in cart
-                        item.title
-                      )}
+                      {convertToKESWithProfit(item.price?.value, "", item.title)}
                     </div>
                   </div>
                   <button
@@ -224,16 +230,15 @@ export default function CheckoutPage() {
               ))}
             </ul>
             {/* Delivery Details */}
-            <DeliveryDetails 
+            <DeliveryDetails
               onDetailsChange={(details) => {
                 setDeliveryDetails(details);
-                // Calculate delivery fee based on county
                 if (details.county) {
-                  const county = kenyanCounties.find(c => c.name === details.county);
+                  const county = kenyanCounties.find((c) => c.name === details.county);
                   const distance = county?.distance || 0;
-                  setDeliveryFee(300 + (distance * 300));
+                  setDeliveryFee(300 + distance * 300);
                 }
-              }} 
+              }}
             />
 
             {/* Order Summary */}
@@ -244,45 +249,38 @@ export default function CheckoutPage() {
                   Ksh {total.toLocaleString()}
                 </span>
               </div>
-              <div className="flex justify-between items-center text-lg">
-                <span className="text-gray-600 dark:text-gray-400">Delivery Fee:</span>
-                <span className="font-medium text-gray-900 dark:text-white">
-                  Ksh {deliveryFee.toLocaleString()}
-                </span>
-              </div>
-              <div className="flex justify-between items-center text-lg">
-                <span className="text-gray-600 dark:text-gray-400">International Shipping:</span>
-                <span className="font-medium text-gray-900 dark:text-white">
-                  Ksh {deliveryDetails?.intlShippingAmount?.toLocaleString() || "Calculating..."}
-                </span>
+              <div className="flex justify-between items-center text-sm text-gray-600 dark:text-gray-400">
+                <span>Local delivery fee (pay on delivery):</span>
+                <span>Ksh {deliveryFee.toLocaleString()}</span>
               </div>
               <div className="flex justify-between items-center text-sm text-amber-700 dark:text-amber-300">
                 <span>Note:</span>
-                <span>The final international shipping cost will be sent within a week.</span>
+                <span>International shipping will be confirmed separately.</span>
               </div>
               <div className="flex justify-between items-center text-xl font-bold border-t pt-4">
-                <span>Total (incl. Intl. Shipping):</span>
+                <span>Total payable now:</span>
                 <span className="text-green-700 dark:text-green-400">
-                  Ksh {(total + deliveryFee + (deliveryDetails?.intlShippingAmount || 0)).toLocaleString()}
+                  Ksh {paymentAmount.toLocaleString()}
                 </span>
               </div>
-
             </div>
 
-
-            {/* Aquantuo Price Estimator */}
-            <AquantuoEstimator 
-              cartTotal={total / 160} 
-              cartItems={cartItems.map(item => ({
+            {/* Aquantuo Estimator */}
+            <AquantuoEstimator
+              cartTotal={total / 160}
+              cartItems={cartItems.map((item) => ({
                 itemId: item.itemId,
                 title: item.title,
                 price: item.price,
                 quantity: item.quantity,
-                type: item.title.toLowerCase().includes('phone') ? 'phone' : 
-                      item.title.toLowerCase().includes('laptop') || 
-                      item.title.toLowerCase().includes('macbook') ? 'laptop' : 'other'
+                type: item.title.toLowerCase().includes("phone")
+                  ? "phone"
+                  : item.title.toLowerCase().includes("laptop") ||
+                    item.title.toLowerCase().includes("macbook")
+                  ? "laptop"
+                  : "other",
               }))}
-            /> {/* Convert KES to USD for estimator */}
+            />
 
             <button
               className="mt-8 w-full bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white font-bold py-4 rounded-2xl shadow-lg text-lg transition"
@@ -314,7 +312,7 @@ export default function CheckoutPage() {
 
       {showPayment && (
         <PaymentModal
-          amount={total + deliveryFee}
+          amount={paymentAmount}
           onClose={() => setShowPayment(false)}
           onPaymentComplete={handlePaymentComplete}
         />

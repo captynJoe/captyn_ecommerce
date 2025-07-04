@@ -9,7 +9,7 @@ import SliderMenu from "@/components/SliderMenu";
 import LoadingAnimation from "@/components/LoadingAnimation";
 import { useApp } from "@/contexts/AppContext";
 import { useWishlist } from "@/contexts/WishlistContext";
-import { convertToKsh, formatKshPrice } from "@/utils/currency";
+import { convertToKESWithProfit } from "@/utils/pricing";
 
 // Types
 interface Seller {
@@ -34,7 +34,14 @@ export default function HomePage() {
   const [products, setProducts] = useState<EbayProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [initialLoading, setInitialLoading] = useState(true);
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(() => {
+    // Initialize from URL if available
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get('q') || "";
+    }
+    return "";
+  });
   const [pageNum, setPageNum] = useState(0);
   const [sort, setSort] = useState("newlyListed");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -116,6 +123,33 @@ export default function HomePage() {
     return () => clearTimeout(timer);
   }, []);
 
+  // Handle browser back/forward navigation
+  useEffect(() => {
+    const handlePopState = () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlQuery = urlParams.get('q') || "";
+      if (urlQuery !== query) {
+        setQuery(urlQuery);
+        setPageNum(0);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [query]);
+
+  // Initial load from URL
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlQuery = urlParams.get('q') || "";
+      if (urlQuery && urlQuery !== query) {
+        setQuery(urlQuery);
+        setPageNum(0);
+      }
+    }
+  }, []);
+
   if (initialLoading) return <LoadingAnimation />;
 
   return (
@@ -123,9 +157,18 @@ export default function HomePage() {
         <Navbar
           onMenuOpen={() => setIsMenuOpen(true)}
           onSearch={(q: string) => {
-            setQuery(q);
-            setPageNum(0);
-            fetchProducts();
+    // Update URL with search query
+    const url = new URL(window.location.href);
+    if (q) {
+      url.searchParams.set('q', q);
+    } else {
+      url.searchParams.delete('q');
+    }
+    window.history.pushState({}, '', url.toString());
+    
+    setQuery(q);
+    setPageNum(0);
+    fetchProducts(true);
           }}
         />
 
@@ -183,6 +226,9 @@ export default function HomePage() {
             {/* All */}
             <button
               onClick={() => {
+                const url = new URL(window.location.href);
+                url.searchParams.delete('q');
+                window.history.pushState({}, '', url.toString());
                 setQuery("");
                 setPageNum(0);
               }}
@@ -205,6 +251,9 @@ export default function HomePage() {
             {/* Phones */}
             <button
               onClick={() => {
+                const url = new URL(window.location.href);
+                url.searchParams.set('q', 'smartphone');
+                window.history.pushState({}, '', url.toString());
                 setQuery("smartphone");
                 setPageNum(0);
               }}
@@ -227,6 +276,9 @@ export default function HomePage() {
             {/* Gaming */}
             <button
               onClick={() => {
+                const url = new URL(window.location.href);
+                url.searchParams.set('q', 'playstation xbox nintendo');
+                window.history.pushState({}, '', url.toString());
                 setQuery("playstation xbox nintendo");
                 setPageNum(0);
               }}
@@ -249,6 +301,9 @@ export default function HomePage() {
             {/* Hair & Wigs */}
             <button
               onClick={() => {
+                const url = new URL(window.location.href);
+                url.searchParams.set('q', 'hair wigs');
+                window.history.pushState({}, '', url.toString());
                 setQuery("hair wigs");
                 setPageNum(0);
               }}
@@ -271,6 +326,9 @@ export default function HomePage() {
             {/* Gaming PCs */}
             <button
               onClick={() => {
+                const url = new URL(window.location.href);
+                url.searchParams.set('q', 'gaming pc');
+                window.history.pushState({}, '', url.toString());
                 setQuery("gaming pc");
                 setPageNum(0);
               }}
@@ -293,6 +351,9 @@ export default function HomePage() {
             {/* Laptops */}
             <button
               onClick={() => {
+                const url = new URL(window.location.href);
+                url.searchParams.set('q', 'laptop');
+                window.history.pushState({}, '', url.toString());
                 setQuery("laptop");
                 setPageNum(0);
               }}
@@ -315,6 +376,9 @@ export default function HomePage() {
             {/* Computer Parts */}
             <button
               onClick={() => {
+                const url = new URL(window.location.href);
+                url.searchParams.set('q', 'graphics card processor');
+                window.history.pushState({}, '', url.toString());
                 setQuery("graphics card processor");
                 setPageNum(0);
               }}
@@ -337,6 +401,9 @@ export default function HomePage() {
             {/* Hacking Tools */}
             <button
               onClick={() => {
+                const url = new URL(window.location.href);
+                url.searchParams.set('q', 'rubber ducky hacking');
+                window.history.pushState({}, '', url.toString());
                 setQuery("rubber ducky hacking");
                 setPageNum(0);
               }}
@@ -359,6 +426,9 @@ export default function HomePage() {
             {/* Electronics */}
             <button
               onClick={() => {
+                const url = new URL(window.location.href);
+                url.searchParams.set('q', 'electronics gadgets');
+                window.history.pushState({}, '', url.toString());
                 setQuery("electronics gadgets");
                 setPageNum(0);
               }}
@@ -470,7 +540,7 @@ export default function HomePage() {
                             : addToWishlist({
                                 id: product.itemId,
                                 title: product.title,
-                                price: formatKshPrice(convertToKsh(product.price.value)),
+                                price: convertToKESWithProfit(product.price.value.toString(), product.condition, product.title),
                                 image: product.image?.imageUrl || '/placeholder-image.jpg',
                                 condition: product.condition,
                               } as any)
@@ -518,7 +588,7 @@ export default function HomePage() {
                       
                       <div className="flex items-center justify-between mt-auto">
                         <div className="text-sm sm:text-lg md:text-xl font-bold text-green-600">
-                          {formatKshPrice(convertToKsh(product.price.value))}
+                          {convertToKESWithProfit(product.price.value.toString(), product.condition, product.title)}
                         </div>
                         {product.seller && (
                           <div className="flex items-center gap-0.5 sm:gap-1 text-xs text-gray-500">

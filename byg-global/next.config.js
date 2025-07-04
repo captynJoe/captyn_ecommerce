@@ -2,9 +2,9 @@
 const nextConfig = {
   images: {
     domains: [
-      "i.ebayimg.com",         // ✅ Most product images
-      "thumbs.ebaystatic.com", // ✅ Thumbnails
-      "vi.vipr.ebaydesc.com"   // ✅ Occasionally used
+      "i.ebayimg.com",
+      "thumbs.ebaystatic.com",
+      "vi.vipr.ebaydesc.com"
     ],
   },
 };

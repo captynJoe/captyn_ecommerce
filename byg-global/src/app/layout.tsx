@@ -4,8 +4,8 @@ import { Providers } from './providers';
 import ClientLayout from './ClientLayout';
 
 export const metadata: Metadata = {
-  title: 'BYG_Joe',
-  description: 'Your personal online store',
+  title: 'CAPTYN Global',
+  description: 'Bridging worlds with seamless shopping',
 };
 
 export default function RootLayout({

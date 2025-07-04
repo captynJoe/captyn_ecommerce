@@ -681,4 +681,91 @@ export default function ProductDetailPage() {
             <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white">More Like This</h2>
-                <Link
+                <Link 
+                  href={`/search?category=similar&itemId=${item?.itemId}`}
+                  className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                >
+                  View All
+                </Link>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {moreLikeThisProducts.slice(0, 4).map((product) => (
+                  <Link 
+                    key={product.itemId} 
+                    href={`/product/${product.itemId}`}
+                    className="block group"
+                  >
+                    <div className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition">
+                      {product.image?.imageUrl ? (
+                        <img
+                          src={product.image.imageUrl}
+                          alt={product.title}
+                          className="product-image-card"
+                        />
+                      ) : (
+                        <div className="product-image-card bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                          <span className="text-gray-400 text-sm">No Image</span>
+                        </div>
+                      )}
+                      <div className="p-4">
+                        <h3 className="text-sm font-medium text-gray-900 dark:text-white line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400">
+                          {product.title}
+                        </h3>
+                        <p className="mt-2 text-lg font-bold text-green-600 dark:text-green-400">
+                          {convertToKESWithProfit(product.price?.value, product.condition, product.title)}
+                        </p>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Description from Seller */}
+        {item.description && (
+          <div id="description" className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6 mt-8 scroll-mt-24">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Description from Seller</h2>
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 overflow-hidden">
+              <div
+                className="prose max-w-none prose-sm dark:prose-invert text-gray-700 dark:text-gray-300"
+                style={{
+                  fontFamily: "Georgia, Cambria, 'Times New Roman', Times, serif",
+                }}
+                dangerouslySetInnerHTML={{ __html: filterDescription(item.description) }}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Support Contact Information - Bottom of Page */}
+        <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6 mt-8">
+          <h3 className="font-semibold text-xl text-blue-900 dark:text-blue-300 mb-4">Need Help?</h3>
+          <div className="space-y-4">
+            <p className="text-blue-800 dark:text-blue-200">
+              Contact our support team for any questions or assistance:
+            </p>
+            <div className="flex flex-col space-y-4">
+              <a 
+                href="mailto:captynglobal@gmail.com" 
+                className="flex items-center gap-3 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium text-lg transition-colors"
+              >
+                <span>📧 Email: captynglobal@gmail.com</span>
+              </a>
+              <a 
+                href="https://wa.me/254112047147" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 font-medium text-lg transition-colors"
+              >
+                <span>💬 WhatsApp: 0112047147</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+      </main>
+    </>
+  );
+}

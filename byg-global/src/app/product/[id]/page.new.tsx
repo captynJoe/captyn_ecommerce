@@ -21,8 +21,31 @@ export default function ProductDetailPage() {
   const router = useRouter();
   const { isDark } = useApp();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
+interface EbayImage {
+  imageUrl: string;
+}
+
+interface EbayItemDetail {
+  title: string;
+  itemId: string;
+  price?: {
+    value: string;
+    currency: string;
+  };
+  seller?: {
+    username: string;
+  };
+  condition?: string;
+  itemWebUrl?: string;
+  image?: EbayImage;
+  additionalImages?: EbayImage[];
+  itemSpecifics?: Record<string, string>;
+  description?: string;
+}
+
   const [item, setItem] = useState<EbayItemDetail | null>(null);
   const [loading, setLoading] = useState(true);
+
   const [error, setError] = useState<string | null>(null);
   const [showLogin, setShowLogin] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -33,6 +56,96 @@ export default function ProductDetailPage() {
     color: '',
     network: ''
   });
+
+  // Handle login success
+  const handleLoginSuccess = () => {
+    setIsLoggedIn(true);
+    setShowLogin(false);
+  };
+
+  // Add to Cart
+  const handleAddToCart = async () => {
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const user = auth.currentUser;
+    if (!user) {
+      setShowLogin(true);
+      return;
+    }
+    if (!item) return;
+    const cartRef = doc(db, "carts", user.uid);
+    await setDoc(
+      cartRef,
+      {
+        items: arrayUnion({
+          itemId: item.itemId,
+          title: item.title,
+          price: item.price,
+          image: item.image?.imageUrl || '/placeholder-image.jpg',
+          quantity: 1,
+          addedAt: new Date().toISOString(),
+          configuration: {
+            storage: selectedConfig.storage || item.itemSpecifics?.["Storage Capacity"] || '',
+            color: selectedConfig.color || item.itemSpecifics?.Color || '',
+            network: selectedConfig.network || item.itemSpecifics?.Network || ''
+          }
+        }),
+      },
+      { merge: true }
+    );
+    alert("Added to cart!");
+  };
+
+  // Buy Now: Add to cart and redirect to checkout
+  const handleBuyNow = async () => {
+    const auth = getAuth(app);
+    const user = auth.currentUser;
+    if (!user) {
+      setShowLogin(true);
+      return;
+    }
+    
+    if (!item) {
+      alert('Product information not available. Please try again.');
+      return;
+    }
+    
+    setBuying(true);
+    try {
+      const db = getFirestore(app);
+      // Add item to cart
+      const cartRef = doc(db, "carts", user.uid);
+      await setDoc(
+        cartRef,
+        {
+          items: arrayUnion({
+            itemId: item.itemId,
+            title: item.title,
+            price: item.price,
+            image: item.image?.imageUrl || '/placeholder-image.jpg',
+            quantity: 1,
+            addedAt: new Date().toISOString(),
+            configuration: {
+              storage: selectedConfig.storage || item.itemSpecifics?.["Storage Capacity"] || '',
+              color: selectedConfig.color || item.itemSpecifics?.Color || '',
+              network: selectedConfig.network || item.itemSpecifics?.Network || ''
+            }
+          }),
+        },
+        { merge: true }
+      );
+      
+      // Redirect to checkout
+      router.push('/checkout');
+    } catch (error) {
+      console.error('Error during buy now:', error);
+      alert('Failed to process purchase. Please try again.');
+    } finally {
+      setBuying(false);
+    }
+  };
+
+
 
   // ... [keep all the existing state and effects] ...
 
@@ -53,14 +166,83 @@ export default function ProductDetailPage() {
               {/* Action Buttons */}
               <div className="flex gap-3">
                 <button
-                  onClick={handleBuyNow}
+                  onClick={() => {
+                    const auth = getAuth(app);
+                    const user = auth.currentUser;
+                    if (!user) {
+                      setShowLogin(true);
+                      return;
+                    }
+                    if (!item) {
+                      alert('Product information not available. Please try again.');
+                      return;
+                    }
+                    setBuying(true);
+                    const db = getFirestore(app);
+                    const cartRef = doc(db, "carts", user.uid);
+                    setDoc(
+                      cartRef,
+                      {
+                        items: arrayUnion({
+                          itemId: item.itemId,
+                          title: item.title,
+                          price: item.price,
+                          image: item.image?.imageUrl || '/placeholder-image.jpg',
+                          quantity: 1,
+                          addedAt: new Date().toISOString(),
+                          configuration: {
+                            storage: selectedConfig.storage || item.itemSpecifics?.["Storage Capacity"] || '',
+                            color: selectedConfig.color || item.itemSpecifics?.Color || '',
+                            network: selectedConfig.network || item.itemSpecifics?.Network || ''
+                          }
+                        }),
+                      },
+                      { merge: true }
+                    ).then(() => {
+                      setBuying(false);
+                      router.push('/checkout');
+                    }).catch(() => {
+                      setBuying(false);
+                      alert('Failed to process purchase. Please try again.');
+                    });
+                  }}
                   className="flex-1 max-w-[200px] bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow-lg transition"
                   disabled={buying}
                 >
                   {buying ? "Processing..." : "Buy Now"}
                 </button>
                 <button
-                  onClick={handleAddToCart}
+                  onClick={() => {
+                    const auth = getAuth(app);
+                    const db = getFirestore(app);
+                    const user = auth.currentUser;
+                    if (!user) {
+                      setShowLogin(true);
+                      return;
+                    }
+                    if (!item) return;
+                    const cartRef = doc(db, "carts", user.uid);
+                    setDoc(
+                      cartRef,
+                      {
+                        items: arrayUnion({
+                          itemId: item.itemId,
+                          title: item.title,
+                          price: item.price,
+                          image: item.image?.imageUrl || '/placeholder-image.jpg',
+                          quantity: 1,
+                          addedAt: new Date().toISOString(),
+                          configuration: {
+                            storage: selectedConfig.storage || item.itemSpecifics?.["Storage Capacity"] || '',
+                            color: selectedConfig.color || item.itemSpecifics?.Color || '',
+                            network: selectedConfig.network || item.itemSpecifics?.Network || ''
+                          }
+                        }),
+                      },
+                      { merge: true }
+                    );
+                    alert("Added to cart!");
+                  }}
                   className="flex-1 max-w-[200px] bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-white font-semibold py-3 rounded-lg shadow transition"
                 >
                   Add to Cart
@@ -96,6 +278,7 @@ export default function ProductDetailPage() {
                   />
                 </button>
               </div>
+
 
               {/* Support Contact Information */}
               <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 mt-6">

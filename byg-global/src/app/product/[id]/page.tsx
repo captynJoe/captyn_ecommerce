@@ -255,12 +255,38 @@ export default function ProductDetailPage() {
     }
   };
 
-  // Filter description to remove "ebay" (case-insensitive) from text nodes only
+  // Enhanced description filtering to remove unwanted content
   function filterDescription(html?: string) {
     if (!html) return "";
-    return html.replace(/>([^<]*)</gi, (match, text) =>
-      ">" + text.replace(/ebay/gi, "") + "<"
-    );
+    
+    // Remove eBay-specific content and seller information
+    let filtered = html
+      // Remove eBay references (case-insensitive)
+      .replace(/>([^<]*)</gi, (match, text) =>
+        ">" + text.replace(/ebay/gi, "").replace(/eBay/gi, "") + "<"
+      )
+      // Remove shipping-related content
+      .replace(/<[^>]*shipping[^>]*>.*?<\/[^>]*>/gi, "")
+      .replace(/shipping[^<]*<br[^>]*>/gi, "")
+      // Remove seller-specific information
+      .replace(/<[^>]*seller[^>]*>.*?<\/[^>]*>/gi, "")
+      .replace(/seller[^<]*<br[^>]*>/gi, "")
+      // Remove payment information
+      .replace(/<[^>]*payment[^>]*>.*?<\/[^>]*>/gi, "")
+      .replace(/payment[^<]*<br[^>]*>/gi, "")
+      // Remove return policy content
+      .replace(/<[^>]*return[^>]*>.*?<\/[^>]*>/gi, "")
+      .replace(/return[^<]*<br[^>]*>/gi, "")
+      // Remove contact information
+      .replace(/<[^>]*contact[^>]*>.*?<\/[^>]*>/gi, "")
+      .replace(/contact[^<]*<br[^>]*>/gi, "")
+      // Clean up extra whitespace and empty tags
+      .replace(/<p>\s*<\/p>/gi, "")
+      .replace(/<div>\s*<\/div>/gi, "")
+      .replace(/\s+/g, " ")
+      .trim();
+    
+    return filtered;
   }
 
   // Organize item specifics into categories
