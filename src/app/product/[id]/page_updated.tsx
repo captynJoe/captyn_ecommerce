@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { getAuth } from "firebase/auth";
 import { getFirestore, doc, setDoc, arrayUnion } from "firebase/firestore";
@@ -11,7 +11,7 @@ import SliderMenu from "@/components/SliderMenu";
 import { convertToKESWithProfit, convertToKESWithProfitAndStorage } from "@/utils/pricing";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { useApp } from "@/contexts/AppContext";
-import { Heart } from "lucide-react";
+import { Heart, Mail, MessageCircle } from "lucide-react";
 import Link from "next/link";
 
 interface EbayImage {
@@ -67,7 +67,6 @@ export default function ProductDetailPage() {
   const [currentImage, setCurrentImage] = useState(0);
   
   // For product recommendations
-  const [recentViewsProducts, setRecentViewsProducts] = useState<EbayItemDetail[]>([]);
   const [moreLikeThisProducts, setMoreLikeThisProducts] = useState<EbayItemDetail[]>([]);
   const [loadingRecommendations, setLoadingRecommendations] = useState(false);
 
@@ -126,15 +125,6 @@ export default function ProductDetailPage() {
           // Filter out the current item and set similar products
           const filteredSimilar = similarData.itemSummaries?.filter((p: EbayItemDetail) => p.itemId !== item?.itemId) || [];
           setMoreLikeThisProducts(filteredSimilar);
-        }
-
-        // For recent views, we'll simulate with random products for now
-        // In a real app, this would come from user's browsing history
-        const recentRes = await fetch(`/api/products/ebay?q=phone&limit=6`);
-        if (recentRes.ok) {
-          const recentData = await recentRes.json();
-          const filteredRecent = recentData.itemSummaries?.filter((p: EbayItemDetail) => p.itemId !== item?.itemId) || [];
-          setRecentViewsProducts(filteredRecent);
         }
       } catch (error) {
         console.error('Failed to fetch recommendations:', error);
@@ -255,12 +245,38 @@ export default function ProductDetailPage() {
     }
   };
 
-  // Filter description to remove "ebay" (case-insensitive) from text nodes only
+  // Enhanced description filtering to remove unwanted content
   function filterDescription(html?: string) {
     if (!html) return "";
-    return html.replace(/>([^<]*)</gi, (match, text) =>
-      ">" + text.replace(/ebay/gi, "") + "<"
-    );
+    
+    // Remove eBay-specific content and seller information
+    let filtered = html
+      // Remove eBay references (case-insensitive)
+      .replace(/>([^<]*)</gi, (match, text) =>
+        ">" + text.replace(/ebay/gi, "").replace(/eBay/gi, "") + "<"
+      )
+      // Remove shipping-related content
+      .replace(/<[^>]*shipping[^>]*>.*?<\/[^>]*>/gi, "")
+      .replace(/shipping[^<]*<br[^>]*>/gi, "")
+      // Remove seller-specific information
+      .replace(/<[^>]*seller[^>]*>.*?<\/[^>]*>/gi, "")
+      .replace(/seller[^<]*<br[^>]*>/gi, "")
+      // Remove payment information
+      .replace(/<[^>]*payment[^>]*>.*?<\/[^>]*>/gi, "")
+      .replace(/payment[^<]*<br[^>]*>/gi, "")
+      // Remove return policy content
+      .replace(/<[^>]*return[^>]*>.*?<\/[^>]*>/gi, "")
+      .replace(/return[^<]*<br[^>]*>/gi, "")
+      // Remove contact information
+      .replace(/<[^>]*contact[^>]*>.*?<\/[^>]*>/gi, "")
+      .replace(/contact[^<]*<br[^>]*>/gi, "")
+      // Clean up extra whitespace and empty tags
+      .replace(/<p>\s*<\/p>/gi, "")
+      .replace(/<div>\s*<\/div>/gi, "")
+      .replace(/\s+/g, " ")
+      .trim();
+    
+    return filtered;
   }
 
   // Organize item specifics into categories
@@ -502,31 +518,6 @@ export default function ProductDetailPage() {
               </button>
             </div>
 
-            {/* Support Contact Information */}
-            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 mt-6">
-              <h3 className="font-semibold text-lg text-blue-900 dark:text-blue-300 mb-3">Need Help?</h3>
-              <div className="space-y-2">
-                <p className="text-blue-800 dark:text-blue-200 text-sm">
-                  Contact our support team for any questions or assistance:
-                </p>
-                <div className="flex flex-col space-y-2">
-                  <a 
-                    href="tel:0112047147" 
-                    className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
-                  >
-                    📞 Call: 0112047147
-                  </a>
-                  <a 
-                    href="https://wa.me/254112047147" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 font-medium"
-                  >
-                    💬 WhatsApp: 0112047147
-                  </a>
-                </div>
-              </div>
-            </div>
 
             {/* Basic Product Info */}
             {!shouldHideDetails && (
@@ -630,52 +621,6 @@ export default function ProductDetailPage() {
 
         {/* Product Recommendations */}
         <div className="space-y-8">
-          {/* Based on Recent Views */}
-          {recentViewsProducts.length > 0 && (
-            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Based on Your Recent Views</h2>
-                <Link 
-                  href={`/search?category=recent-views`}
-                  className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
-                >
-                  View All
-                </Link>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {recentViewsProducts.slice(0, 4).map((product) => (
-                  <Link 
-                    key={product.itemId} 
-                    href={`/product/${product.itemId}`}
-                    className="block group"
-                  >
-                    <div className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition">
-                      {product.image?.imageUrl ? (
-                        <img
-                          src={product.image.imageUrl}
-                          alt={product.title}
-                          className="product-image-card"
-                        />
-                      ) : (
-                        <div className="product-image-card bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-                          <span className="text-gray-400 text-sm">No Image</span>
-                        </div>
-                      )}
-                      <div className="p-4">
-                        <h3 className="text-sm font-medium text-gray-900 dark:text-white line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400">
-                          {product.title}
-                        </h3>
-                        <p className="mt-2 text-lg font-bold text-green-600 dark:text-green-400">
-                          {convertToKESWithProfit(product.price?.value, product.condition, product.title)}
-                        </p>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          )}
-
           {/* More Like This */}
           {moreLikeThisProducts.length > 0 && (
             <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6">
@@ -751,7 +696,8 @@ export default function ProductDetailPage() {
                 href="mailto:captynglobal@gmail.com" 
                 className="flex items-center gap-3 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium text-lg transition-colors"
               >
-                <span>📧 Email: captynglobal@gmail.com</span>
+                <Mail className="w-6 h-6" />
+                <span>Email: captynglobal@gmail.com</span>
               </a>
               <a 
                 href="https://wa.me/254112047147" 
@@ -759,12 +705,13 @@ export default function ProductDetailPage() {
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 font-medium text-lg transition-colors"
               >
-                <span>💬 WhatsApp: 0112047147</span>
+                <MessageCircle className="w-6 h-6" />
+                <span>WhatsApp: 0112047147</span>
               </a>
             </div>
           </div>
         </div>
-      </div>
+        </div>
       </main>
     </>
   );

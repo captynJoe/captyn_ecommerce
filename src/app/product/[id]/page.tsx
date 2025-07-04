@@ -67,9 +67,9 @@ export default function ProductDetailPage() {
   const [currentImage, setCurrentImage] = useState(0);
   
   // For product recommendations
-  const [recentViewsProducts, setRecentViewsProducts] = useState<EbayItemDetail[]>([]);
   const [moreLikeThisProducts, setMoreLikeThisProducts] = useState<EbayItemDetail[]>([]);
   const [loadingRecommendations, setLoadingRecommendations] = useState(false);
+
 
   // Handle configuration changes
   const handleConfigChange = (type: 'storage' | 'color' | 'network', value: string) => {
@@ -128,14 +128,7 @@ export default function ProductDetailPage() {
           setMoreLikeThisProducts(filteredSimilar);
         }
 
-        // For recent views, we'll simulate with random products for now
-        // In a real app, this would come from user's browsing history
-        const recentRes = await fetch(`/api/products/ebay?q=phone&limit=6`);
-        if (recentRes.ok) {
-          const recentData = await recentRes.json();
-          const filteredRecent = recentData.itemSummaries?.filter((p: EbayItemDetail) => p.itemId !== item?.itemId) || [];
-          setRecentViewsProducts(filteredRecent);
-        }
+
       } catch (error) {
         console.error('Failed to fetch recommendations:', error);
       } finally {
@@ -261,10 +254,13 @@ export default function ProductDetailPage() {
     
     // Remove eBay-specific content and seller information
     let filtered = html
+      // Remove links to eBay
+      .replace(/<a[^>]+href="https?:\/\/[^"]*ebay\.[^"]*"[^>]*>.*?<\/a>/gi, "")
       // Remove eBay references (case-insensitive)
       .replace(/>([^<]*)</gi, (match, text) =>
         ">" + text.replace(/ebay/gi, "").replace(/eBay/gi, "") + "<"
       )
+
       // Remove shipping-related content
       .replace(/<[^>]*shipping[^>]*>.*?<\/[^>]*>/gi, "")
       .replace(/shipping[^<]*<br[^>]*>/gi, "")
@@ -631,53 +627,8 @@ export default function ProductDetailPage() {
 
         {/* Product Recommendations */}
         <div className="space-y-8">
-          {/* Based on Recent Views */}
-          {recentViewsProducts.length > 0 && (
-            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Based on Your Recent Views</h2>
-                <Link 
-                  href={`/search?category=recent-views`}
-                  className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
-                >
-                  View All
-                </Link>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {recentViewsProducts.slice(0, 4).map((product) => (
-                  <Link 
-                    key={product.itemId} 
-                    href={`/product/${product.itemId}`}
-                    className="block group"
-                  >
-                    <div className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition">
-                      {product.image?.imageUrl ? (
-                        <img
-                          src={product.image.imageUrl}
-                          alt={product.title}
-                          className="product-image-card"
-                        />
-                      ) : (
-                        <div className="product-image-card bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-                          <span className="text-gray-400 text-sm">No Image</span>
-                        </div>
-                      )}
-                      <div className="p-4">
-                        <h3 className="text-sm font-medium text-gray-900 dark:text-white line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400">
-                          {product.title}
-                        </h3>
-                        <p className="mt-2 text-lg font-bold text-green-600 dark:text-green-400">
-                          {convertToKESWithProfit(product.price?.value, product.condition, product.title)}
-                        </p>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          )}
-
           {/* More Like This */}
+
           {moreLikeThisProducts.length > 0 && (
             <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6">
               <div className="flex justify-between items-center mb-6">
