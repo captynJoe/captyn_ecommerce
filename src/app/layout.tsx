@@ -1,11 +1,20 @@
 import './globals.css';
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Providers } from './providers';
 import ClientLayout from './ClientLayout';
 
 export const metadata: Metadata = {
   title: 'CAPTYN Global',
   description: 'Bridging worlds with seamless shopping',
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  minimumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
 };
 
 export default function RootLayout({
