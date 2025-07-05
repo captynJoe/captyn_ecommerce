@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { getFirestore, doc, setDoc, collection, addDoc } from 'firebase/firestore';
-import { app } from '@/utils/firebase';
+import clientPromise from "@/lib/mongodb";
+
 
 interface OrderItem {
   itemId: string;
@@ -48,7 +48,8 @@ export async function POST(req: Request) {
       );
     }
 
-    const db = getFirestore(app);
+    const client = await clientPromise;
+    const db = client.db();
     
     // Create order document
     const order = {
@@ -58,19 +59,20 @@ export async function POST(req: Request) {
       paymentDetails: orderData.paymentDetails,
       shippingAddress: orderData.shippingAddress,
       status: 'pending_seller_payment',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
       totalAmount: orderData.paymentDetails.amount,
       currency: orderData.paymentDetails.currency,
     };
 
-    // Add order to Firestore
-    const ordersRef = collection(db, 'orders');
-    const orderDoc = await addDoc(ordersRef, order);
+    // Add order to MongoDB
+    const orderResult = await db.collection('orders').insertOne(order);
+    const orderId = orderResult.insertedId;
 
     // Create seller payment instructions for each item
     const sellerPayments = orderData.items.map(item => ({
-      orderId: orderDoc.id,
+      orderId: orderId.toString(),
+
       itemId: item.itemId,
       sellerUsername: item.sellerInfo?.username || 'Unknown',
       itemTitle: item.title,
@@ -78,17 +80,18 @@ export async function POST(req: Request) {
       quantity: item.quantity,
       totalItemPrice: parseFloat(item.price.value) * item.quantity,
       paymentStatus: 'pending',
-      createdAt: new Date().toISOString(),
+      createdAt: new Date(),
     }));
 
     // Store seller payment instructions
-    for (const payment of sellerPayments) {
-      await addDoc(collection(db, 'seller_payments'), payment);
+    if (sellerPayments.length > 0) {
+        await db.collection('seller_payments').insertMany(sellerPayments);
     }
 
     // Generate payment instructions for the customer
     const paymentInstructions = {
-      orderId: orderDoc.id,
+      orderId: orderId.toString(),
+
       message: 'Your order has been received and will be processed internally.',
       sellerPayments: sellerPayments.map(payment => ({
         seller: payment.sellerUsername,
@@ -102,7 +105,8 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       success: true,
-      orderId: orderDoc.id,
+      orderId: orderId.toString(),
+
       paymentInstructions,
       message: 'Order created successfully',
     });
