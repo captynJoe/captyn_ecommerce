@@ -127,6 +127,12 @@ export default function Navbar({
                           : "text-black placeholder-gray-500 focus:ring-1 focus:ring-gray-200"
                       } focus:outline-none transition-all duration-200`}
                       autoFocus
+                      autoComplete="off"
+                      autoCorrect="off"
+                      autoCapitalize="off"
+                      spellCheck="false"
+                      inputMode="search"
+                      style={{ fontSize: '16px' }}
                     />
                     <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center space-x-1">
                       <button

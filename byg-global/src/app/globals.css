@@ -262,6 +262,38 @@ html, body {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  /* Prevent zoom on mobile devices */
+  touch-action: manipulation;
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* Prevent zoom on all elements */
+* {
+  touch-action: manipulation;
+}
+
+/* Prevent zoom on input focus (common mobile browser behavior) */
+input, textarea, select {
+  font-size: 16px !important;
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  touch-action: manipulation;
+}
+
+/* Prevent double-tap zoom */
+a, button, [role="button"] {
+  touch-action: manipulation;
+}
+
+/* Additional zoom prevention for iOS Safari */
+@supports (-webkit-touch-callout: none) {
+  input, textarea, select {
+    font-size: 16px !important;
+    transform: translateZ(0);
+  }
 }
 
 body {
