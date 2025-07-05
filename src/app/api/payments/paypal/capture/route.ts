@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { getFirestore, doc, setDoc } from 'firebase/firestore';
-import { app } from '@/utils/firebase';
+import clientPromise from "@/lib/mongodb";
+
 
 const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID || '';
 const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET || '';
@@ -52,8 +52,9 @@ export async function POST(req: Request) {
     const data = await response.json();
 
     if (response.ok && data.status === 'COMPLETED') {
-      // Store payment details in Firestore
-      const db = getFirestore(app);
+      // Store payment details in MongoDB
+      const client = await clientPromise;
+      const db = client.db();
       const paymentDetails = {
         orderId: data.id,
         status: data.status,
@@ -62,14 +63,18 @@ export async function POST(req: Request) {
         amount: data.purchase_units[0]?.payments?.captures[0]?.amount?.value,
         currency: data.purchase_units[0]?.payments?.captures[0]?.amount?.currency_code,
         captureId: data.purchase_units[0]?.payments?.captures[0]?.id,
-        timestamp: new Date().toISOString(),
+        timestamp: new Date(),
         success: true,
       };
 
-      const paymentsRef = doc(db, 'paypal_payments', orderId);
-      await setDoc(paymentsRef, paymentDetails);
+      await db.collection('paypal_payments').updateOne(
+        { orderId: orderId },
+        { $set: paymentDetails },
+        { upsert: true }
+      );
 
       console.log('PayPal payment captured:', paymentDetails);
+
 
       return NextResponse.json({
         success: true,

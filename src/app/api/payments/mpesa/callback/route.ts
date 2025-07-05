@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { getFirestore, doc, setDoc } from 'firebase/firestore';
-import { app } from '@/utils/firebase';
+import clientPromise from "@/lib/mongodb";
+
 
 interface MpesaPaymentDetails {
   checkoutRequestID: string;
@@ -47,6 +47,7 @@ export async function POST(req: Request) {
       resultDesc: ResultDesc,
       timestamp: new Date().toISOString(),
       success: ResultCode === 0,
+
     };
 
     // If payment was successful, extract additional details
@@ -58,11 +59,16 @@ export async function POST(req: Request) {
       paymentDetails.phoneNumber = metadata.find((item) => item.Name === 'PhoneNumber')?.Value as string;
     }
 
-    // Store the payment result in Firestore
-    const db = getFirestore(app);
-    const paymentsRef = doc(db, 'mpesa_payments', CheckoutRequestID);
+    // Store the payment result in MongoDB
+    const client = await clientPromise;
+    const db = client.db();
     
-    await setDoc(paymentsRef, paymentDetails);
+    await db.collection('mpesa_payments').updateOne(
+        { checkoutRequestID: CheckoutRequestID },
+        { $set: paymentDetails },
+        { upsert: true }
+    );
+
 
     console.log('MPESA callback processed:', paymentDetails);
 
