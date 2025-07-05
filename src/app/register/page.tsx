@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { auth } from "@/utils/firebase";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -24,14 +23,27 @@ export default function RegisterPage() {
 
     setLoading(true);
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
-      router.push("/"); // Redirect to homepage or login page after successful registration
+      const res = await fetch("/api/user", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (res.ok) {
+        router.push("/"); // Redirect to homepage or login page
+      } else {
+        const errorData = await res.text();
+        setError(errorData || "Failed to create account");
+      }
     } catch (err: any) {
-      setError(err.message || "Failed to create account");
+      setError(err.message || "An unexpected error occurred.");
     } finally {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">

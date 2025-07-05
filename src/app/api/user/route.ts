@@ -1,52 +1,34 @@
 import { NextResponse } from "next/server";
+import bcrypt from "bcrypt";
 import clientPromise from "@/lib/mongodb";
-import { ObjectId } from "mongodb";
 
-export async function GET() {
-  const client = await clientPromise;
-  const db = client.db("your_database_name");
-  const collection = db.collection("users");
+export async function POST(request: Request) {
+  try {
+    const { email, password } = await request.json();
 
-  // Example: Find user by email or _id
-  const user = await collection.findOne({ email: "joel@example.com" });
-  
-  if (!user) {
-    return NextResponse.json({ error: "User not found" }, { status: 404 });
+    if (!email || !password) {
+      return new NextResponse("Missing email or password", { status: 400 });
+    }
+
+    const client = await clientPromise;
+    const db = client.db();
+
+    const existingUser = await db.collection("users").findOne({ email });
+
+    if (existingUser) {
+      return new NextResponse("User already exists", { status: 400 });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await db.collection("users").insertOne({
+      email,
+      hashedPassword,
+    });
+
+    return new NextResponse("User created successfully", { status: 201 });
+  } catch (error) {
+    console.error("Registration Error:", error);
+    return new NextResponse("Internal Server Error", { status: 500 });
   }
-
-  // Destructure to remove password before sending response
-  const { password, ...safeUser } = user;
-
-  return NextResponse.json(safeUser);
-}
-
-export async function PUT(req: Request) {
-  const data = await req.json();
-  const client = await clientPromise;
-  const db = client.db("your_database_name");
-  const collection = db.collection("users");
-
-  // Example: update by user id
-  const userId = data._id;
-  if (!userId) {
-    return NextResponse.json({ error: "User ID required" }, { status: 400 });
-  }
-
-  // Build update doc, but never update password here directly (for demo)
-  const updateData = { ...data };
-  delete updateData.password;
-
-  const result = await collection.findOneAndUpdate(
-    { _id: new ObjectId(userId) },
-    { $set: updateData },
-    { returnDocument: "after" }
-  );
-
-  if (!result.value) {
-    return NextResponse.json({ error: "User not found" }, { status: 404 });
-  }
-
-  const { password, ...safeUser } = result.value;
-
-  return NextResponse.json(safeUser);
 }
