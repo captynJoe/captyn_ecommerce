@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { auth } from "@/utils/firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 
+//fd
 export default function RegisterPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
