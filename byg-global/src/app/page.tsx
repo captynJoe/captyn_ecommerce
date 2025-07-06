@@ -414,244 +414,246 @@ export default function HomePage() {
           </section>
         )}
 
-        {/* Category Icons Section */}
-        <section className="max-w-7xl mx-auto px-4 py-8">
-          <div className="text-center mb-8">
-            <h2 className={`text-2xl md:text-3xl font-bold mb-2 ${isDark ? "text-white" : "text-gray-900"}`}>
-              Shop by Category
-            </h2>
-            <p className={`text-sm md:text-base ${isDark ? "text-gray-400" : "text-gray-600"}`}>
-              Find exactly what you're looking for
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-6 lg:grid-cols-9 gap-4 md:gap-6">
-            {/* All */}
-            <button
-              onClick={() => {
-                const url = new URL(window.location.href);
-                url.searchParams.delete('q');
-                window.history.pushState({}, '', url.toString());
-                setQuery("");
-                setPageNum(0);
-              }}
-              className={`group flex flex-col items-center p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
-                isDark 
-                  ? "bg-gray-800 hover:bg-gray-700 border border-gray-700" 
-                  : "bg-white hover:bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md"
-              }`}
-            >
-              <div className={`p-3 rounded-full mb-2 transition-colors ${
-                isDark ? "bg-gray-900/30 group-hover:bg-gray-800/40" : "bg-gray-100 group-hover:bg-gray-200"
-              }`}>
-                <LayoutGrid className={`w-6 h-6 ${isDark ? "text-gray-400" : "text-gray-600"}`} />
-              </div>
-              <span className={`text-xs font-medium text-center ${isDark ? "text-gray-300" : "text-gray-700"}`}>
-                All
-              </span>
-            </button>
+        {/* Category Icons Section - Only show when no search is active */}
+        {!query && (
+          <section className="max-w-7xl mx-auto px-4 py-8">
+            <div className="text-center mb-8">
+              <h2 className={`text-2xl md:text-3xl font-bold mb-2 ${isDark ? "text-white" : "text-gray-900"}`}>
+                Shop by Category
+              </h2>
+              <p className={`text-sm md:text-base ${isDark ? "text-gray-400" : "text-gray-600"}`}>
+                Find exactly what you're looking for
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-6 lg:grid-cols-9 gap-4 md:gap-6">
+              {/* All */}
+              <button
+                onClick={() => {
+                  const url = new URL(window.location.href);
+                  url.searchParams.delete('q');
+                  window.history.pushState({}, '', url.toString());
+                  setQuery("");
+                  setPageNum(0);
+                }}
+                className={`group flex flex-col items-center p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
+                  isDark 
+                    ? "bg-gray-800 hover:bg-gray-700 border border-gray-700" 
+                    : "bg-white hover:bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md"
+                }`}
+              >
+                <div className={`p-3 rounded-full mb-2 transition-colors ${
+                  isDark ? "bg-gray-900/30 group-hover:bg-gray-800/40" : "bg-gray-100 group-hover:bg-gray-200"
+                }`}>
+                  <LayoutGrid className={`w-6 h-6 ${isDark ? "text-gray-400" : "text-gray-600"}`} />
+                </div>
+                <span className={`text-xs font-medium text-center ${isDark ? "text-gray-300" : "text-gray-700"}`}>
+                  All
+                </span>
+              </button>
 
-            {/* Phones */}
-            <button
-              onClick={() => {
-                const url = new URL(window.location.href);
-                url.searchParams.set('q', 'smartphone');
-                window.history.pushState({}, '', url.toString());
-                setQuery("smartphone");
-                setPageNum(0);
-              }}
-              className={`group flex flex-col items-center p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
-                isDark 
-                  ? "bg-gray-800 hover:bg-gray-700 border border-gray-700" 
-                  : "bg-white hover:bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md"
-              }`}
-            >
-              <div className={`p-3 rounded-full mb-2 transition-colors ${
-                isDark ? "bg-purple-900/30 group-hover:bg-purple-800/40" : "bg-purple-100 group-hover:bg-purple-200"
-              }`}>
-                <Smartphone className={`w-6 h-6 ${isDark ? "text-purple-400" : "text-purple-600"}`} />
-              </div>
-              <span className={`text-xs font-medium text-center ${isDark ? "text-gray-300" : "text-gray-700"}`}>
-                Phones
-              </span>
-            </button>
+              {/* Phones */}
+              <button
+                onClick={() => {
+                  const url = new URL(window.location.href);
+                  url.searchParams.set('q', 'smartphone');
+                  window.history.pushState({}, '', url.toString());
+                  setQuery("smartphone");
+                  setPageNum(0);
+                }}
+                className={`group flex flex-col items-center p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
+                  isDark 
+                    ? "bg-gray-800 hover:bg-gray-700 border border-gray-700" 
+                    : "bg-white hover:bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md"
+                }`}
+              >
+                <div className={`p-3 rounded-full mb-2 transition-colors ${
+                  isDark ? "bg-purple-900/30 group-hover:bg-purple-800/40" : "bg-purple-100 group-hover:bg-purple-200"
+                }`}>
+                  <Smartphone className={`w-6 h-6 ${isDark ? "text-purple-400" : "text-purple-600"}`} />
+                </div>
+                <span className={`text-xs font-medium text-center ${isDark ? "text-gray-300" : "text-gray-700"}`}>
+                  Phones
+                </span>
+              </button>
 
-            {/* Gaming */}
-            <button
-              onClick={() => {
-                const url = new URL(window.location.href);
-                url.searchParams.set('q', 'playstation xbox nintendo');
-                window.history.pushState({}, '', url.toString());
-                setQuery("playstation xbox nintendo");
-                setPageNum(0);
-              }}
-              className={`group flex flex-col items-center p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
-                isDark 
-                  ? "bg-gray-800 hover:bg-gray-700 border border-gray-700" 
-                  : "bg-white hover:bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md"
-              }`}
-            >
-              <div className={`p-3 rounded-full mb-2 transition-colors ${
-                isDark ? "bg-red-900/30 group-hover:bg-red-800/40" : "bg-red-100 group-hover:bg-red-200"
-              }`}>
-                <Gamepad2 className={`w-6 h-6 ${isDark ? "text-red-400" : "text-red-600"}`} />
-              </div>
-              <span className={`text-xs font-medium text-center ${isDark ? "text-gray-300" : "text-gray-700"}`}>
-                Gaming
-              </span>
-            </button>
+              {/* Gaming */}
+              <button
+                onClick={() => {
+                  const url = new URL(window.location.href);
+                  url.searchParams.set('q', 'playstation xbox nintendo');
+                  window.history.pushState({}, '', url.toString());
+                  setQuery("playstation xbox nintendo");
+                  setPageNum(0);
+                }}
+                className={`group flex flex-col items-center p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
+                  isDark 
+                    ? "bg-gray-800 hover:bg-gray-700 border border-gray-700" 
+                    : "bg-white hover:bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md"
+                }`}
+              >
+                <div className={`p-3 rounded-full mb-2 transition-colors ${
+                  isDark ? "bg-red-900/30 group-hover:bg-red-800/40" : "bg-red-100 group-hover:bg-red-200"
+                }`}>
+                  <Gamepad2 className={`w-6 h-6 ${isDark ? "text-red-400" : "text-red-600"}`} />
+                </div>
+                <span className={`text-xs font-medium text-center ${isDark ? "text-gray-300" : "text-gray-700"}`}>
+                  Gaming
+                </span>
+              </button>
 
-            {/* Hair & Wigs */}
-            <button
-              onClick={() => {
-                const url = new URL(window.location.href);
-                url.searchParams.set('q', 'hair wigs');
-                window.history.pushState({}, '', url.toString());
-                setQuery("hair wigs");
-                setPageNum(0);
-              }}
-              className={`group flex flex-col items-center p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
-                isDark 
-                  ? "bg-gray-800 hover:bg-gray-700 border border-gray-700" 
-                  : "bg-white hover:bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md"
-              }`}
-            >
-              <div className={`p-3 rounded-full mb-2 transition-colors ${
-                isDark ? "bg-pink-900/30 group-hover:bg-pink-800/40" : "bg-pink-100 group-hover:bg-pink-200"
-              }`}>
-                <Scissors className={`w-6 h-6 ${isDark ? "text-pink-400" : "text-pink-600"}`} />
-              </div>
-              <span className={`text-xs font-medium text-center ${isDark ? "text-gray-300" : "text-gray-700"}`}>
-                Hair & Wigs
-              </span>
-            </button>
+              {/* Hair & Wigs */}
+              <button
+                onClick={() => {
+                  const url = new URL(window.location.href);
+                  url.searchParams.set('q', 'hair wigs');
+                  window.history.pushState({}, '', url.toString());
+                  setQuery("hair wigs");
+                  setPageNum(0);
+                }}
+                className={`group flex flex-col items-center p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
+                  isDark 
+                    ? "bg-gray-800 hover:bg-gray-700 border border-gray-700" 
+                    : "bg-white hover:bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md"
+                }`}
+              >
+                <div className={`p-3 rounded-full mb-2 transition-colors ${
+                  isDark ? "bg-pink-900/30 group-hover:bg-pink-800/40" : "bg-pink-100 group-hover:bg-pink-200"
+                }`}>
+                  <Scissors className={`w-6 h-6 ${isDark ? "text-pink-400" : "text-pink-600"}`} />
+                </div>
+                <span className={`text-xs font-medium text-center ${isDark ? "text-gray-300" : "text-gray-700"}`}>
+                  Hair & Wigs
+                </span>
+              </button>
 
-            {/* Gaming PCs */}
-            <button
-              onClick={() => {
-                const url = new URL(window.location.href);
-                url.searchParams.set('q', 'gaming pc');
-                window.history.pushState({}, '', url.toString());
-                setQuery("gaming pc");
-                setPageNum(0);
-              }}
-              className={`group flex flex-col items-center p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
-                isDark 
-                  ? "bg-gray-800 hover:bg-gray-700 border border-gray-700" 
-                  : "bg-white hover:bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md"
-              }`}
-            >
-              <div className={`p-3 rounded-full mb-2 transition-colors ${
-                isDark ? "bg-blue-900/30 group-hover:bg-blue-800/40" : "bg-blue-100 group-hover:bg-blue-200"
-              }`}>
-                <Cpu className={`w-6 h-6 ${isDark ? "text-blue-400" : "text-blue-600"}`} />
-              </div>
-              <span className={`text-xs font-medium text-center ${isDark ? "text-gray-300" : "text-gray-700"}`}>
-                Gaming PCs
-              </span>
-            </button>
+              {/* Gaming PCs */}
+              <button
+                onClick={() => {
+                  const url = new URL(window.location.href);
+                  url.searchParams.set('q', 'gaming pc');
+                  window.history.pushState({}, '', url.toString());
+                  setQuery("gaming pc");
+                  setPageNum(0);
+                }}
+                className={`group flex flex-col items-center p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
+                  isDark 
+                    ? "bg-gray-800 hover:bg-gray-700 border border-gray-700" 
+                    : "bg-white hover:bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md"
+                }`}
+              >
+                <div className={`p-3 rounded-full mb-2 transition-colors ${
+                  isDark ? "bg-blue-900/30 group-hover:bg-blue-800/40" : "bg-blue-100 group-hover:bg-blue-200"
+                }`}>
+                  <Cpu className={`w-6 h-6 ${isDark ? "text-blue-400" : "text-blue-600"}`} />
+                </div>
+                <span className={`text-xs font-medium text-center ${isDark ? "text-gray-300" : "text-gray-700"}`}>
+                  Gaming PCs
+                </span>
+              </button>
 
-            {/* Laptops */}
-            <button
-              onClick={() => {
-                const url = new URL(window.location.href);
-                url.searchParams.set('q', 'laptop');
-                window.history.pushState({}, '', url.toString());
-                setQuery("laptop");
-                setPageNum(0);
-              }}
-              className={`group flex flex-col items-center p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
-                isDark 
-                  ? "bg-gray-800 hover:bg-gray-700 border border-gray-700" 
-                  : "bg-white hover:bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md"
-              }`}
-            >
-              <div className={`p-3 rounded-full mb-2 transition-colors ${
-                isDark ? "bg-indigo-900/30 group-hover:bg-indigo-800/40" : "bg-indigo-100 group-hover:bg-indigo-200"
-              }`}>
-                <Laptop className={`w-6 h-6 ${isDark ? "text-indigo-400" : "text-indigo-600"}`} />
-              </div>
-              <span className={`text-xs font-medium text-center ${isDark ? "text-gray-300" : "text-gray-700"}`}>
-                Laptops
-              </span>
-            </button>
+              {/* Laptops */}
+              <button
+                onClick={() => {
+                  const url = new URL(window.location.href);
+                  url.searchParams.set('q', 'laptop');
+                  window.history.pushState({}, '', url.toString());
+                  setQuery("laptop");
+                  setPageNum(0);
+                }}
+                className={`group flex flex-col items-center p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
+                  isDark 
+                    ? "bg-gray-800 hover:bg-gray-700 border border-gray-700" 
+                    : "bg-white hover:bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md"
+                }`}
+              >
+                <div className={`p-3 rounded-full mb-2 transition-colors ${
+                  isDark ? "bg-indigo-900/30 group-hover:bg-indigo-800/40" : "bg-indigo-100 group-hover:bg-indigo-200"
+                }`}>
+                  <Laptop className={`w-6 h-6 ${isDark ? "text-indigo-400" : "text-indigo-600"}`} />
+                </div>
+                <span className={`text-xs font-medium text-center ${isDark ? "text-gray-300" : "text-gray-700"}`}>
+                  Laptops
+                </span>
+              </button>
 
-            {/* Computer Parts */}
-            <button
-              onClick={() => {
-                const url = new URL(window.location.href);
-                url.searchParams.set('q', 'graphics card processor');
-                window.history.pushState({}, '', url.toString());
-                setQuery("graphics card processor");
-                setPageNum(0);
-              }}
-              className={`group flex flex-col items-center p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
-                isDark 
-                  ? "bg-gray-800 hover:bg-gray-700 border border-gray-700" 
-                  : "bg-white hover:bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md"
-              }`}
-            >
-              <div className={`p-3 rounded-full mb-2 transition-colors ${
-                isDark ? "bg-green-900/30 group-hover:bg-green-800/40" : "bg-green-100 group-hover:bg-green-200"
-              }`}>
-                <Cpu className={`w-6 h-6 ${isDark ? "text-green-400" : "text-green-600"}`} />
-              </div>
-              <span className={`text-xs font-medium text-center ${isDark ? "text-gray-300" : "text-gray-700"}`}>
-                PC Parts
-              </span>
-            </button>
+              {/* Computer Parts */}
+              <button
+                onClick={() => {
+                  const url = new URL(window.location.href);
+                  url.searchParams.set('q', 'graphics card processor');
+                  window.history.pushState({}, '', url.toString());
+                  setQuery("graphics card processor");
+                  setPageNum(0);
+                }}
+                className={`group flex flex-col items-center p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
+                  isDark 
+                    ? "bg-gray-800 hover:bg-gray-700 border border-gray-700" 
+                    : "bg-white hover:bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md"
+                }`}
+              >
+                <div className={`p-3 rounded-full mb-2 transition-colors ${
+                  isDark ? "bg-green-900/30 group-hover:bg-green-800/40" : "bg-green-100 group-hover:bg-green-200"
+                }`}>
+                  <Cpu className={`w-6 h-6 ${isDark ? "text-green-400" : "text-green-600"}`} />
+                </div>
+                <span className={`text-xs font-medium text-center ${isDark ? "text-gray-300" : "text-gray-700"}`}>
+                  PC Parts
+                </span>
+              </button>
 
-            {/* Hacking Tools */}
-            <button
-              onClick={() => {
-                const url = new URL(window.location.href);
-                url.searchParams.set('q', 'rubber ducky hacking');
-                window.history.pushState({}, '', url.toString());
-                setQuery("rubber ducky hacking");
-                setPageNum(0);
-              }}
-              className={`group flex flex-col items-center p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
-                isDark 
-                  ? "bg-gray-800 hover:bg-gray-700 border border-gray-700" 
-                  : "bg-white hover:bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md"
-              }`}
-            >
-              <div className={`p-3 rounded-full mb-2 transition-colors ${
-                isDark ? "bg-orange-900/30 group-hover:bg-orange-800/40" : "bg-orange-100 group-hover:bg-orange-200"
-              }`}>
-                <Shield className={`w-6 h-6 ${isDark ? "text-orange-400" : "text-orange-600"}`} />
-              </div>
-              <span className={`text-xs font-medium text-center ${isDark ? "text-gray-300" : "text-gray-700"}`}>
-                Security
-              </span>
-            </button>
+              {/* Hacking Tools */}
+              <button
+                onClick={() => {
+                  const url = new URL(window.location.href);
+                  url.searchParams.set('q', 'rubber ducky hacking');
+                  window.history.pushState({}, '', url.toString());
+                  setQuery("rubber ducky hacking");
+                  setPageNum(0);
+                }}
+                className={`group flex flex-col items-center p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
+                  isDark 
+                    ? "bg-gray-800 hover:bg-gray-700 border border-gray-700" 
+                    : "bg-white hover:bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md"
+                }`}
+              >
+                <div className={`p-3 rounded-full mb-2 transition-colors ${
+                  isDark ? "bg-orange-900/30 group-hover:bg-orange-800/40" : "bg-orange-100 group-hover:bg-orange-200"
+                }`}>
+                  <Shield className={`w-6 h-6 ${isDark ? "text-orange-400" : "text-orange-600"}`} />
+                </div>
+                <span className={`text-xs font-medium text-center ${isDark ? "text-gray-300" : "text-gray-700"}`}>
+                  Security
+                </span>
+              </button>
 
-            {/* Electronics */}
-            <button
-              onClick={() => {
-                const url = new URL(window.location.href);
-                url.searchParams.set('q', 'electronics gadgets');
-                window.history.pushState({}, '', url.toString());
-                setQuery("electronics gadgets");
-                setPageNum(0);
-              }}
-              className={`group flex flex-col items-center p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
-                isDark 
-                  ? "bg-gray-800 hover:bg-gray-700 border border-gray-700" 
-                  : "bg-white hover:bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md"
-              }`}
-            >
-              <div className={`p-3 rounded-full mb-2 transition-colors ${
-                isDark ? "bg-yellow-900/30 group-hover:bg-yellow-800/40" : "bg-yellow-100 group-hover:bg-yellow-200"
-              }`}>
-                <Star className={`w-6 h-6 ${isDark ? "text-yellow-400" : "text-yellow-600"}`} />
-              </div>
-              <span className={`text-xs font-medium text-center ${isDark ? "text-gray-300" : "text-gray-700"}`}>
-                Electronics
-              </span>
-            </button>
-          </div>
-        </section>
+              {/* Electronics */}
+              <button
+                onClick={() => {
+                  const url = new URL(window.location.href);
+                  url.searchParams.set('q', 'electronics gadgets');
+                  window.history.pushState({}, '', url.toString());
+                  setQuery("electronics gadgets");
+                  setPageNum(0);
+                }}
+                className={`group flex flex-col items-center p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
+                  isDark 
+                    ? "bg-gray-800 hover:bg-gray-700 border border-gray-700" 
+                    : "bg-white hover:bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md"
+                }`}
+              >
+                <div className={`p-3 rounded-full mb-2 transition-colors ${
+                  isDark ? "bg-yellow-900/30 group-hover:bg-yellow-800/40" : "bg-yellow-100 group-hover:bg-yellow-200"
+                }`}>
+                  <Star className={`w-6 h-6 ${isDark ? "text-yellow-400" : "text-yellow-600"}`} />
+                </div>
+                <span className={`text-xs font-medium text-center ${isDark ? "text-gray-300" : "text-gray-700"}`}>
+                  Electronics
+                </span>
+              </button>
+            </div>
+          </section>
+        )}
 
         {/* Filter and View Controls */}
         <section className="max-w-7xl mx-auto px-4 py-6">

@@ -82,19 +82,31 @@ export default function Navbar({
 
               {/* Logo - Centered */}
               <div className="flex items-center justify-center flex-1">
-                <Image
-                  src={isDark ? "/captynlogo.png" : "/captynlogo-white.png"}
-                  alt="Captyn Logo"
-                  width={140}
-                  height={56}
-                  className={`drop-shadow-lg w-24 h-auto sm:w-28 md:w-32 lg:w-36`}
-                  priority
-                  quality={100}
-                  style={{ 
-                    objectFit: 'contain',
-                    imageRendering: 'crisp-edges'
+                <a
+                  href="/"
+                  className="cursor-pointer"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    window.location.href = "/";
                   }}
-                />
+                >
+                  <Image
+                    src={isDark ? "/captynlogo.png" : "/captynlogo-white.png"}
+                    alt="Captyn Logo"
+                    width={140}
+                    height={56}
+                    className={`drop-shadow-lg w-24 h-auto sm:w-28 md:w-32 lg:w-36 select-none pointer-events-none`}
+                    priority
+                    quality={100}
+                    style={{ 
+                      objectFit: 'contain',
+                      imageRendering: 'crisp-edges'
+                    }}
+                    draggable={false}
+                    onContextMenu={(e) => e.preventDefault()}
+                    onDragStart={(e) => e.preventDefault()}
+                  />
+                </a>
               </div>
 
               {/* Search Button */}
