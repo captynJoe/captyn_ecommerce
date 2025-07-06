@@ -8,7 +8,7 @@ import { app } from "../../../utils/firebase";
 import LoadingAnimation from "@/components/LoadingAnimation";
 import LoginModal from "@/components/LoginModal";
 import SliderMenu from "@/components/SliderMenu";
-import { convertToKESWithProfit, convertToKESWithProfitAndStorage } from "@/utils/pricing";
+import { convertToKESWithProfitAndShipping, convertToKESWithProfitStorageAndShipping } from "@/utils/pricing";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { useApp } from "@/contexts/AppContext";
 import { Heart, Mail, MessageCircle } from "lucide-react";
@@ -388,20 +388,25 @@ export default function ProductDetailPage() {
             <div>
               <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-4">{item.title}</h1>
               
-              <div className="text-2xl font-bold text-green-600 dark:text-green-400 mb-6">
-                {selectedConfig.storage ? 
-                  convertToKESWithProfitAndStorage(
-                    item.price?.value,
-                    item.condition,
-                    item.title,
-                    selectedConfig.storage
-                  ) :
-                  convertToKESWithProfit(
-                    item.price?.value,
-                    item.condition,
-                    item.title
-                  )
-                }
+              <div className="mb-6">
+                <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                  {selectedConfig.storage ? 
+                    convertToKESWithProfitStorageAndShipping(
+                      item.price?.value,
+                      item.condition,
+                      item.title,
+                      selectedConfig.storage
+                    ) :
+                    convertToKESWithProfitAndShipping(
+                      item.price?.value,
+                      item.condition,
+                      item.title
+                    )
+                  }
+                </div>
+                <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  Includes shipping to US
+                </div>
               </div>
             </div>
 
@@ -663,9 +668,14 @@ export default function ProductDetailPage() {
                         <h3 className="text-sm font-medium text-gray-900 dark:text-white line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400">
                           {product.title}
                         </h3>
-                        <p className="mt-2 text-lg font-bold text-green-600 dark:text-green-400">
-                          {convertToKESWithProfit(product.price?.value, product.condition, product.title)}
-                        </p>
+                        <div className="mt-2">
+                          <p className="text-lg font-bold text-green-600 dark:text-green-400">
+                            {convertToKESWithProfitAndShipping(product.price?.value, product.condition, product.title)}
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            Includes shipping to US
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </Link>

@@ -339,3 +339,109 @@ export function convertToKESWithProfitAndStorage(
   
   return formatPrice(adjustedPrice);
 }
+
+/**
+ * Get estimated seller shipping cost to US based on item type
+ * @param title - Product title to determine item type
+ * @param sellerShipping - Actual seller shipping cost if available
+ * @returns Estimated shipping cost in USD
+ */
+export function getSellerShippingCost(
+  title: string = '',
+  sellerShipping?: number
+): number {
+  // If seller provides shipping cost, use it
+  if (sellerShipping !== undefined && sellerShipping >= 0) {
+    return sellerShipping;
+  }
+
+  // Otherwise estimate based on item type
+  const lowerTitle = title.toLowerCase();
+  
+  // Estimate shipping costs based on typical eBay seller rates to US
+  if (lowerTitle.includes('iphone') || lowerTitle.includes('samsung') || 
+      lowerTitle.includes('phone') || lowerTitle.includes('galaxy')) {
+    return 15.00; // Typical phone shipping cost
+  } else if (lowerTitle.includes('macbook') || lowerTitle.includes('laptop')) {
+    return 25.00; // Typical laptop shipping cost
+  } else if (lowerTitle.includes('tablet') || lowerTitle.includes('ipad')) {
+    return 18.00; // Typical tablet shipping cost
+  } else if (lowerTitle.includes('watch') || lowerTitle.includes('airpods') || 
+             lowerTitle.includes('earbuds')) {
+    return 8.00; // Small accessories shipping
+  } else if (lowerTitle.includes('playstation') || lowerTitle.includes('xbox') || 
+             lowerTitle.includes('nintendo')) {
+    return 30.00; // Gaming console shipping
+  } else if (lowerTitle.includes('graphics card') || lowerTitle.includes('processor')) {
+    return 20.00; // PC components shipping
+  }
+  
+  return 12.00; // Default shipping cost for other items
+}
+
+/**
+ * Convert USD price to KES with profit margin and seller shipping cost
+ * @param usdPrice - Price in USD
+ * @param condition - Product condition
+ * @param title - Product title
+ * @param sellerShipping - Seller's shipping cost (if available)
+ * @returns Formatted final price string including shipping
+ */
+export function convertToKESWithProfitAndShipping(
+  usdPrice: string | undefined,
+  condition: string = '',
+  title: string = '',
+  sellerShipping?: number
+): string {
+  if (!usdPrice) return "Price not available";
+  
+  const priceNum = parseFloat(usdPrice);
+  if (isNaN(priceNum)) return "Price not available";
+  
+  // Get seller shipping cost
+  const shippingCost = getSellerShippingCost(title, sellerShipping);
+  
+  // Calculate total price including shipping
+  const totalPriceUSD = priceNum + shippingCost;
+  
+  // Apply profit margin to the total (product + shipping)
+  const priceInfo = calculateProfitPrice(totalPriceUSD, condition, title);
+  
+  return formatPrice(priceInfo.finalPrice);
+}
+
+/**
+ * Convert USD price to KES with profit margin, storage adjustment, and seller shipping
+ * @param usdPrice - Price in USD
+ * @param condition - Product condition
+ * @param title - Product title
+ * @param storageCapacity - Selected storage capacity
+ * @param sellerShipping - Seller's shipping cost (if available)
+ * @returns Formatted final price string including shipping
+ */
+export function convertToKESWithProfitStorageAndShipping(
+  usdPrice: string | undefined,
+  condition: string = '',
+  title: string = '',
+  storageCapacity: string = '',
+  sellerShipping?: number
+): string {
+  if (!usdPrice) return "Price not available";
+  
+  const priceNum = parseFloat(usdPrice);
+  if (isNaN(priceNum)) return "Price not available";
+  
+  // Get seller shipping cost
+  const shippingCost = getSellerShippingCost(title, sellerShipping);
+  
+  // Calculate total price including shipping
+  const totalPriceUSD = priceNum + shippingCost;
+  
+  // Apply profit margin to the total (product + shipping)
+  const priceInfo = calculateProfitPrice(totalPriceUSD, condition, title);
+  
+  // Apply storage adjustment
+  const adjustedPrice = calculateStorageAdjustment(priceInfo.finalPrice, storageCapacity, title);
+  
+  return formatPrice(adjustedPrice);
+}

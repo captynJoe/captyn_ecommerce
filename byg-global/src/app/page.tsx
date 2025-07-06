@@ -9,7 +9,7 @@ import SliderMenu from "@/components/SliderMenu";
 import LoadingAnimation from "@/components/LoadingAnimation";
 import { useApp } from "@/contexts/AppContext";
 import { useWishlist } from "@/contexts/WishlistContext";
-import { convertToKESWithProfit } from "@/utils/pricing";
+import { convertToKESWithProfitAndShipping } from "@/utils/pricing";
 
 // Types
 interface Seller {
@@ -540,7 +540,7 @@ export default function HomePage() {
                             : addToWishlist({
                                 id: product.itemId,
                                 title: product.title,
-                                price: convertToKESWithProfit(product.price.value.toString(), product.condition, product.title),
+                                price: convertToKESWithProfitAndShipping(product.price.value.toString(), product.condition, product.title),
                                 image: product.image?.imageUrl || '/placeholder-image.jpg',
                                 condition: product.condition,
                               } as any)
@@ -587,8 +587,13 @@ export default function HomePage() {
                       </div>
                       
                       <div className="flex items-center justify-between mt-auto">
-                        <div className="text-sm sm:text-lg md:text-xl font-bold text-green-600">
-                          {convertToKESWithProfit(product.price.value.toString(), product.condition, product.title)}
+                        <div className="flex flex-col">
+                          <div className="text-sm sm:text-lg md:text-xl font-bold text-green-600">
+                            {convertToKESWithProfitAndShipping(product.price.value.toString(), product.condition, product.title)}
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                            Includes shipping to US
+                          </div>
                         </div>
                         {product.seller && (
                           <div className="flex items-center gap-0.5 sm:gap-1 text-xs text-gray-500">
