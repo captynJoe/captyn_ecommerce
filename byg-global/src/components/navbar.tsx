@@ -6,15 +6,15 @@ import Image from "next/image";
 import { Menu, Search, X } from "lucide-react";
 
 interface NavbarProps {
-  onMenuOpen: () => void;
-  onSearch?: (query: string) => void;
+  onMenuOpenAction: () => void;
+  onSearchAction?: (query: string) => void;
   showSearch?: boolean;
   className?: string;
 }
 
 export default function Navbar({
-  onMenuOpen,
-  onSearch,
+  onMenuOpenAction,
+  onSearchAction,
   showSearch = true,
   className = "",
 }: NavbarProps) {
@@ -24,8 +24,8 @@ export default function Navbar({
 
   const handleSearch = (e: FormEvent) => {
     e.preventDefault();
-    if (onSearch && searchQuery.trim()) {
-      onSearch(searchQuery.trim());
+    if (onSearchAction && searchQuery.trim()) {
+      onSearchAction(searchQuery.trim());
       setIsSearchOpen(false);
     }
   };
@@ -72,7 +72,7 @@ export default function Navbar({
               {/* Menu Button */}
               <div className="flex items-center min-w-0">
                 <button
-                  onClick={onMenuOpen}
+                  onClick={onMenuOpenAction}
                   className={`p-2.5 sm:p-3 rounded-xl transition-colors hover:bg-gray-800/30 touch-manipulation ${isDark ? "text-white" : "text-black"}`}
                   aria-label="Open menu"
                 >

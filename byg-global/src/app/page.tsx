@@ -240,8 +240,8 @@ export default function HomePage() {
   return (
     <main className={`${isDark ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-900"} min-h-screen`}>
         <Navbar
-          onMenuOpen={() => setIsMenuOpen(true)}
-          onSearch={(q: string) => {
+          onMenuOpenAction={() => setIsMenuOpen(true)}
+          onSearchAction={(q: string) => {
     // Update URL with search query
     const url = new URL(window.location.href);
     if (q) {
