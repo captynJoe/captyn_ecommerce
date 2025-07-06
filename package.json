@@ -1,4 +1,13 @@
 {
+  "name": "captyn-ecommerce",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "cd byg-global && npm run dev",
+    "build": "cd byg-global && npm install && npm run build",
+    "start": "cd byg-global && npm run start",
+    "lint": "cd byg-global && npm run lint"
+  },
   "devDependencies": {
     "@types/node": "^24.0.10"
   }
