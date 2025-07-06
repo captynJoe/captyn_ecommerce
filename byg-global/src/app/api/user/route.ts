@@ -1,29 +1,35 @@
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import authOptions from "@/lib/authOptions";
 
 export async function GET() {
-  // Check if MongoDB is configured
-  if (!process.env.MONGODB_URI) {
-    return NextResponse.json({ error: "Database not configured" }, { status: 503 });
-  }
-
   try {
+    const session = await getServerSession(authOptions);
+    
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Check if MongoDB is configured
+    if (!process.env.MONGODB_URI) {
+      return NextResponse.json({ error: "Database not configured" }, { status: 503 });
+    }
+
     // Dynamic import to prevent build errors when MongoDB isn't configured
     const { default: clientPromise } = await import("@/lib/mongodb");
-    const { ObjectId } = await import("mongodb");
     
     const client = await clientPromise;
-    const db = client.db("your_database_name");
+    const db = client.db();
     const collection = db.collection("users");
 
-    // Example: Find user by email or _id
-    const user = await collection.findOne({ email: "joel@example.com" });
+    const user = await collection.findOne({ email: session.user.email });
     
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Destructure to remove password before sending response
-    const { password, ...safeUser } = user;
+    // Remove sensitive data before sending response
+    const { hashedPassword, ...safeUser } = user;
 
     return NextResponse.json(safeUser);
   } catch (error) {
@@ -32,35 +38,92 @@ export async function GET() {
   }
 }
 
-export async function PUT(req: Request) {
-  // Check if MongoDB is configured
-  if (!process.env.MONGODB_URI) {
-    return NextResponse.json({ error: "Database not configured" }, { status: 503 });
-  }
-
+export async function POST(req: Request) {
   try {
+    // Check if MongoDB is configured
+    if (!process.env.MONGODB_URI) {
+      return NextResponse.json({ error: "Database not configured" }, { status: 503 });
+    }
+
+    const data = await req.json();
+    
+    if (!data.email || !data.name) {
+      return NextResponse.json({ error: "Email and name are required" }, { status: 400 });
+    }
+
+    // Dynamic import to prevent build errors when MongoDB isn't configured
+    const { default: clientPromise } = await import("@/lib/mongodb");
+    
+    const client = await clientPromise;
+    const db = client.db();
+    const collection = db.collection("users");
+
+    // Check if user already exists
+    const existingUser = await collection.findOne({ email: data.email });
+    if (existingUser) {
+      return NextResponse.json({ error: "User already exists" }, { status: 409 });
+    }
+
+    // Create new user
+    const newUser = {
+      email: data.email,
+      name: data.name,
+      firebaseUid: data.firebaseUid,
+      createdAt: data.createdAt || new Date().toISOString(),
+      searchHistory: data.searchHistory || [],
+      preferences: {
+        currency: 'KES',
+        language: 'en',
+        notifications: true,
+      },
+    };
+
+    const result = await collection.insertOne(newUser);
+
+    return NextResponse.json({ 
+      success: true, 
+      userId: result.insertedId,
+      message: "User created successfully" 
+    });
+
+  } catch (error) {
+    console.error("User creation error:", error);
+    return NextResponse.json({ error: "Failed to create user" }, { status: 500 });
+  }
+}
+
+export async function PUT(req: Request) {
+  try {
+    const session = await getServerSession(authOptions);
+    
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Check if MongoDB is configured
+    if (!process.env.MONGODB_URI) {
+      return NextResponse.json({ error: "Database not configured" }, { status: 503 });
+    }
+
     const data = await req.json();
     
     // Dynamic import to prevent build errors when MongoDB isn't configured
     const { default: clientPromise } = await import("@/lib/mongodb");
-    const { ObjectId } = await import("mongodb");
     
     const client = await clientPromise;
-    const db = client.db("your_database_name");
+    const db = client.db();
     const collection = db.collection("users");
 
-    // Example: update by user id
-    const userId = data._id;
-    if (!userId) {
-      return NextResponse.json({ error: "User ID required" }, { status: 400 });
-    }
-
-    // Build update doc, but never update password here directly (for demo)
+    // Build update doc, exclude sensitive fields
     const updateData = { ...data };
-    delete updateData.password;
+    delete updateData.hashedPassword;
+    delete updateData._id;
+    delete updateData.email; // Don't allow email changes
+    
+    updateData.updatedAt = new Date().toISOString();
 
     const result = await collection.findOneAndUpdate(
-      { _id: new ObjectId(userId) },
+      { email: session.user.email },
       { $set: updateData },
       { returnDocument: "after" }
     );
@@ -69,7 +132,7 @@ export async function PUT(req: Request) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const { password, ...safeUser } = result.value;
+    const { hashedPassword, ...safeUser } = result.value;
 
     return NextResponse.json(safeUser);
   } catch (error) {

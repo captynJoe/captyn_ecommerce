@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
-import { Heart, Star, ShoppingBag, Filter, Grid3X3, List, Laptop, Smartphone, Gamepad2, Shield, Scissors, Cpu, LayoutGrid } from "lucide-react";
+import { Heart, Star, ShoppingBag, Filter, Grid3X3, List, Laptop, Smartphone, Gamepad2, Shield, Scissors, Cpu, LayoutGrid, Clock, TrendingUp } from "lucide-react";
 import Navbar from "@/components/navbar";
 import SliderMenu from "@/components/SliderMenu";
 import LoadingAnimation from "@/components/LoadingAnimation";
@@ -28,11 +29,15 @@ interface EbayProduct {
 
 // Main Page
 export default function HomePage() {
+  const { data: session } = useSession();
   const { isDark } = useApp();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
 
   const [products, setProducts] = useState<EbayProduct[]>([]);
+  const [personalizedProducts, setPersonalizedProducts] = useState<EbayProduct[]>([]);
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [personalizedLoading, setPersonalizedLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [query, setQuery] = useState(() => {
     // Initialize from URL if available
@@ -118,10 +123,90 @@ export default function HomePage() {
     fetchProducts(resetProducts);
   }, [query, pageNum, sort]);
 
+  // Separate effect to handle search changes without dependency issues
+  useEffect(() => {
+    if (query) {
+      setPageNum(0);
+      fetchProducts(true);
+    }
+  }, [query]);
+
   useEffect(() => {
     const timer = setTimeout(() => setInitialLoading(false), 1500);
     return () => clearTimeout(timer);
   }, []);
+
+  // Fetch user search history and personalized products
+  useEffect(() => {
+    if (session?.user) {
+      fetchUserSearchHistory();
+    }
+  }, [session]);
+
+  const fetchUserSearchHistory = async () => {
+    try {
+      const response = await fetch('/api/user/search-history');
+      if (response.ok) {
+        const data = await response.json();
+        setRecentSearches(data.searchHistory || []);
+        
+        // Fetch personalized products based on search history
+        if (data.searchHistory && data.searchHistory.length > 0) {
+          fetchPersonalizedProducts(data.searchHistory);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch search history:', error);
+    }
+  };
+
+  const fetchPersonalizedProducts = async (searchHistory: string[]) => {
+    setPersonalizedLoading(true);
+    try {
+      // Use the most recent search terms to get personalized recommendations
+      const recentTerms = searchHistory.slice(0, 3); // Get top 3 recent searches
+      const combinedQuery = recentTerms.join(' ');
+      
+      const res = await fetch(`/api/products/ebay?q=${encodeURIComponent(combinedQuery)}&limit=12`);
+      if (res.ok) {
+        const data = await res.json();
+        setPersonalizedProducts(data.itemSummaries || []);
+      }
+    } catch (error) {
+      console.error("Error fetching personalized products:", error);
+    } finally {
+      setPersonalizedLoading(false);
+    }
+  };
+
+  const saveSearchHistory = async (query: string) => {
+    if (!session?.user || !query.trim()) return;
+    
+    try {
+      await fetch('/api/user/search-history', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          searchQuery: query.trim(),
+        }),
+      });
+    } catch (error) {
+      console.error('Failed to save search history:', error);
+    }
+  };
+
+  const handleQuickSearch = (searchTerm: string) => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('q', searchTerm);
+    window.history.pushState({}, '', url.toString());
+    
+    setQuery(searchTerm);
+    setPageNum(0);
+    fetchProducts(true);
+    saveSearchHistory(searchTerm);
+  };
 
   // Handle browser back/forward navigation
   useEffect(() => {
@@ -169,6 +254,7 @@ export default function HomePage() {
     setQuery(q);
     setPageNum(0);
     fetchProducts(true);
+    saveSearchHistory(q);
           }}
         />
 
@@ -210,6 +296,123 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+
+        {/* Recent Searches - Only show for logged in users */}
+        {session?.user && recentSearches.length > 0 && (
+          <section className="max-w-7xl mx-auto px-4 py-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Clock className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Searches</h2>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {recentSearches.slice(0, 6).map((search, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleQuickSearch(search)}
+                  className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded-full text-sm hover:bg-blue-200 dark:hover:bg-blue-900/50 transition"
+                >
+                  {search}
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Personalized Recommendations - Only show for logged in users */}
+        {session?.user && personalizedProducts.length > 0 && (
+          <section className="max-w-7xl mx-auto px-4 py-8">
+            <div className="flex items-center gap-2 mb-6">
+              <TrendingUp className="w-5 h-5 text-green-600" />
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Recommended for You</h2>
+              <span className="text-sm text-gray-500 dark:text-gray-400">Based on your recent searches</span>
+            </div>
+            
+            {personalizedLoading ? (
+              <div className="flex justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
+                {personalizedProducts.slice(0, 6).map((product, index) => (
+                  <div 
+                    key={`personalized-${product.itemId}-${index}`} 
+                    className={`group ${isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"} border rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col`}
+                  >
+                    <div className="relative aspect-square">
+                      <button
+                        onClick={() =>
+                          isInWishlist(product.itemId)
+                            ? removeFromWishlist(product.itemId)
+                            : addToWishlist({
+                                id: product.itemId,
+                                title: product.title,
+                                price: convertToKESWithProfitAndShipping(product.price.value.toString(), product.condition, product.title),
+                                image: product.image?.imageUrl || '/placeholder-image.jpg',
+                                condition: product.condition,
+                              } as any)
+                        }
+                        className="absolute top-2 right-2 p-1.5 sm:p-2 rounded-full bg-white/90 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all z-10 group-hover:scale-110"
+                        title={isInWishlist(product.itemId) ? "Remove from Wishlist" : "Add to Wishlist"}
+                      >
+                        <Heart
+                          className={`w-4 h-4 sm:w-5 sm:h-5 transition-colors ${
+                            isInWishlist(product.itemId) 
+                              ? "fill-red-500 text-red-500" 
+                              : "text-gray-600 hover:text-red-500"
+                          }`}
+                        />
+                      </button>
+                      <Link href={`/product/${product.itemId}`} className="block h-full relative">
+                        <Image
+                          src={product.image?.imageUrl || '/placeholder-image.jpg'}
+                          alt={product.title}
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-300"
+                          sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
+                        />
+                      </Link>
+                    </div>
+                    
+                    <div className="p-2 sm:p-3 md:p-4 flex flex-col justify-between flex-1">
+                      <div>
+                        <Link href={`/product/${product.itemId}`}>
+                          <h3 className="text-xs sm:text-sm font-semibold mb-1 sm:mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
+                            {product.title}
+                          </h3>
+                        </Link>
+                        
+                        {product.condition && (
+                          <span className={`inline-block px-1.5 sm:px-2 py-0.5 sm:py-1 text-xs rounded-full mb-1 sm:mb-2 ${
+                            isDark ? "bg-green-900/30 text-green-400" : "bg-green-100 text-green-700"
+                          }`}>
+                            {product.condition}
+                          </span>
+                        )}
+                      </div>
+                      
+                      <div className="flex items-center justify-between mt-auto">
+                        <div className="flex flex-col">
+                          <div className="text-sm sm:text-lg md:text-xl font-bold text-green-600">
+                            {convertToKESWithProfitAndShipping(product.price.value.toString(), product.condition, product.title)}
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                            Includes shipping to US
+                          </div>
+                        </div>
+                        {product.seller && (
+                          <div className="flex items-center gap-0.5 sm:gap-1 text-xs text-gray-500">
+                            <Star className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-yellow-400 text-yellow-400" />
+                            <span className="text-xs">{product.seller.feedbackPercentage}%</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
 
         {/* Category Icons Section */}
         <section className="max-w-7xl mx-auto px-4 py-8">
