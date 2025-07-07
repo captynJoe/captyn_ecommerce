@@ -12,6 +12,7 @@ import { useApp } from "@/contexts/AppContext";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { convertToKESWithProfitAndShipping } from "@/utils/pricing";
 
+
 // Types
 interface Seller {
   username: string;
