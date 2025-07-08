@@ -9,8 +9,9 @@
     "lint": "cd byg-global && npm run lint"
   },
   "devDependencies": {
-    "@types/node": "^24.0.10",
-    "@types/nodemailer": "^6.4.17"
+    "@types/node": "^24.0.11",
+    "@types/nodemailer": "^6.4.17",
+    "vitest": "^3.2.4"
   },
   "dependencies": {
     "nodemailer": "^7.0.4"
