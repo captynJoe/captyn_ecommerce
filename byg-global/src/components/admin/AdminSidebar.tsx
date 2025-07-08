@@ -20,13 +20,24 @@ const AdminSidebar = () => {
   const pathname = usePathname();
   const { isDark } = useApp();
 
-  const handleLogout = () => {
-    // Clear any stored authentication data
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('userSession');
-    
-    // Redirect to login page or home page
-    window.location.href = '/';
+  const handleLogout = async () => {
+    try {
+      // Use Firebase signOut
+      const { signOut } = await import('@/utils/auth');
+      await signOut();
+      
+      // Clear any additional stored data
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('userSession');
+      
+      // Redirect to home page
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Fallback: clear storage and redirect anyway
+      localStorage.clear();
+      window.location.href = '/';
+    }
   };
 
   const menuItems = [

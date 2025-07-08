@@ -1,6 +1,9 @@
-import NextAuth from "next-auth";
-import { authOptions } from "@/lib/authOptions";
+// NextAuth has been removed in favor of Firebase Auth
+// This file is deprecated and should not be used
+export async function GET() {
+  return new Response('NextAuth has been replaced with Firebase Auth', { status: 404 });
+}
 
-const handler = NextAuth(authOptions);
-
-export { handler as GET, handler as POST };
+export async function POST() {
+  return new Response('NextAuth has been replaced with Firebase Auth', { status: 404 });
+}
