@@ -29,9 +29,10 @@ interface EbayProduct {
   condition?: string;
 }
 
+import type { User } from "firebase/auth";
+
 // Main Page
 export default function HomePage() {
-  import type { User } from "firebase/auth";
   const [user, setUser] = useState<User | null>(null);
   const { isDark } = useApp();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
