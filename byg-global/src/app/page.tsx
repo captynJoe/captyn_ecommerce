@@ -37,7 +37,7 @@ export default function HomePage() {
   const [products, setProducts] = useState<EbayProduct[]>([]);
   const [personalizedProducts, setPersonalizedProducts] = useState<EbayProduct[]>([]);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [personalizedLoading, setPersonalizedLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [query, setQuery] = useState(() => {
@@ -142,8 +142,11 @@ export default function HomePage() {
   }, [loading, products.length]);
 
   useEffect(() => {
-    const resetProducts = pageNum === 0;
-    fetchProducts(resetProducts);
+    // Only fetch products if there's a query (search term or category selected)
+    if (query) {
+      const resetProducts = pageNum === 0;
+      fetchProducts(resetProducts);
+    }
   }, [query, pageNum, sort, priceRange, filterCondition]);
 
   // Separate effect to handle search changes without dependency issues
@@ -155,7 +158,7 @@ export default function HomePage() {
   }, [query]);
 
   useEffect(() => {
-    const timer = setTimeout(() => setInitialLoading(false), 1500);
+    const timer = setTimeout(() => setInitialLoading(false), 1000);
     return () => clearTimeout(timer);
   }, []);
 
@@ -260,6 +263,9 @@ export default function HomePage() {
 
   if (initialLoading) return <LoadingAnimation />;
 
+  // Determine if we're in search mode
+  const isSearchMode = query && query.trim().length > 0;
+
   return (
     <main className={`${isDark ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-900"} min-h-screen`}>
         <Navbar
@@ -302,26 +308,590 @@ export default function HomePage() {
           setNetworkTypeAction={setNetworkType}
         />
 
-        {/* Hero Section */}
-        <section className={`${isDark ? "bg-gradient-to-r from-blue-900 to-purple-900" : "bg-gradient-to-r from-blue-600 to-purple-600"} text-white py-8 sm:py-12 md:py-16`}>
-          <div className="max-w-7xl mx-auto px-4 text-center">
-            <h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-bold mb-2 sm:mb-3 md:mb-4">
-              Discover Amazing Products
+        {/* Hero Section - Only show when not in search mode */}
+        {!isSearchMode && (
+          <section className={`${isDark ? "bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900" : "bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-600"} text-white py-16 sm:py-20 md:py-24 relative overflow-hidden`}>
+          {/* Background Pattern */}
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute top-10 left-10 w-20 h-20 border border-white rounded-full"></div>
+            <div className="absolute top-32 right-20 w-16 h-16 border border-white rounded-full"></div>
+            <div className="absolute bottom-20 left-1/4 w-12 h-12 border border-white rounded-full"></div>
+            <div className="absolute bottom-32 right-1/3 w-8 h-8 border border-white rounded-full"></div>
+          </div>
+          
+          <div className="max-w-7xl mx-auto px-4 text-center relative z-10">
+            <div className="mb-6">
+              <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 mb-6">
+                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                <span className="text-sm font-medium">Trusted by 10,000+ Customers</span>
+              </div>
+            </div>
+            
+            <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
+              Ship Anything from the 
+              <span className="bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent"> U.S. to Kenya </span>
+              with Ease
             </h1>
-            <p className="text-base sm:text-lg md:text-2xl mb-4 sm:mb-6 md:mb-8 opacity-90">
-              Shop from millions of products with the best deals and quality
+            
+            <p className="text-lg sm:text-xl md:text-2xl mb-8 opacity-90 max-w-4xl mx-auto leading-relaxed">
+              We make buying, shipping, and delivery simple, secure, and affordable. 
+              From various sellers in the USA, we handle everything so you don't have to.
             </p>
-            <div className="flex flex-wrap justify-center gap-2 sm:gap-3 md:gap-4">
-              <div className="flex items-center gap-1.5 sm:gap-2 bg-white/20 backdrop-blur-sm rounded-full px-3 sm:px-4 md:px-6 py-1.5 sm:py-2 md:py-3 text-xs sm:text-sm md:text-base">
-                <Star className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5" />
-                <span>Top Rated Sellers</span>
+            
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
+              <button className="bg-white text-blue-600 px-8 py-4 rounded-xl font-bold text-lg hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-xl">
+                Get Started Now
+              </button>
+              <Link href="/estimator-demo" className="bg-transparent border-2 border-white text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-white hover:text-blue-600 transition-all duration-300 transform hover:scale-105">
+                Estimate Shipping
+              </Link>
+            </div>
+            
+            <div className="flex flex-wrap justify-center gap-6 text-sm opacity-80">
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 bg-green-400 rounded-full"></div>
+                <span>No Hidden Fees</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 bg-green-400 rounded-full"></div>
+                <span>2-4 Week Delivery</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 bg-green-400 rounded-full"></div>
+                <span>M-Pesa Payments</span>
+              </div>
+            </div>
+          </div>
+        </section>
+        )}
+
+        {/* Shop by Category Section - Always visible and positioned high */}
+        <section className={`max-w-7xl mx-auto px-4 ${isSearchMode ? 'py-4' : 'py-8'}`}>
+          <div className="text-center mb-6">
+            <h2 className={`text-2xl md:text-3xl font-bold mb-2 ${isDark ? "text-white" : "text-gray-900"}`}>
+              Shop by Category
+            </h2>
+            <p className={`text-sm md:text-base ${isDark ? "text-gray-400" : "text-gray-600"}`}>
+              Find exactly what you're looking for
+            </p>
+          </div>
+            
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-3 md:gap-4">
+              {/* Phones */}
+              <button
+                onClick={() => {
+                  const url = new URL(window.location.href);
+                  url.searchParams.set('q', 'phone');
+                  window.history.pushState({}, '', url.toString());
+                  setQuery("phone");
+                  setPageNum(0);
+                }}
+                className={`group flex flex-col items-center p-3 md:p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
+                  isDark 
+                    ? "bg-gray-800 hover:bg-gray-700 border border-gray-700" 
+                    : "bg-white hover:bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md"
+                }`}
+              >
+                <div className={`p-2 md:p-3 rounded-full mb-2 transition-colors ${
+                  isDark ? "bg-purple-900/30 group-hover:bg-purple-800/40" : "bg-purple-100 group-hover:bg-purple-200"
+                }`}>
+                  <Smartphone className={`w-5 h-5 md:w-6 md:h-6 ${isDark ? "text-purple-400" : "text-purple-600"}`} />
+                </div>
+                <span className={`text-xs font-medium text-center ${isDark ? "text-gray-300" : "text-gray-700"}`}>
+                  Phones
+                </span>
+              </button>
+
+              {/* PCs & Laptops */}
+              <button
+                onClick={() => {
+                  const url = new URL(window.location.href);
+                  url.searchParams.set('q', 'laptop');
+                  window.history.pushState({}, '', url.toString());
+                  setQuery("laptop");
+                  setPageNum(0);
+                }}
+                className={`group flex flex-col items-center p-3 md:p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
+                  isDark 
+                    ? "bg-gray-800 hover:bg-gray-700 border border-gray-700" 
+                    : "bg-white hover:bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md"
+                }`}
+              >
+                <div className={`p-2 md:p-3 rounded-full mb-2 transition-colors ${
+                  isDark ? "bg-blue-900/30 group-hover:bg-blue-800/40" : "bg-blue-100 group-hover:bg-blue-200"
+                }`}>
+                  <Laptop className={`w-5 h-5 md:w-6 md:h-6 ${isDark ? "text-blue-400" : "text-blue-600"}`} />
+                </div>
+                <span className={`text-xs font-medium text-center ${isDark ? "text-gray-300" : "text-gray-700"}`}>
+                  PCs & Laptops
+                </span>
+              </button>
+
+              {/* Gaming & Consoles */}
+              <button
+                onClick={() => {
+                  const url = new URL(window.location.href);
+                  url.searchParams.set('q', 'gaming console');
+                  window.history.pushState({}, '', url.toString());
+                  setQuery("gaming console");
+                  setPageNum(0);
+                }}
+                className={`group flex flex-col items-center p-3 md:p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
+                  isDark 
+                    ? "bg-gray-800 hover:bg-gray-700 border border-gray-700" 
+                    : "bg-white hover:bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md"
+                }`}
+              >
+                <div className={`p-2 md:p-3 rounded-full mb-2 transition-colors ${
+                  isDark ? "bg-red-900/30 group-hover:bg-red-800/40" : "bg-red-100 group-hover:bg-red-200"
+                }`}>
+                  <Gamepad2 className={`w-5 h-5 md:w-6 md:h-6 ${isDark ? "text-red-400" : "text-red-600"}`} />
+                </div>
+                <span className={`text-xs font-medium text-center ${isDark ? "text-gray-300" : "text-gray-700"}`}>
+                  Gaming
+                </span>
+              </button>
+
+              {/* Face & Beauty */}
+              <button
+                onClick={() => {
+                  const url = new URL(window.location.href);
+                  url.searchParams.set('q', 'beauty');
+                  window.history.pushState({}, '', url.toString());
+                  setQuery("beauty");
+                  setPageNum(0);
+                }}
+                className={`group flex flex-col items-center p-3 md:p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
+                  isDark 
+                    ? "bg-gray-800 hover:bg-gray-700 border border-gray-700" 
+                    : "bg-white hover:bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md"
+                }`}
+              >
+                <div className={`p-2 md:p-3 rounded-full mb-2 transition-colors ${
+                  isDark ? "bg-pink-900/30 group-hover:bg-pink-800/40" : "bg-pink-100 group-hover:bg-pink-200"
+                }`}>
+                  <Scissors className={`w-5 h-5 md:w-6 md:h-6 ${isDark ? "text-pink-400" : "text-pink-600"}`} />
+                </div>
+                <span className={`text-xs font-medium text-center ${isDark ? "text-gray-300" : "text-gray-700"}`}>
+                  Beauty
+                </span>
+              </button>
+
+              {/* Books & Novels */}
+              <button
+                onClick={() => {
+                  const url = new URL(window.location.href);
+                  url.searchParams.set('q', 'book');
+                  window.history.pushState({}, '', url.toString());
+                  setQuery("book");
+                  setPageNum(0);
+                }}
+                className={`group flex flex-col items-center p-3 md:p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
+                  isDark 
+                    ? "bg-gray-800 hover:bg-gray-700 border border-gray-700" 
+                    : "bg-white hover:bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md"
+                }`}
+              >
+                <div className={`p-2 md:p-3 rounded-full mb-2 transition-colors ${
+                  isDark ? "bg-green-900/30 group-hover:bg-green-800/40" : "bg-green-100 group-hover:bg-green-200"
+                }`}>
+                  <ShoppingBag className={`w-5 h-5 md:w-6 md:h-6 ${isDark ? "text-green-400" : "text-green-600"}`} />
+                </div>
+                <span className={`text-xs font-medium text-center ${isDark ? "text-gray-300" : "text-gray-700"}`}>
+                  Books
+                </span>
+              </button>
+
+              {/* Clothing */}
+              <button
+                onClick={() => {
+                  const url = new URL(window.location.href);
+                  url.searchParams.set('q', 'clothing');
+                  window.history.pushState({}, '', url.toString());
+                  setQuery("clothing");
+                  setPageNum(0);
+                }}
+                className={`group flex flex-col items-center p-3 md:p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
+                  isDark 
+                    ? "bg-gray-800 hover:bg-gray-700 border border-gray-700" 
+                    : "bg-white hover:bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md"
+                }`}
+              >
+                <div className={`p-2 md:p-3 rounded-full mb-2 transition-colors ${
+                  isDark ? "bg-indigo-900/30 group-hover:bg-indigo-800/40" : "bg-indigo-100 group-hover:bg-indigo-200"
+                }`}>
+                  <Scissors className={`w-5 h-5 md:w-6 md:h-6 ${isDark ? "text-indigo-400" : "text-indigo-600"}`} />
+                </div>
+                <span className={`text-xs font-medium text-center ${isDark ? "text-gray-300" : "text-gray-700"}`}>
+                  Clothing
+                </span>
+              </button>
+
+              {/* Security */}
+              <button
+                onClick={() => {
+                  const url = new URL(window.location.href);
+                  url.searchParams.set('q', 'security');
+                  window.history.pushState({}, '', url.toString());
+                  setQuery("security");
+                  setPageNum(0);
+                }}
+                className={`group flex flex-col items-center p-3 md:p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
+                  isDark 
+                    ? "bg-gray-800 hover:bg-gray-700 border border-gray-700" 
+                    : "bg-white hover:bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md"
+                }`}
+              >
+                <div className={`p-2 md:p-3 rounded-full mb-2 transition-colors ${
+                  isDark ? "bg-orange-900/30 group-hover:bg-orange-800/40" : "bg-orange-100 group-hover:bg-orange-200"
+                }`}>
+                  <Shield className={`w-5 h-5 md:w-6 md:h-6 ${isDark ? "text-orange-400" : "text-orange-600"}`} />
+                </div>
+                <span className={`text-xs font-medium text-center ${isDark ? "text-gray-300" : "text-gray-700"}`}>
+                  Security
+                </span>
+              </button>
+
+              {/* Electronics */}
+              <button
+                onClick={() => {
+                  const url = new URL(window.location.href);
+                  url.searchParams.set('q', 'electronics');
+                  window.history.pushState({}, '', url.toString());
+                  setQuery("electronics");
+                  setPageNum(0);
+                }}
+                className={`group flex flex-col items-center p-3 md:p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
+                  isDark 
+                    ? "bg-gray-800 hover:bg-gray-700 border border-gray-700" 
+                    : "bg-white hover:bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md"
+                }`}
+              >
+                <div className={`p-2 md:p-3 rounded-full mb-2 transition-colors ${
+                  isDark ? "bg-yellow-900/30 group-hover:bg-yellow-800/40" : "bg-yellow-100 group-hover:bg-yellow-200"
+                }`}>
+                  <Star className={`w-5 h-5 md:w-6 md:h-6 ${isDark ? "text-yellow-400" : "text-yellow-600"}`} />
+                </div>
+                <span className={`text-xs font-medium text-center ${isDark ? "text-gray-300" : "text-gray-700"}`}>
+                  Electronics
+                </span>
+              </button>
+            </div>
+        </section>
+
+        {/* Marketing Content - Only show when not in search mode */}
+        {!isSearchMode && (
+          <>
+            {/* How It Works Section */}
+            <section className="py-16 sm:py-20">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="text-center mb-16">
+              <h2 className={`text-3xl sm:text-4xl md:text-5xl font-bold mb-4 ${isDark ? "text-white" : "text-gray-900"}`}>
+                How It Works
+              </h2>
+              <p className={`text-lg sm:text-xl ${isDark ? "text-gray-400" : "text-gray-600"} max-w-3xl mx-auto`}>
+                Four simple steps to get your favorite U.S. products delivered to Kenya
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              {/* Step 1 */}
+              <div className={`text-center p-6 rounded-2xl ${isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"} border shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2`}>
+                <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <span className="text-white font-bold text-xl">1</span>
+                </div>
+                <h3 className={`text-xl font-bold mb-4 ${isDark ? "text-white" : "text-gray-900"}`}>
+                  Find Your Product
+                </h3>
+                <p className={`${isDark ? "text-gray-400" : "text-gray-600"}`}>
+                  Use our integrated search to discover U.S. products
+                </p>
+              </div>
+
+              {/* Step 2 */}
+              <div className={`text-center p-6 rounded-2xl ${isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"} border shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2`}>
+                <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <span className="text-white font-bold text-xl">2</span>
+                </div>
+                <h3 className={`text-xl font-bold mb-4 ${isDark ? "text-white" : "text-gray-900"}`}>
+                  Estimate Shipping & Costs
+                </h3>
+                <p className={`${isDark ? "text-gray-400" : "text-gray-600"}`}>
+                  Use our price estimator to know the estimate shipping cost before you commit.
+                </p>
+              </div>
+
+              {/* Step 3 */}
+              <div className={`text-center p-6 rounded-2xl ${isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"} border shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2`}>
+                <div className="w-16 h-16 bg-gradient-to-r from-pink-500 to-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <span className="text-white font-bold text-xl">3</span>
+                </div>
+                <h3 className={`text-xl font-bold mb-4 ${isDark ? "text-white" : "text-gray-900"}`}>
+                  Place Your Order
+                </h3>
+                <p className={`${isDark ? "text-gray-400" : "text-gray-600"}`}>
+                  We'll handle the buying, packaging, and safe delivery to Kenya. Sit back and relax.
+                </p>
+              </div>
+
+              {/* Step 4 */}
+              <div className={`text-center p-6 rounded-2xl ${isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"} border shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2`}>
+                <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-teal-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <span className="text-white font-bold text-xl">4</span>
+                </div>
+                <h3 className={`text-xl font-bold mb-4 ${isDark ? "text-white" : "text-gray-900"}`}>
+                  Track & Receive
+                </h3>
+                <p className={`${isDark ? "text-gray-400" : "text-gray-600"}`}>
+                  Get regular updates and delivery within 2–3 weeks. Track your package every step of the way.
+                </p>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Recent Searches - Only show for logged in users */}
-        {session?.user && recentSearches.length > 0 && (
+        {/* Why Choose Captyn Global */}
+        <section className={`py-16 sm:py-20 ${isDark ? "bg-gray-800" : "bg-gray-50"}`}>
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="text-center mb-16">
+              <h2 className={`text-3xl sm:text-4xl md:text-5xl font-bold mb-4 ${isDark ? "text-white" : "text-gray-900"}`}>
+                Why Choose Captyn Global?
+              </h2>
+              <p className={`text-lg sm:text-xl ${isDark ? "text-gray-400" : "text-gray-600"} max-w-3xl mx-auto`}>
+                We're not just another shipping company. We're your trusted partner for U.S. shopping.
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className={`p-8 rounded-2xl ${isDark ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200"} border shadow-lg`}>
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <span className="text-white font-bold text-xl">✓</span>
+                  </div>
+                  <div>
+                    <h3 className={`text-xl font-bold mb-2 ${isDark ? "text-white" : "text-gray-900"}`}>
+                      All-in-One Platform
+                    </h3>
+                    <p className={`${isDark ? "text-gray-400" : "text-gray-600"}`}>
+                      No need to deal with multiple sites, forwarding services, or complicated processes. Everything you need in one place.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className={`p-8 rounded-2xl ${isDark ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200"} border shadow-lg`}>
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <span className="text-white font-bold text-xl">✓</span>
+                  </div>
+                  <div>
+                    <h3 className={`text-xl font-bold mb-2 ${isDark ? "text-white" : "text-gray-900"}`}>
+                      No Hidden Fees
+                    </h3>
+                    <p className={`${isDark ? "text-gray-400" : "text-gray-600"}`}>
+                      Transparent pricing before you buy. What you see is what you pay - no surprise charges at checkout.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className={`p-8 rounded-2xl ${isDark ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200"} border shadow-lg`}>
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-gradient-to-r from-pink-500 to-red-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <span className="text-white font-bold text-xl">✓</span>
+                  </div>
+                  <div>
+                    <h3 className={`text-xl font-bold mb-2 ${isDark ? "text-white" : "text-gray-900"}`}>
+                      Fast, Safe Delivery
+                    </h3>
+                    <p className={`${isDark ? "text-gray-400" : "text-gray-600"}`}>
+                      From U.S. stores to your doorstep in Kenya within 2-4 weeks. Secure packaging and reliable tracking.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className={`p-8 rounded-2xl ${isDark ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200"} border shadow-lg`}>
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-teal-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <span className="text-white font-bold text-xl">✓</span>
+                  </div>
+                  <div>
+                    <h3 className={`text-xl font-bold mb-2 ${isDark ? "text-white" : "text-gray-900"}`}>
+                      Local Payment Options
+                    </h3>
+                    <p className={`${isDark ? "text-gray-400" : "text-gray-600"}`}>
+                      Pay conveniently via M-Pesa, PayPal, or bank transfer. No need for international credit cards.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Customer Testimonials */}
+        <section className="py-16 sm:py-20">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="text-center mb-16">
+              <h2 className={`text-3xl sm:text-4xl md:text-5xl font-bold mb-4 ${isDark ? "text-white" : "text-gray-900"}`}>
+                What Our Customers Say
+              </h2>
+              <p className={`text-lg sm:text-xl ${isDark ? "text-gray-400" : "text-gray-600"} max-w-3xl mx-auto`}>
+                Join thousands of satisfied customers who trust us with their U.S. shopping
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className={`p-8 rounded-2xl ${isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"} border shadow-lg`}>
+                <div className="flex items-center gap-1 mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                  ))}
+                </div>
+                <p className={`mb-6 ${isDark ? "text-gray-300" : "text-gray-700"} italic`}>
+                  "Got my iPhone 15 Pro in just 3 weeks — love how smooth the entire process was! No stress, no complications."
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                    <span className="text-white font-bold">A</span>
+                  </div>
+                  <div>
+                    <p className={`font-semibold ${isDark ? "text-white" : "text-gray-900"}`}>Alex Mwangi</p>
+                    <p className={`text-sm ${isDark ? "text-gray-400" : "text-gray-600"}`}>Nairobi, Kenya</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className={`p-8 rounded-2xl ${isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"} border shadow-lg`}>
+                <div className="flex items-center gap-1 mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                  ))}
+                </div>
+                <p className={`mb-6 ${isDark ? "text-gray-300" : "text-gray-700"} italic`}>
+                  "Finally a simple way to get products from the U.S. without getting scammed. Transparent pricing and excellent service!"
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                    <span className="text-white font-bold">S</span>
+                  </div>
+                  <div>
+                    <p className={`font-semibold ${isDark ? "text-white" : "text-gray-900"}`}>Sarah Wanjiku</p>
+                    <p className={`text-sm ${isDark ? "text-gray-400" : "text-gray-600"}`}>Mombasa, Kenya</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className={`p-8 rounded-2xl ${isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"} border shadow-lg`}>
+                <div className="flex items-center gap-1 mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                  ))}
+                </div>
+                <p className={`mb-6 ${isDark ? "text-gray-300" : "text-gray-700"} italic`}>
+                  "Ordered my MacBook and gaming setup through Captyn. Everything arrived perfectly packaged and on time. Highly recommended!"
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-teal-500 rounded-full flex items-center justify-center">
+                    <span className="text-white font-bold">D</span>
+                  </div>
+                  <div>
+                    <p className={`font-semibold ${isDark ? "text-white" : "text-gray-900"}`}>David Kiprotich</p>
+                    <p className={`text-sm ${isDark ? "text-gray-400" : "text-gray-600"}`}>Eldoret, Kenya</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* FAQ Section */}
+        <section className={`py-16 sm:py-20 ${isDark ? "bg-gray-800" : "bg-gray-50"}`}>
+          <div className="max-w-4xl mx-auto px-4">
+            <div className="text-center mb-16">
+              <h2 className={`text-3xl sm:text-4xl md:text-5xl font-bold mb-4 ${isDark ? "text-white" : "text-gray-900"}`}>
+                Frequently Asked Questions
+              </h2>
+              <p className={`text-lg sm:text-xl ${isDark ? "text-gray-400" : "text-gray-600"}`}>
+                Everything you need to know about shipping from the U.S. to Kenya
+              </p>
+            </div>
+            
+            <div className="space-y-6">
+              <div className={`p-6 rounded-2xl ${isDark ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200"} border shadow-lg`}>
+                <h3 className={`text-xl font-bold mb-3 ${isDark ? "text-white" : "text-gray-900"}`}>
+                  How long does delivery take?
+                </h3>
+                <p className={`${isDark ? "text-gray-400" : "text-gray-600"}`}>
+                  Standard delivery takes 2-4 weeks from the time we receive your order. Express shipping options are available for faster delivery (7-14 days) at additional cost.
+                </p>
+              </div>
+
+              <div className={`p-6 rounded-2xl ${isDark ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200"} border shadow-lg`}>
+                <h3 className={`text-xl font-bold mb-3 ${isDark ? "text-white" : "text-gray-900"}`}>
+                  How are items packaged?
+                </h3>
+                <p className={`${isDark ? "text-gray-400" : "text-gray-600"}`}>
+                  We use professional packaging materials including bubble wrap, foam padding, and sturdy boxes to ensure your items arrive safely. Fragile items receive extra protection.
+                </p>
+              </div>
+
+              <div className={`p-6 rounded-2xl ${isDark ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200"} border shadow-lg`}>
+                <h3 className={`text-xl font-bold mb-3 ${isDark ? "text-white" : "text-gray-900"}`}>
+                  Can I order from any U.S. store?
+                </h3>
+                <p className={`${isDark ? "text-gray-400" : "text-gray-600"}`}>
+                  Yes! We can purchase from eBay, Amazon, Best Buy, Target, Walmart, and virtually any U.S. online store. Just share the product link with us.
+                </p>
+              </div>
+
+              <div className={`p-6 rounded-2xl ${isDark ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200"} border shadow-lg`}>
+                <h3 className={`text-xl font-bold mb-3 ${isDark ? "text-white" : "text-gray-900"}`}>
+                  What if my item is damaged?
+                </h3>
+                <p className={`${isDark ? "text-gray-400" : "text-gray-600"}`}>
+                  We offer full insurance on all shipments. If your item arrives damaged, we'll work with you to get a replacement or full refund within 30 days.
+                </p>
+              </div>
+
+              <div className={`p-6 rounded-2xl ${isDark ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200"} border shadow-lg`}>
+                <h3 className={`text-xl font-bold mb-3 ${isDark ? "text-white" : "text-gray-900"}`}>
+                  How do I pay?
+                </h3>
+                <p className={`${isDark ? "text-gray-400" : "text-gray-600"}`}>
+                  We accept M-Pesa, PayPal, bank transfers, and major credit cards. Payment is required before we purchase your items from the U.S. store.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Final CTA Section */}
+        <section className={`py-16 sm:py-20 ${isDark ? "bg-gradient-to-r from-blue-900 to-purple-900" : "bg-gradient-to-r from-blue-600 to-purple-600"} text-white`}>
+          <div className="max-w-4xl mx-auto px-4 text-center">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6">
+              Ready to Ship Your First Item?
+            </h2>
+            <p className="text-lg sm:text-xl mb-8 opacity-90">
+              Join thousands of satisfied customers and start shopping from the U.S. today. 
+              No hidden fees, no complications, just simple and secure shipping.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button className="bg-white text-blue-600 px-8 py-4 rounded-xl font-bold text-lg hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-xl">
+                Get Started Now
+              </button>
+              <Link href="/estimator-demo" className="bg-transparent border-2 border-white text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-white hover:text-blue-600 transition-all duration-300 transform hover:scale-105">
+                Calculate Shipping Cost
+              </Link>
+            </div>
+          </div>
+        </section>
+          </>
+        )}
+
+        {/* Recent Searches - Only show for logged in users and not in search mode */}
+        {session?.user && recentSearches.length > 0 && !isSearchMode && (
           <section className="max-w-7xl mx-auto px-4 py-6">
             <div className="flex items-center gap-2 mb-4">
               <Clock className="w-5 h-5 text-gray-600 dark:text-gray-400" />
@@ -341,8 +911,8 @@ export default function HomePage() {
           </section>
         )}
 
-        {/* Personalized Recommendations - Only show for logged in users */}
-        {session?.user && personalizedProducts.length > 0 && (
+        {/* Personalized Recommendations - Only show for logged in users and not in search mode */}
+        {session?.user && personalizedProducts.length > 0 && !isSearchMode && (
           <section className="max-w-7xl mx-auto px-4 py-8">
             <div className="flex items-center gap-2 mb-6">
               <TrendingUp className="w-5 h-5 text-green-600" />
@@ -453,344 +1023,180 @@ export default function HomePage() {
           </section>
         )}
 
-        {/* Category Icons Section - Only show when no search is active */}
-        {!query && (
-          <section className="max-w-7xl mx-auto px-4 py-8">
-            <div className="text-center mb-8">
-              <h2 className={`text-2xl md:text-3xl font-bold mb-2 ${isDark ? "text-white" : "text-gray-900"}`}>
-                Shop by Category
-              </h2>
-              <p className={`text-sm md:text-base ${isDark ? "text-gray-400" : "text-gray-600"}`}>
-                Find exactly what you're looking for
-              </p>
-            </div>
-            
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6">
-              {/* Phones */}
-              <button
-                onClick={() => {
-                  const url = new URL(window.location.href);
-                  url.searchParams.set('q', 'smartphone iphone samsung galaxy');
-                  window.history.pushState({}, '', url.toString());
-                  setQuery("smartphone iphone samsung galaxy");
-                  setPageNum(0);
-                }}
-                className={`group flex flex-col items-center p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
-                  isDark 
-                    ? "bg-gray-800 hover:bg-gray-700 border border-gray-700" 
-                    : "bg-white hover:bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md"
-                }`}
-              >
-                <div className={`p-3 rounded-full mb-2 transition-colors ${
-                  isDark ? "bg-purple-900/30 group-hover:bg-purple-800/40" : "bg-purple-100 group-hover:bg-purple-200"
-                }`}>
-                  <Smartphone className={`w-6 h-6 ${isDark ? "text-purple-400" : "text-purple-600"}`} />
-                </div>
-                <span className={`text-xs font-medium text-center ${isDark ? "text-gray-300" : "text-gray-700"}`}>
-                  Phones
-                </span>
-              </button>
-
-              {/* PCs & Laptops */}
-              <button
-                onClick={() => {
-                  const url = new URL(window.location.href);
-                  url.searchParams.set('q', 'laptop macbook gaming pc desktop');
-                  window.history.pushState({}, '', url.toString());
-                  setQuery("laptop macbook gaming pc desktop");
-                  setPageNum(0);
-                }}
-                className={`group flex flex-col items-center p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
-                  isDark 
-                    ? "bg-gray-800 hover:bg-gray-700 border border-gray-700" 
-                    : "bg-white hover:bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md"
-                }`}
-              >
-                <div className={`p-3 rounded-full mb-2 transition-colors ${
-                  isDark ? "bg-blue-900/30 group-hover:bg-blue-800/40" : "bg-blue-100 group-hover:bg-blue-200"
-                }`}>
-                  <Laptop className={`w-6 h-6 ${isDark ? "text-blue-400" : "text-blue-600"}`} />
-                </div>
-                <span className={`text-xs font-medium text-center ${isDark ? "text-gray-300" : "text-gray-700"}`}>
-                  PCs & Laptops
-                </span>
-              </button>
-
-              {/* Gaming & Consoles */}
-              <button
-                onClick={() => {
-                  const url = new URL(window.location.href);
-                  url.searchParams.set('q', 'playstation xbox nintendo gaming console');
-                  window.history.pushState({}, '', url.toString());
-                  setQuery("playstation xbox nintendo gaming console");
-                  setPageNum(0);
-                }}
-                className={`group flex flex-col items-center p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
-                  isDark 
-                    ? "bg-gray-800 hover:bg-gray-700 border border-gray-700" 
-                    : "bg-white hover:bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md"
-                }`}
-              >
-                <div className={`p-3 rounded-full mb-2 transition-colors ${
-                  isDark ? "bg-red-900/30 group-hover:bg-red-800/40" : "bg-red-100 group-hover:bg-red-200"
-                }`}>
-                  <Gamepad2 className={`w-6 h-6 ${isDark ? "text-red-400" : "text-red-600"}`} />
-                </div>
-                <span className={`text-xs font-medium text-center ${isDark ? "text-gray-300" : "text-gray-700"}`}>
-                  Gaming & Consoles
-                </span>
-              </button>
-
-              {/* Face & Beauty */}
-              <button
-                onClick={() => {
-                  const url = new URL(window.location.href);
-                  url.searchParams.set('q', 'hair wigs makeup skincare beauty');
-                  window.history.pushState({}, '', url.toString());
-                  setQuery("hair wigs makeup skincare beauty");
-                  setPageNum(0);
-                }}
-                className={`group flex flex-col items-center p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
-                  isDark 
-                    ? "bg-gray-800 hover:bg-gray-700 border border-gray-700" 
-                    : "bg-white hover:bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md"
-                }`}
-              >
-                <div className={`p-3 rounded-full mb-2 transition-colors ${
-                  isDark ? "bg-pink-900/30 group-hover:bg-pink-800/40" : "bg-pink-100 group-hover:bg-pink-200"
-                }`}>
-                  <Scissors className={`w-6 h-6 ${isDark ? "text-pink-400" : "text-pink-600"}`} />
-                </div>
-                <span className={`text-xs font-medium text-center ${isDark ? "text-gray-300" : "text-gray-700"}`}>
-                  Face & Beauty
-                </span>
-              </button>
-
-              {/* Security */}
-              <button
-                onClick={() => {
-                  const url = new URL(window.location.href);
-                  url.searchParams.set('q', 'security');
-                  window.history.pushState({}, '', url.toString());
-                  setQuery("security");
-                  setPageNum(0);
-                }}
-                className={`group flex flex-col items-center p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
-                  isDark 
-                    ? "bg-gray-800 hover:bg-gray-700 border border-gray-700" 
-                    : "bg-white hover:bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md"
-                }`}
-              >
-                <div className={`p-3 rounded-full mb-2 transition-colors ${
-                  isDark ? "bg-orange-900/30 group-hover:bg-orange-800/40" : "bg-orange-100 group-hover:bg-orange-200"
-                }`}>
-                  <Shield className={`w-6 h-6 ${isDark ? "text-orange-400" : "text-orange-600"}`} />
-                </div>
-                <span className={`text-xs font-medium text-center ${isDark ? "text-gray-300" : "text-gray-700"}`}>
-                  Security
-                </span>
-              </button>
-
-              {/* Electronics */}
-              <button
-                onClick={() => {
-                  const url = new URL(window.location.href);
-                  url.searchParams.set('q', 'electronics gadgets accessories');
-                  window.history.pushState({}, '', url.toString());
-                  setQuery("electronics gadgets accessories");
-                  setPageNum(0);
-                }}
-                className={`group flex flex-col items-center p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
-                  isDark 
-                    ? "bg-gray-800 hover:bg-gray-700 border border-gray-700" 
-                    : "bg-white hover:bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md"
-                }`}
-              >
-                <div className={`p-3 rounded-full mb-2 transition-colors ${
-                  isDark ? "bg-yellow-900/30 group-hover:bg-yellow-800/40" : "bg-yellow-100 group-hover:bg-yellow-200"
-                }`}>
-                  <Star className={`w-6 h-6 ${isDark ? "text-yellow-400" : "text-yellow-600"}`} />
-                </div>
-                <span className={`text-xs font-medium text-center ${isDark ? "text-gray-300" : "text-gray-700"}`}>
-                  Electronics
-                </span>
-              </button>
-            </div>
-          </section>
-        )}
-
-        {/* Filter and View Controls */}
-        <section className="max-w-7xl mx-auto px-4 py-6">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => setIsMenuOpen(true)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
-                  isDark 
-                    ? "border-gray-600 hover:bg-gray-800 text-white" 
-                    : "border-gray-300 hover:bg-gray-100 text-gray-700"
-                }`}
-              >
-                <Filter className="w-4 h-4" />
-                Filters
-              </button>
-            </div>
-            
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setViewMode('grid')}
-                className={`p-2 rounded-lg transition-colors ${
-                  viewMode === 'grid'
-                    ? isDark ? "bg-blue-600 text-white" : "bg-blue-500 text-white"
-                    : isDark ? "hover:bg-gray-800 text-gray-400" : "hover:bg-gray-200 text-gray-600"
-                }`}
-              >
-                <Grid3X3 className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => setViewMode('list')}
-                className={`p-2 rounded-lg transition-colors ${
-                  viewMode === 'list'
-                    ? isDark ? "bg-blue-600 text-white" : "bg-blue-500 text-white"
-                    : isDark ? "hover:bg-gray-800 text-gray-400" : "hover:bg-gray-200 text-gray-600"
-                }`}
-              >
-                <List className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-
-          {/* Products Grid/List */}
-          {loading && pageNum === 0 ? (
-            <div className="flex justify-center items-center py-20">
-              <LoadingAnimation />
-            </div>
-          ) : error ? (
-            <div className="text-center py-20">
-              <div className={`inline-block p-8 rounded-xl ${isDark ? "bg-red-900/20 border border-red-800" : "bg-red-50 border border-red-200"}`}>
-                <div className="text-red-500 text-6xl mb-4">⚠️</div>
-                <h3 className="text-xl font-semibold mb-2 text-red-600">Something went wrong</h3>
-                <p className="text-red-500 mb-4">{error}</p>
-                <button 
-                  onClick={() => fetchProducts()}
-                  className="px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium"
+        {/* Filter and View Controls - Only show when there are products or in search mode */}
+        {(isSearchMode || products.length > 0) && (
+          <section className="max-w-7xl mx-auto px-4 py-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={() => setIsMenuOpen(true)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
+                    isDark 
+                      ? "border-gray-600 hover:bg-gray-800 text-white" 
+                      : "border-gray-300 hover:bg-gray-100 text-gray-700"
+                  }`}
                 >
-                  Try Again
+                  <Filter className="w-4 h-4" />
+                  Filters
+                </button>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={`p-2 rounded-lg transition-colors ${
+                    viewMode === 'grid'
+                      ? isDark ? "bg-blue-600 text-white" : "bg-blue-500 text-white"
+                      : isDark ? "hover:bg-gray-800 text-gray-400" : "hover:bg-gray-200 text-gray-600"
+                  }`}
+                >
+                  <Grid3X3 className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`p-2 rounded-lg transition-colors ${
+                    viewMode === 'list'
+                      ? isDark ? "bg-blue-600 text-white" : "bg-blue-500 text-white"
+                      : isDark ? "hover:bg-gray-800 text-gray-400" : "hover:bg-gray-200 text-gray-600"
+                  }`}
+                >
+                  <List className="w-4 h-4" />
                 </button>
               </div>
             </div>
-          ) : products.length === 0 ? (
-            <div className="text-center py-20">
-              <div className={`inline-block p-8 rounded-xl ${isDark ? "bg-gray-800 border border-gray-700" : "bg-white border border-gray-200"}`}>
-                <div className="text-6xl mb-4">🔍</div>
-                <h3 className="text-xl font-semibold mb-2">No products found</h3>
-                <p className="text-gray-500">Try adjusting your search or filters</p>
+
+            {/* Products Grid/List */}
+            {loading && pageNum === 0 ? (
+              <div className="flex justify-center items-center py-20">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
               </div>
-            </div>
-          ) : (
-            <>
-              <div className={`grid gap-4 sm:gap-6 ${
-                viewMode === 'grid' 
-                  ? 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6' 
-                  : 'grid-cols-1'
-              }`}>
-                {products.map((product, index) => (
-                  <div 
-                    key={`${product.itemId}-${index}`} 
-                    className={`group ${isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"} border rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 ${
-                      viewMode === 'list' ? 'flex flex-row' : 'flex flex-col'
-                    }`}
+            ) : error ? (
+              <div className="text-center py-20">
+                <div className={`inline-block p-8 rounded-xl ${isDark ? "bg-red-900/20 border border-red-800" : "bg-red-50 border border-red-200"}`}>
+                  <div className="text-red-500 text-6xl mb-4">⚠️</div>
+                  <h3 className="text-xl font-semibold mb-2 text-red-600">Something went wrong</h3>
+                  <p className="text-red-500 mb-4">{error}</p>
+                  <button 
+                    onClick={() => fetchProducts()}
+                    className="px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium"
                   >
-                    <div className={`relative ${viewMode === 'list' ? 'w-48 h-32' : 'aspect-square'}`}>
-                      <button
-                        onClick={() =>
-                          isInWishlist(product.itemId)
-                            ? removeFromWishlist(product.itemId)
-                            : addToWishlist({
-                                id: product.itemId,
-                                title: product.title,
-                                price: convertToKESWithProfitAndShipping(product.price.value.toString(), product.condition, product.title),
-                                image: product.image?.imageUrl || '/placeholder-image.jpg',
-                                condition: product.condition,
-                              } as any)
-                        }
-                        className="absolute top-2 right-2 p-1.5 sm:p-2 rounded-full bg-white/90 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all z-10 group-hover:scale-110"
-                        title={isInWishlist(product.itemId) ? "Remove from Wishlist" : "Add to Wishlist"}
-                      >
-                        <Heart
-                          className={`w-4 h-4 sm:w-5 sm:h-5 transition-colors ${
-                            isInWishlist(product.itemId) 
-                              ? "fill-red-500 text-red-500" 
-                              : "text-gray-600 hover:text-red-500"
-                          }`}
-                        />
-                      </button>
-                      <Link href={`/product/${product.itemId}`} className="block h-full relative">
-                        <Image
-                          src={product.image?.imageUrl || '/placeholder-image.jpg'}
-                          alt={product.title}
-                          fill
-                          className="object-cover group-hover:scale-105 transition-transform duration-300"
-                          sizes={viewMode === 'list' ? "192px" : "(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"}
-                        />
-                      </Link>
-                    </div>
-                    
-                    <div className={`p-2 sm:p-3 md:p-4 flex flex-col justify-between ${viewMode === 'list' ? 'flex-1' : ''}`}>
-                      <div>
-                        <Link href={`/product/${product.itemId}`}>
-                          <h3 className={`font-semibold mb-1 sm:mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors ${
-                            viewMode === 'list' ? 'text-lg' : 'text-xs sm:text-sm'
-                          }`}>
-                            {product.title}
-                          </h3>
+                    Try Again
+                  </button>
+                </div>
+              </div>
+            ) : products.length === 0 && isSearchMode ? (
+              <div className="text-center py-20">
+                <div className={`inline-block p-8 rounded-xl ${isDark ? "bg-gray-800 border border-gray-700" : "bg-white border border-gray-200"}`}>
+                  <div className="text-6xl mb-4">🔍</div>
+                  <h3 className="text-xl font-semibold mb-2">No products found</h3>
+                  <p className="text-gray-500">Try adjusting your search or filters</p>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className={`grid gap-4 sm:gap-6 ${
+                  viewMode === 'grid' 
+                    ? 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6' 
+                    : 'grid-cols-1'
+                }`}>
+                  {products.map((product, index) => (
+                    <div 
+                      key={`${product.itemId}-${index}`} 
+                      className={`group ${isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"} border rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 ${
+                        viewMode === 'list' ? 'flex flex-row' : 'flex flex-col'
+                      }`}
+                    >
+                      <div className={`relative ${viewMode === 'list' ? 'w-48 h-32' : 'aspect-square'}`}>
+                        <button
+                          onClick={() =>
+                            isInWishlist(product.itemId)
+                              ? removeFromWishlist(product.itemId)
+                              : addToWishlist({
+                                  id: product.itemId,
+                                  title: product.title,
+                                  price: convertToKESWithProfitAndShipping(product.price.value.toString(), product.condition, product.title),
+                                  image: product.image?.imageUrl || '/placeholder-image.jpg',
+                                  condition: product.condition,
+                                } as any)
+                          }
+                          className="absolute top-2 right-2 p-1.5 sm:p-2 rounded-full bg-white/90 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all z-10 group-hover:scale-110"
+                          title={isInWishlist(product.itemId) ? "Remove from Wishlist" : "Add to Wishlist"}
+                        >
+                          <Heart
+                            className={`w-4 h-4 sm:w-5 sm:h-5 transition-colors ${
+                              isInWishlist(product.itemId) 
+                                ? "fill-red-500 text-red-500" 
+                                : "text-gray-600 hover:text-red-500"
+                            }`}
+                          />
+                        </button>
+                        <Link href={`/product/${product.itemId}`} className="block h-full relative">
+                          <Image
+                            src={product.image?.imageUrl || '/placeholder-image.jpg'}
+                            alt={product.title}
+                            fill
+                            className="object-cover group-hover:scale-105 transition-transform duration-300"
+                            sizes={viewMode === 'list' ? "192px" : "(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"}
+                          />
                         </Link>
-                        
-                        {product.condition && (
-                          <span className={`inline-block px-1.5 sm:px-2 py-0.5 sm:py-1 text-xs rounded-full mb-1 sm:mb-2 ${
-                            isDark ? "bg-green-900/30 text-green-400" : "bg-green-100 text-green-700"
-                          }`}>
-                            {product.condition}
-                          </span>
-                        )}
                       </div>
                       
-                      <div className="flex items-center justify-between mt-auto">
-                        <div className="flex flex-col">
-                          <div className="text-sm sm:text-lg md:text-xl font-bold text-green-600">
-                            {convertToKESWithProfitAndShipping(product.price.value.toString(), product.condition, product.title)}
-                          </div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">
-                            Includes shipping to US
-                          </div>
+                      <div className={`p-2 sm:p-3 md:p-4 flex flex-col justify-between ${viewMode === 'list' ? 'flex-1' : ''}`}>
+                        <div>
+                          <Link href={`/product/${product.itemId}`}>
+                            <h3 className={`font-semibold mb-1 sm:mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors ${
+                              viewMode === 'list' ? 'text-lg' : 'text-xs sm:text-sm'
+                            }`}>
+                              {product.title}
+                            </h3>
+                          </Link>
+                          
+                          {product.condition && (
+                            <span className={`inline-block px-1.5 sm:px-2 py-0.5 sm:py-1 text-xs rounded-full mb-1 sm:mb-2 ${
+                              isDark ? "bg-green-900/30 text-green-400" : "bg-green-100 text-green-700"
+                            }`}>
+                              {product.condition}
+                            </span>
+                          )}
                         </div>
-                        {product.seller && (
-                          <div className="flex items-center gap-0.5 sm:gap-1 text-xs text-gray-500">
-                            <Star className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-yellow-400 text-yellow-400" />
-                            <span className="text-xs">{product.seller.feedbackPercentage}%</span>
+                        
+                        <div className="flex items-center justify-between mt-auto">
+                          <div className="flex flex-col">
+                            <div className="text-sm sm:text-lg md:text-xl font-bold text-green-600">
+                              {convertToKESWithProfitAndShipping(product.price.value.toString(), product.condition, product.title)}
+                            </div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400">
+                              Includes shipping to US
+                            </div>
                           </div>
-                        )}
+                          {product.seller && (
+                            <div className="flex items-center gap-0.5 sm:gap-1 text-xs text-gray-500">
+                              <Star className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-yellow-400 text-yellow-400" />
+                              <span className="text-xs">{product.seller.feedbackPercentage}%</span>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Loading Trigger for Infinite Scroll */}
-              {products.length > 0 && (
-                <div 
-                  id="loading-trigger" 
-                  className="text-center py-8 mt-4"
-                  style={{ minHeight: '100px' }}
-                >
-                  <div className={`text-sm ${isDark ? "text-gray-400" : "text-gray-600"}`}>
-                    {loading ? "Loading..." : "Scroll for more"}
-                  </div>
+                  ))}
                 </div>
-              )}
-            </>
-          )}
-        </section>
+
+                {/* Loading Trigger for Infinite Scroll */}
+                {products.length > 0 && (
+                  <div 
+                    id="loading-trigger" 
+                    className="text-center py-8 mt-4"
+                    style={{ minHeight: '100px' }}
+                  >
+                    <div className={`text-sm ${isDark ? "text-gray-400" : "text-gray-600"}`}>
+                      {loading ? "Loading..." : "Scroll for more"}
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </section>
+        )}
     </main>
   );
 }

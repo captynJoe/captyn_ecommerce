@@ -31,10 +31,10 @@ async function getAccessToken() {
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
-  // Default search query focused on attractive deals and popular items
-  let query = searchParams.get("q") || "iPhone 13 iPhone 14 iPhone 15 Samsung Galaxy S23 S24 MacBook Air PlayStation 5 Xbox Series AirPods iPad";
+  // Default search query focused on popular items that are likely to have results
+  let query = searchParams.get("q") || "phone laptop gaming console electronics";
   // Dynamic limit: more products for homepage, fewer for searches
-  const isSearch = query && query !== "iPhone 13 iPhone 14 iPhone 15 Samsung Galaxy S23 S24 MacBook Air PlayStation 5 Xbox Series AirPods iPad";
+  const isSearch = query && query !== "phone laptop gaming console electronics";
   const limit = parseInt(searchParams.get("limit") || (isSearch ? "20" : "50"));  // 20 for searches, 50 for homepage
   const offset = parseInt(searchParams.get("offset") || "0");
   const sortBy = searchParams.get("sortBy") || "bestMatch";
@@ -142,6 +142,15 @@ export async function GET(req: Request) {
   } else if (lowerQuery.includes('power bank') || lowerQuery.includes('portable charger') || lowerQuery.includes('battery pack')) {
     filterArray.push('categoryIds:{20349}'); // Power Banks
     query = `${query} -case -cable -accessories`;
+  } else if (lowerQuery.includes('book') || lowerQuery.includes('novel') || lowerQuery.includes('textbook') || lowerQuery.includes('fiction') || lowerQuery.includes('non-fiction')) {
+    filterArray.push('categoryIds:{267}'); // Books
+    query = `${query} book novel fiction mystery romance thriller science fantasy biography history textbook`;
+  } else if (lowerQuery.includes('clothing') || lowerQuery.includes('shirt') || lowerQuery.includes('dress') || lowerQuery.includes('fashion')) {
+    filterArray.push('categoryIds:{11450}'); // Clothing, Shoes & Accessories
+    query = `${query} -case -accessories -jewelry`;
+  } else if (lowerQuery.includes('home') || lowerQuery.includes('kitchen') || lowerQuery.includes('furniture') || lowerQuery.includes('decor')) {
+    filterArray.push('categoryIds:{11700}'); // Home & Garden
+    query = `${query} -case -accessories`;
   }
 
   // Add condition filter if specified
