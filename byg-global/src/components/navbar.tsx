@@ -145,6 +145,13 @@ export default function Navbar({
                       spellCheck="false"
                       inputMode="search"
                       style={{ fontSize: '16px' }}
+                      onBlur={(e) => {
+                        // Prevent blur from closing search when clicking buttons inside
+                        const relatedTarget = e.relatedTarget as HTMLElement;
+                        if (relatedTarget && relatedTarget.closest('.search-form')) {
+                          e.target.focus();
+                        }
+                      }}
                     />
                     <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center space-x-1">
                       <button
