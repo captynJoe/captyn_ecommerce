@@ -215,7 +215,7 @@ export default function HomePage() {
   };
 
   const saveSearchHistory = async (query: string) => {
-    if (!session?.user || !query.trim()) return;
+    if (!user || !query.trim()) return;
     
     try {
       await fetch('/api/user/search-history', {
