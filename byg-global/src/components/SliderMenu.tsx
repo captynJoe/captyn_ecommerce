@@ -183,46 +183,44 @@ export default function SliderMenu({
             <label className="block text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">
               Price Range (KSh):
             </label>
-            <div className="space-y-2">
-              <div className="flex space-x-2">
-                <input
-                  type="number"
-                  min={0}
-                  value={priceRange.min}
-                  onChange={(e) => {
-                    setPriceRangeAction({ min: Number(e.target.value), max: priceRange.max });
+              <div className="space-y-2">
+                <div className="flex space-x-2">
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    min={0}
+                    value={priceRange.min}
+                    onChange={(e) => {
+                      // Update local state only, do not apply filter yet
+                      setPriceRangeAction({ min: e.target.value === '' ? 0 : Number(e.target.value), max: priceRange.max });
+                    }}
+                    className="w-1/2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-black dark:text-white p-2 text-sm"
+                    placeholder="Min"
+                  />
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    min={0}
+                    value={priceRange.max}
+                    onChange={(e) => {
+                      // Update local state only, do not apply filter yet
+                      setPriceRangeAction({ min: priceRange.min, max: e.target.value === '' ? 0 : Number(e.target.value) });
+                    }}
+                    className="w-1/2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-black dark:text-white p-2 text-sm"
+                    placeholder="Max"
+                  />
+                </div>
+                <button
+                  onClick={() => {
+                    onFilterChangeAction();
                   }}
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      onFilterChangeAction();
-                    }
-                  }}
-                  className="w-1/2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-black dark:text-white p-2 text-sm"
-                  placeholder="Min"
-                />
-                <input
-                  type="number"
-                  min={0}
-                  value={priceRange.max}
-                  onChange={(e) => {
-                    setPriceRangeAction({ min: priceRange.min, max: Number(e.target.value) });
-                  }}
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      onFilterChangeAction();
-                    }
-                  }}
-                  className="w-1/2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-black dark:text-white p-2 text-sm"
-                  placeholder="Max"
-                />
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded text-sm transition-colors"
+                >
+                  Apply Price Range
+                </button>
               </div>
-              <button
-                onClick={onFilterChangeAction}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded text-sm transition-colors"
-              >
-                Apply Price Range
-              </button>
-            </div>
           </div>
 
           {/* Seller Rating */}

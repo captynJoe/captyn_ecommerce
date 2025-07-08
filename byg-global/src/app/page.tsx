@@ -388,7 +388,7 @@ export default function HomePage() {
             </p>
           </div>
             
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-3 md:gap-4">
+            <div className="grid grid-cols-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-2 md:gap-4">
               {/* Phones */}
               <button
                 onClick={() => {
@@ -398,16 +398,16 @@ export default function HomePage() {
                   setQuery("phone");
                   setPageNum(0);
                 }}
-                className={`group flex flex-col items-center p-3 md:p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
+                className={`group flex flex-col items-center p-2 md:p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
                   isDark 
                     ? "bg-gray-800 hover:bg-gray-700 border border-gray-700" 
                     : "bg-white hover:bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md"
                 }`}
               >
-                <div className={`p-2 md:p-3 rounded-full mb-2 transition-colors ${
+                <div className={`p-1.5 md:p-3 rounded-full mb-1 md:mb-2 transition-colors ${
                   isDark ? "bg-purple-900/30 group-hover:bg-purple-800/40" : "bg-purple-100 group-hover:bg-purple-200"
                 }`}>
-                  <Smartphone className={`w-5 h-5 md:w-6 md:h-6 ${isDark ? "text-purple-400" : "text-purple-600"}`} />
+                  <Smartphone className={`w-4 h-4 md:w-6 md:h-6 ${isDark ? "text-purple-400" : "text-purple-600"}`} />
                 </div>
                 <span className={`text-xs font-medium text-center ${isDark ? "text-gray-300" : "text-gray-700"}`}>
                   Phones
@@ -423,16 +423,16 @@ export default function HomePage() {
                   setQuery("laptop");
                   setPageNum(0);
                 }}
-                className={`group flex flex-col items-center p-3 md:p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
+                className={`group flex flex-col items-center p-2 md:p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
                   isDark 
                     ? "bg-gray-800 hover:bg-gray-700 border border-gray-700" 
                     : "bg-white hover:bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md"
                 }`}
               >
-                <div className={`p-2 md:p-3 rounded-full mb-2 transition-colors ${
+                <div className={`p-1.5 md:p-3 rounded-full mb-1 md:mb-2 transition-colors ${
                   isDark ? "bg-blue-900/30 group-hover:bg-blue-800/40" : "bg-blue-100 group-hover:bg-blue-200"
                 }`}>
-                  <Laptop className={`w-5 h-5 md:w-6 md:h-6 ${isDark ? "text-blue-400" : "text-blue-600"}`} />
+                  <Laptop className={`w-4 h-4 md:w-6 md:h-6 ${isDark ? "text-blue-400" : "text-blue-600"}`} />
                 </div>
                 <span className={`text-xs font-medium text-center ${isDark ? "text-gray-300" : "text-gray-700"}`}>
                   PCs & Laptops
@@ -448,16 +448,16 @@ export default function HomePage() {
                   setQuery("gaming console");
                   setPageNum(0);
                 }}
-                className={`group flex flex-col items-center p-3 md:p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
+                className={`group flex flex-col items-center p-2 md:p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
                   isDark 
                     ? "bg-gray-800 hover:bg-gray-700 border border-gray-700" 
                     : "bg-white hover:bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md"
                 }`}
               >
-                <div className={`p-2 md:p-3 rounded-full mb-2 transition-colors ${
+                <div className={`p-1.5 md:p-3 rounded-full mb-1 md:mb-2 transition-colors ${
                   isDark ? "bg-red-900/30 group-hover:bg-red-800/40" : "bg-red-100 group-hover:bg-red-200"
                 }`}>
-                  <Gamepad2 className={`w-5 h-5 md:w-6 md:h-6 ${isDark ? "text-red-400" : "text-red-600"}`} />
+                  <Gamepad2 className={`w-4 h-4 md:w-6 md:h-6 ${isDark ? "text-red-400" : "text-red-600"}`} />
                 </div>
                 <span className={`text-xs font-medium text-center ${isDark ? "text-gray-300" : "text-gray-700"}`}>
                   Gaming
@@ -473,16 +473,16 @@ export default function HomePage() {
                   setQuery("beauty");
                   setPageNum(0);
                 }}
-                className={`group flex flex-col items-center p-3 md:p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
+                className={`group flex flex-col items-center p-2 md:p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
                   isDark 
                     ? "bg-gray-800 hover:bg-gray-700 border border-gray-700" 
                     : "bg-white hover:bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md"
                 }`}
               >
-                <div className={`p-2 md:p-3 rounded-full mb-2 transition-colors ${
+                <div className={`p-1.5 md:p-3 rounded-full mb-1 md:mb-2 transition-colors ${
                   isDark ? "bg-pink-900/30 group-hover:bg-pink-800/40" : "bg-pink-100 group-hover:bg-pink-200"
                 }`}>
-                  <Scissors className={`w-5 h-5 md:w-6 md:h-6 ${isDark ? "text-pink-400" : "text-pink-600"}`} />
+                  <Scissors className={`w-4 h-4 md:w-6 md:h-6 ${isDark ? "text-pink-400" : "text-pink-600"}`} />
                 </div>
                 <span className={`text-xs font-medium text-center ${isDark ? "text-gray-300" : "text-gray-700"}`}>
                   Beauty
@@ -498,16 +498,16 @@ export default function HomePage() {
                   setQuery("book");
                   setPageNum(0);
                 }}
-                className={`group flex flex-col items-center p-3 md:p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
+                className={`group flex flex-col items-center p-2 md:p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
                   isDark 
                     ? "bg-gray-800 hover:bg-gray-700 border border-gray-700" 
                     : "bg-white hover:bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md"
                 }`}
               >
-                <div className={`p-2 md:p-3 rounded-full mb-2 transition-colors ${
+                <div className={`p-1.5 md:p-3 rounded-full mb-1 md:mb-2 transition-colors ${
                   isDark ? "bg-green-900/30 group-hover:bg-green-800/40" : "bg-green-100 group-hover:bg-green-200"
                 }`}>
-                  <ShoppingBag className={`w-5 h-5 md:w-6 md:h-6 ${isDark ? "text-green-400" : "text-green-600"}`} />
+                  <ShoppingBag className={`w-4 h-4 md:w-6 md:h-6 ${isDark ? "text-green-400" : "text-green-600"}`} />
                 </div>
                 <span className={`text-xs font-medium text-center ${isDark ? "text-gray-300" : "text-gray-700"}`}>
                   Books
@@ -523,16 +523,16 @@ export default function HomePage() {
                   setQuery("clothing");
                   setPageNum(0);
                 }}
-                className={`group flex flex-col items-center p-3 md:p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
+                className={`group flex flex-col items-center p-2 md:p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
                   isDark 
                     ? "bg-gray-800 hover:bg-gray-700 border border-gray-700" 
                     : "bg-white hover:bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md"
                 }`}
               >
-                <div className={`p-2 md:p-3 rounded-full mb-2 transition-colors ${
+                <div className={`p-1.5 md:p-3 rounded-full mb-1 md:mb-2 transition-colors ${
                   isDark ? "bg-indigo-900/30 group-hover:bg-indigo-800/40" : "bg-indigo-100 group-hover:bg-indigo-200"
                 }`}>
-                  <Scissors className={`w-5 h-5 md:w-6 md:h-6 ${isDark ? "text-indigo-400" : "text-indigo-600"}`} />
+                  <Scissors className={`w-4 h-4 md:w-6 md:h-6 ${isDark ? "text-indigo-400" : "text-indigo-600"}`} />
                 </div>
                 <span className={`text-xs font-medium text-center ${isDark ? "text-gray-300" : "text-gray-700"}`}>
                   Clothing
@@ -548,16 +548,16 @@ export default function HomePage() {
                   setQuery("security");
                   setPageNum(0);
                 }}
-                className={`group flex flex-col items-center p-3 md:p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
+                className={`group flex flex-col items-center p-2 md:p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
                   isDark 
                     ? "bg-gray-800 hover:bg-gray-700 border border-gray-700" 
                     : "bg-white hover:bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md"
                 }`}
               >
-                <div className={`p-2 md:p-3 rounded-full mb-2 transition-colors ${
+                <div className={`p-1.5 md:p-3 rounded-full mb-1 md:mb-2 transition-colors ${
                   isDark ? "bg-orange-900/30 group-hover:bg-orange-800/40" : "bg-orange-100 group-hover:bg-orange-200"
                 }`}>
-                  <Shield className={`w-5 h-5 md:w-6 md:h-6 ${isDark ? "text-orange-400" : "text-orange-600"}`} />
+                  <Shield className={`w-4 h-4 md:w-6 md:h-6 ${isDark ? "text-orange-400" : "text-orange-600"}`} />
                 </div>
                 <span className={`text-xs font-medium text-center ${isDark ? "text-gray-300" : "text-gray-700"}`}>
                   Security
@@ -573,16 +573,16 @@ export default function HomePage() {
                   setQuery("electronics");
                   setPageNum(0);
                 }}
-                className={`group flex flex-col items-center p-3 md:p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
+                className={`group flex flex-col items-center p-2 md:p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
                   isDark 
                     ? "bg-gray-800 hover:bg-gray-700 border border-gray-700" 
                     : "bg-white hover:bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md"
                 }`}
               >
-                <div className={`p-2 md:p-3 rounded-full mb-2 transition-colors ${
+                <div className={`p-1.5 md:p-3 rounded-full mb-1 md:mb-2 transition-colors ${
                   isDark ? "bg-yellow-900/30 group-hover:bg-yellow-800/40" : "bg-yellow-100 group-hover:bg-yellow-200"
                 }`}>
-                  <Star className={`w-5 h-5 md:w-6 md:h-6 ${isDark ? "text-yellow-400" : "text-yellow-600"}`} />
+                  <Star className={`w-4 h-4 md:w-6 md:h-6 ${isDark ? "text-yellow-400" : "text-yellow-600"}`} />
                 </div>
                 <span className={`text-xs font-medium text-center ${isDark ? "text-gray-300" : "text-gray-700"}`}>
                   Electronics
