@@ -1024,17 +1024,28 @@ export default function HomePage() {
         )}
 
         {/* Security Warning - Only show when security search is active */}
-        {query && (query.toLowerCase().includes('security') || query.toLowerCase().includes('hacking') || query.toLowerCase().includes('rubber ducky')) && (
+        {query && (query.toLowerCase().includes('security') || query.toLowerCase().includes('hacking') || query.toLowerCase().includes('rubber ducky') || query.toLowerCase().includes('penetration') || query.toLowerCase().includes('flipper') || query.toLowerCase().includes('proxmark')) && (
           <section className="max-w-7xl mx-auto px-4 py-4">
-            <div className={`p-4 rounded-lg border-l-4 border-red-500 ${isDark ? "bg-red-900/20 border-red-800" : "bg-red-50 border-red-200"}`}>
-              <div className="flex items-center">
-                <Shield className="w-5 h-5 text-red-500 mr-2" />
-                <h3 className="text-lg font-semibold text-red-600 dark:text-red-400">Security Tools Warning</h3>
+            <div className={`p-6 rounded-xl border-l-4 border-red-500 ${isDark ? "bg-red-900/20 border-red-800" : "bg-red-50 border-red-200"}`}>
+              <div className="flex items-center mb-3">
+                <Shield className="w-6 h-6 text-red-500 mr-3" />
+                <h3 className="text-xl font-semibold text-red-600 dark:text-red-400">Security & Penetration Testing Tools</h3>
               </div>
-              <p className="mt-2 text-red-700 dark:text-red-300">
-                ⚠️ <strong>Important:</strong> We do not ship illegal hacking tools or devices intended for malicious purposes. 
-                All security tools must be for legitimate educational, research, or authorized penetration testing purposes only.
-              </p>
+              <div className="space-y-3 text-red-700 dark:text-red-300">
+                <p>
+                  <strong>⚠️ Legal Notice:</strong> We only ship security tools for legitimate purposes including:
+                </p>
+                <ul className="list-disc list-inside ml-4 space-y-1">
+                  <li>Educational research and learning cybersecurity</li>
+                  <li>Authorized penetration testing and security audits</li>
+                  <li>Professional cybersecurity training and certification</li>
+                  <li>Personal network security testing (your own devices)</li>
+                </ul>
+                <p className="text-sm">
+                  <strong>Prohibited:</strong> Tools intended for unauthorized access, illegal activities, or malicious purposes. 
+                  By purchasing, you confirm legitimate use and compliance with local laws.
+                </p>
+              </div>
             </div>
           </section>
         )}
