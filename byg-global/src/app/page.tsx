@@ -339,7 +339,19 @@ export default function HomePage() {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
-              <button className="bg-white text-blue-600 px-8 py-4 rounded-xl font-bold text-lg hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-xl">
+              <button
+                onClick={() => {
+                  // Scroll to Shop by Category section and set query to empty to show all
+                  const shopSection = document.getElementById('shop-by-category');
+                  if (shopSection) {
+                    shopSection.scrollIntoView({ behavior: 'smooth' });
+                  }
+                  setQuery('');
+                  setPageNum(0);
+                  fetchProducts(true);
+                }}
+                className="bg-white text-blue-600 px-8 py-4 rounded-xl font-bold text-lg hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-xl"
+              >
                 Get Started Now
               </button>
               <Link href="/estimator-demo" className="bg-transparent border-2 border-white text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-white hover:text-blue-600 transition-all duration-300 transform hover:scale-105">
