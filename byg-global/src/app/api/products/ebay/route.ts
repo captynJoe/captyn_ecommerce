@@ -31,10 +31,10 @@ async function getAccessToken() {
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
-  // Default search query focused on flagship products
-  let query = searchParams.get("q") || "iPhone 14 Pro, iPhone 15 Pro, Samsung Galaxy S23 Ultra, PlayStation 5, MacBook Pro";
+  // Default search query focused on attractive deals and popular items
+  let query = searchParams.get("q") || "iPhone 13 iPhone 14 iPhone 15 Samsung Galaxy S23 S24 MacBook Air PlayStation 5 Xbox Series AirPods iPad";
   // Dynamic limit: more products for homepage, fewer for searches
-  const isSearch = query && query !== "iPhone 14 Pro, iPhone 15 Pro, Samsung Galaxy S23 Ultra, PlayStation 5, MacBook Pro";
+  const isSearch = query && query !== "iPhone 13 iPhone 14 iPhone 15 Samsung Galaxy S23 S24 MacBook Air PlayStation 5 Xbox Series AirPods iPad";
   const limit = parseInt(searchParams.get("limit") || (isSearch ? "20" : "50"));  // 20 for searches, 50 for homepage
   const offset = parseInt(searchParams.get("offset") || "0");
   const sortBy = searchParams.get("sortBy") || "bestMatch";
@@ -63,22 +63,49 @@ export async function GET(req: Request) {
   const filterArray: string[] = [];
   const lowerQuery = query.toLowerCase();
 
-  // Enhanced category filters with intelligent search prioritization like eBay
+  // Enhanced category filters with intelligent search prioritization for ALL products
   if (lowerQuery.includes('gaming pc') || lowerQuery.includes('gaming laptop')) {
     filterArray.push('categoryIds:{177,175672}'); // PC Laptops & Gaming PCs
     query = `${query} -case -skin -keyboard -mouse -adapter -charger -stand -accessories`;
-  } else if (lowerQuery.includes('graphics card') || lowerQuery.includes('processor')) {
+  } else if (lowerQuery.includes('graphics card') || lowerQuery.includes('processor') || lowerQuery.includes('cpu') || lowerQuery.includes('gpu')) {
     filterArray.push('categoryIds:{27386,164}'); // Graphics Cards & Processors
-    query = `${query} -fan -cooler -case -accessories`;
-  } else if (lowerQuery.includes('phone') || lowerQuery.includes('smartphone') || lowerQuery.includes('iphone') || lowerQuery.includes('samsung')) {
+    query = `${query} -fan -cooler -case -accessories -cable`;
+  } else if (lowerQuery.includes('phone') || lowerQuery.includes('smartphone') || lowerQuery.includes('iphone') || lowerQuery.includes('samsung') || lowerQuery.includes('galaxy')) {
     filterArray.push('categoryIds:{9355}'); // Cell Phones & Smartphones
-    query = `${query} -case -screen -protector -cable -charger -accessories -cover -holder -mount -stand -kit`;
-  } else if (lowerQuery.includes('hacking') || lowerQuery.includes('rubber ducky')) {
-    filterArray.push('categoryIds:{182094,182095}'); // Network Hardware & Security Devices
-    query = `${query} -case -cable -accessories`;
-  } else if (lowerQuery.includes('wig') || lowerQuery.includes('hair')) {
+    query = `${query} -case -screen -protector -cable -charger -accessories -cover -holder -mount -stand -kit -tempered -glass`;
+  } else if (lowerQuery.includes('airpods') || lowerQuery.includes('earbuds') || lowerQuery.includes('headphones') || lowerQuery.includes('earphones')) {
+    filterArray.push('categoryIds:{15052}'); // Portable Audio Headphones
+    query = `${query} -case -stand -holder -accessories -cable -adapter`;
+  } else if (lowerQuery.includes('watch') || lowerQuery.includes('smartwatch') || lowerQuery.includes('apple watch')) {
+    filterArray.push('categoryIds:{178893}'); // Smart Watches
+    query = `${query} -band -strap -case -screen -protector -charger -stand -accessories`;
+  } else if (lowerQuery.includes('camera') || lowerQuery.includes('dslr') || lowerQuery.includes('canon') || lowerQuery.includes('nikon') || lowerQuery.includes('sony camera')) {
+    filterArray.push('categoryIds:{625}'); // Digital Cameras
+    query = `${query} -lens -case -bag -strap -tripod -accessories -filter -memory`;
+  } else if (lowerQuery.includes('drone') || lowerQuery.includes('quadcopter')) {
+    filterArray.push('categoryIds:{182186}'); // Radio Control Toys
+    query = `${query} -case -bag -propeller -battery -charger -accessories -parts`;
+  } else if (lowerQuery.includes('tv') || lowerQuery.includes('television') || lowerQuery.includes('smart tv')) {
+    filterArray.push('categoryIds:{11071}'); // Televisions
+    query = `${query} -mount -stand -remote -cable -accessories`;
+  } else if (lowerQuery.includes('speaker') || lowerQuery.includes('bluetooth speaker') || lowerQuery.includes('wireless speaker')) {
+    filterArray.push('categoryIds:{14969}'); // Portable Speakers
+    query = `${query} -case -stand -mount -cable -accessories`;
+  } else if (lowerQuery.includes('keyboard') || lowerQuery.includes('mechanical keyboard') || lowerQuery.includes('gaming keyboard')) {
+    filterArray.push('categoryIds:{3676}'); // Computer Keyboards & Keypads
+    query = `${query} -case -cover -wrist -rest -accessories -cable`;
+  } else if (lowerQuery.includes('mouse') || lowerQuery.includes('gaming mouse') || lowerQuery.includes('wireless mouse')) {
+    filterArray.push('categoryIds:{3695}'); // Computer Mice & Trackballs
+    query = `${query} -pad -case -accessories -cable`;
+  } else if (lowerQuery.includes('monitor') || lowerQuery.includes('gaming monitor') || lowerQuery.includes('4k monitor')) {
+    filterArray.push('categoryIds:{80053}'); // Computer Monitors
+    query = `${query} -stand -mount -arm -cable -accessories`;
+  } else if (lowerQuery.includes('hacking') || lowerQuery.includes('rubber ducky') || lowerQuery.includes('penetration testing') || lowerQuery.includes('security')) {
+    filterArray.push('categoryIds:{182094,182095,267}'); // Network Hardware & Security Devices + Books
+    query = `${query} rubber ducky flipper zero wifi pineapple kali linux penetration testing ethical hacking cybersecurity books tools -case -cable -accessories`;
+  } else if (lowerQuery.includes('wig') || lowerQuery.includes('hair') || lowerQuery.includes('hair extension')) {
     filterArray.push('categoryIds:{11854,175630}'); // Wigs & Hair Extensions
-    query = `${query} -stand -holder -accessories`;
+    query = `${query} -stand -holder -accessories -mannequin`;
   } else if (lowerQuery.includes('ps5') || lowerQuery.includes('playstation 5')) {
     filterArray.push('categoryIds:{139971}'); // Video Game Consoles
     query = `${query} console -controller -game -accessory -skin -stand -cable -sticker -decal -vinyl -wrap -cover -case -bag -headset -charging -dock -remote -media -disc`;
@@ -97,12 +124,24 @@ export async function GET(req: Request) {
   } else if (lowerQuery.includes('ps4 games') || lowerQuery.includes('ps5 games') || lowerQuery.includes('xbox games') || lowerQuery.includes('nintendo games') || lowerQuery.includes('games')) {
     filterArray.push('categoryIds:{139973}'); // Video Games
     // Don't exclude games for game searches
-  } else if (lowerQuery.includes('macbook') || lowerQuery.includes('laptop')) {
+  } else if (lowerQuery.includes('macbook') || lowerQuery.includes('laptop') || lowerQuery.includes('notebook')) {
     filterArray.push('categoryIds:{111422,177}'); // Apple Laptops & PC Laptops
-    query = `${query} -case -skin -keyboard -mouse -adapter -charger -stand -accessories`;
+    query = `${query} -case -skin -keyboard -mouse -adapter -charger -stand -accessories -sleeve -bag`;
   } else if (lowerQuery.includes('tablet') || lowerQuery.includes('ipad')) {
     filterArray.push('categoryIds:{171485}'); // Tablets & eBook Readers
-    query = `${query} -case -screen -protector -keyboard -stand -accessories`;
+    query = `${query} -case -screen -protector -keyboard -stand -accessories -stylus -pen`;
+  } else if (lowerQuery.includes('router') || lowerQuery.includes('wifi router') || lowerQuery.includes('modem')) {
+    filterArray.push('categoryIds:{182094}'); // Network Hardware
+    query = `${query} -cable -antenna -accessories`;
+  } else if (lowerQuery.includes('printer') || lowerQuery.includes('3d printer') || lowerQuery.includes('inkjet')) {
+    filterArray.push('categoryIds:{617}'); // Printers
+    query = `${query} -ink -cartridge -paper -cable -accessories`;
+  } else if (lowerQuery.includes('hard drive') || lowerQuery.includes('ssd') || lowerQuery.includes('storage')) {
+    filterArray.push('categoryIds:{175669}'); // Computer Hard Drives
+    query = `${query} -case -enclosure -cable -accessories`;
+  } else if (lowerQuery.includes('power bank') || lowerQuery.includes('portable charger') || lowerQuery.includes('battery pack')) {
+    filterArray.push('categoryIds:{20349}'); // Power Banks
+    query = `${query} -case -cable -accessories`;
   }
 
   // Add condition filter if specified
