@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ShoppingCart, X, AlertTriangle, Heart } from "lucide-react";
+import { ShoppingCart, X, AlertTriangle, Heart, Filter, DollarSign, Smartphone, SlidersHorizontal, Package } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 
 interface SliderMenuProps {
@@ -15,8 +15,6 @@ interface SliderMenuProps {
   onFilterChangeAction: () => void;
   priceRange: { min: number; max: number };
   setPriceRangeAction: (range: { min: number; max: number }) => void;
-  rating: number;
-  setRatingAction: (rating: number) => void;
   networkType: string;
   setNetworkTypeAction: (network: string) => void;
 }
@@ -31,13 +29,17 @@ export default function SliderMenu({
   onFilterChangeAction, 
   priceRange, 
   setPriceRangeAction, 
-  rating, 
-  setRatingAction,
   networkType,
   setNetworkTypeAction
 }: SliderMenuProps) {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
+  const [localPriceRange, setLocalPriceRange] = useState(priceRange);
+
+  // Sync local price range with props
+  useEffect(() => {
+    setLocalPriceRange(priceRange);
+  }, [priceRange]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -60,16 +62,47 @@ export default function SliderMenu({
   }, [isOpen, onCloseAction]);
 
   const networks = [
-    { id: "all", label: "All Networks" },
-    { id: "unlocked", label: "Unlocked Only" },
-    { id: "locked", label: "Carrier Locked" },
+    { id: "all", label: "All Networks", icon: "📱" },
+    { id: "unlocked", label: "Unlocked Only", icon: "🔓" },
+    { id: "locked", label: "Carrier Locked", icon: "🔒" },
   ];
+
+  const conditions = [
+    { value: "all", label: "All Conditions", color: "text-gray-600" },
+    { value: "new", label: "New", color: "text-green-600" },
+    { value: "refurbished", label: "Refurbished", color: "text-blue-600" },
+    { value: "very good", label: "Very Good", color: "text-emerald-600" },
+    { value: "good", label: "Good", color: "text-yellow-600" },
+    { value: "used", label: "Used", color: "text-orange-600" },
+    { value: "for parts", label: "For Parts Only", color: "text-red-600" },
+  ];
+
+  const sortOptions = [
+    { value: "bestMatch", label: "Best Match", icon: "🎯" },
+    { value: "priceAsc", label: "Price: Low to High", icon: "📈" },
+    { value: "priceDesc", label: "Price: High to Low", icon: "📉" },
+    { value: "newlyListed", label: "Newly Listed", icon: "🆕" },
+  ];
+
+  const handleApplyPriceRange = () => {
+    setPriceRangeAction(localPriceRange);
+    onFilterChangeAction();
+  };
+
+  const handleResetFilters = () => {
+    setSortByAction("bestMatch");
+    setFilterConditionAction("all");
+    setLocalPriceRange({ min: 0, max: 0 });
+    setPriceRangeAction({ min: 0, max: 0 });
+    setNetworkTypeAction("all");
+    onFilterChangeAction();
+  };
 
   return (
     <>
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-opacity duration-300"
           aria-hidden="true"
           onClick={onCloseAction}
         />
@@ -80,201 +113,258 @@ export default function SliderMenu({
         tabIndex={-1}
         role="dialog"
         aria-modal="true"
-        aria-label="Navigation menu"
-        className={`fixed top-0 left-0 h-full w-56 bg-white dark:bg-black shadow-xl z-50 transform transition-transform duration-300 ease-in-out ${
+        aria-label="Filters and Navigation"
+        className={`fixed top-0 left-0 h-full w-80 bg-white dark:bg-gray-900 shadow-2xl z-50 transform transition-all duration-300 ease-out ${
           isOpen ? "translate-x-0" : "-translate-x-full"
-        } focus:outline-none overflow-y-auto`}
+        } focus:outline-none overflow-y-auto border-r border-gray-200 dark:border-gray-700`}
       >
-        <div className="flex justify-between items-center p-3 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-base font-bold text-black dark:text-white">Menu</h2>
-          <button
-            onClick={onCloseAction}
-            aria-label="Close menu"
-            className="p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition"
-          >
-            <X className="w-5 h-5 text-black dark:text-white" />
-          </button>
-        </div>
-
-        <div className="p-3 border-b border-gray-200 dark:border-gray-700">
-          <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">
-            Network Selection
-          </h3>
-          <div className="space-y-2">
-            {networks.map((network) => (
-              <label
-                key={network.id}
-                className="flex items-center space-x-2 cursor-pointer text-sm"
-              >
-                <input
-                  type="radio"
-                  name="network"
-                  value={network.id}
-                  checked={networkType === network.id}
-                  onChange={(e) => {
-                    setNetworkTypeAction(e.target.value);
-                    onFilterChangeAction();
-                  }}
-                  className="form-radio text-blue-600 focus:ring-blue-500"
-                />
-                <span className="text-black dark:text-white">{network.label}</span>
-              </label>
-            ))}
+        {/* Header */}
+        <div className="sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 z-10">
+          <div className="flex justify-between items-center p-4">
+            <div className="flex items-center gap-2">
+              <SlidersHorizontal className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white">Filters & Menu</h2>
+            </div>
+            <button
+              onClick={onCloseAction}
+              aria-label="Close menu"
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            >
+              <X className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+            </button>
           </div>
           
-          {networkType === "locked" && (
-             <div className="mt-3 p-2 bg-yellow-50 dark:bg-yellow-900/20 rounded-md">
-              <div className="flex items-start space-x-2">
-                <AlertTriangle className="w-4 h-4 text-yellow-600 dark:text-yellow-500 flex-shrink-0 mt-0.5" />
-                <p className="text-xs text-yellow-700 dark:text-yellow-400">
-                  Some devices might be locked to specific networks. Please verify device compatibility before purchase.
-                </p>
-              </div>
-            </div>
-          )}
+          {/* Reset Filters Button */}
+          <div className="px-4 pb-4">
+            <button
+              onClick={handleResetFilters}
+              className="w-full py-2 px-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+            >
+              Reset All Filters
+            </button>
+          </div>
         </div>
 
-        <div className="p-3 space-y-4 text-black dark:text-white">
+        <div className="p-4 space-y-6">
           {/* Sort By */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">
-              Sort by:
-            </label>
-            <select
-              value={sortBy}
-              onChange={(e) => {
-                setSortByAction(e.target.value);
-                onFilterChangeAction();
-              }}
-              className="w-full rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-black dark:text-white p-2 text-sm"
-            >
-              <option value="bestMatch">Best Match</option>
-              <option value="priceAsc">Price: Low to High</option>
-              <option value="priceDesc">Price: High to Low</option>
-              <option value="newlyListed">Newly Listed</option>
-            </select>
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <Filter className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Sort By</h3>
+            </div>
+            <div className="grid grid-cols-1 gap-2">
+              {sortOptions.map((option) => (
+                <label
+                  key={option.value}
+                  className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                    sortBy === option.value
+                      ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300"
+                      : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="sort"
+                    value={option.value}
+                    checked={sortBy === option.value}
+                    onChange={(e) => {
+                      setSortByAction(e.target.value);
+                      onFilterChangeAction();
+                    }}
+                    className="sr-only"
+                  />
+                  <span className="text-lg">{option.icon}</span>
+                  <span className="text-sm font-medium">{option.label}</span>
+                </label>
+              ))}
+            </div>
           </div>
 
           {/* Condition */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">
-              Condition:
-            </label>
-            <select
-              value={filterCondition}
-              onChange={(e) => {
-                setFilterConditionAction(e.target.value);
-                onFilterChangeAction();
-              }}
-              className="w-full rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-black dark:text-white p-2 text-sm"
-            >
-              <option value="all">All Conditions</option>
-              <option value="new">New</option>
-              <option value="refurbished">Refurbished</option>
-              <option value="very good">Very Good</option>
-              <option value="good">Good</option>
-              <option value="used">Used</option>
-              <option value="for parts">For Parts Only</option>
-            </select>
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <Package className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Condition</h3>
+            </div>
+            <div className="grid grid-cols-1 gap-2">
+              {conditions.map((condition) => (
+                <label
+                  key={condition.value}
+                  className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                    filterCondition === condition.value
+                      ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300"
+                      : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="condition"
+                    value={condition.value}
+                    checked={filterCondition === condition.value}
+                    onChange={(e) => {
+                      setFilterConditionAction(e.target.value);
+                      onFilterChangeAction();
+                    }}
+                    className="sr-only"
+                  />
+                  <div className={`w-3 h-3 rounded-full ${
+                    filterCondition === condition.value ? "bg-blue-500" : "bg-gray-300 dark:bg-gray-600"
+                  }`} />
+                  <span className={`text-sm font-medium ${condition.color} dark:text-gray-300`}>
+                    {condition.label}
+                  </span>
+                </label>
+              ))}
+            </div>
           </div>
 
           {/* Price Range */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">
-              Price Range (KSh):
-            </label>
-              <div className="space-y-2">
-                <div className="flex space-x-2">
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <DollarSign className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Price Range (KSh)</h3>
+            </div>
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                    Minimum
+                  </label>
                   <input
-                    type="text"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
+                    type="number"
                     min={0}
-                    value={priceRange.min}
+                    value={localPriceRange.min || ''}
                     onChange={(e) => {
-                      // Update local state only, do not apply filter yet
-                      setPriceRangeAction({ min: e.target.value === '' ? 0 : Number(e.target.value), max: priceRange.max });
+                      const value = e.target.value === '' ? 0 : Number(e.target.value);
+                      setLocalPriceRange({ ...localPriceRange, min: value });
                     }}
-                    className="w-1/2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-black dark:text-white p-2 text-sm"
-                    placeholder="Min"
-                  />
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    min={0}
-                    value={priceRange.max}
-                    onChange={(e) => {
-                      // Update local state only, do not apply filter yet
-                      setPriceRangeAction({ min: priceRange.min, max: e.target.value === '' ? 0 : Number(e.target.value) });
-                    }}
-                    className="w-1/2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-black dark:text-white p-2 text-sm"
-                    placeholder="Max"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="0"
                   />
                 </div>
-                <button
-                  onClick={() => {
-                    onFilterChangeAction();
-                  }}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded text-sm transition-colors"
-                >
-                  Apply Price Range
-                </button>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                    Maximum
+                  </label>
+                  <input
+                    type="number"
+                    min={0}
+                    value={localPriceRange.max || ''}
+                    onChange={(e) => {
+                      const value = e.target.value === '' ? 0 : Number(e.target.value);
+                      setLocalPriceRange({ ...localPriceRange, max: value });
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="No limit"
+                  />
+                </div>
               </div>
+              <button
+                onClick={handleApplyPriceRange}
+                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium py-2.5 px-4 rounded-lg text-sm transition-all duration-200 transform hover:scale-[1.02] focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              >
+                Apply Price Filter
+              </button>
+              {(localPriceRange.min > 0 || localPriceRange.max > 0) && (
+                <div className="text-xs text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 p-2 rounded-lg">
+                  Current: KSh {localPriceRange.min.toLocaleString()} - {localPriceRange.max > 0 ? `KSh ${localPriceRange.max.toLocaleString()}` : 'No limit'}
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Seller Rating */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">
-              Seller Rating:
-            </label>
-            <select
-              value={rating}
-              onChange={(e) => {
-                setRatingAction(Number(e.target.value));
-                onFilterChangeAction();
-              }}
-              className="w-full rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-black dark:text-white p-2 text-sm"
-            >
-              <option value={0}>Any Rating</option>
-              <option value={1}>⭐ & up</option>
-              <option value={2}>⭐⭐ & up</option>
-              <option value={3}>⭐⭐⭐ & up</option>
-              <option value={4}>⭐⭐⭐⭐ & up</option>
-              <option value={5}>⭐⭐⭐⭐⭐ only</option>
-            </select>
+          {/* Network Selection */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <Smartphone className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Network Type</h3>
+            </div>
+            <div className="grid grid-cols-1 gap-2">
+              {networks.map((network) => (
+                <label
+                  key={network.id}
+                  className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                    networkType === network.id
+                      ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300"
+                      : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="network"
+                    value={network.id}
+                    checked={networkType === network.id}
+                    onChange={(e) => {
+                      setNetworkTypeAction(e.target.value);
+                      onFilterChangeAction();
+                    }}
+                    className="sr-only"
+                  />
+                  <span className="text-lg">{network.icon}</span>
+                  <span className="text-sm font-medium">{network.label}</span>
+                </label>
+              ))}
+            </div>
+            
+            {networkType === "locked" && (
+              <div className="mt-3 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+                <div className="flex items-start gap-2">
+                  <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-500 flex-shrink-0 mt-0.5" />
+                  <p className="text-xs text-amber-700 dark:text-amber-400 leading-relaxed">
+                    Carrier-locked devices may only work with specific networks. Please verify compatibility before purchase.
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
+
         </div>
 
-        <nav className="flex flex-col p-3 space-y-3 text-black dark:text-white border-t border-gray-200 dark:border-gray-700">
-          <Link
-            href="/user"
-            onClick={onCloseAction}
-            className="hover:text-blue-600 dark:hover:text-blue-400 text-sm"
-          >
-            User Profile
-          </Link>
-          <Link
-            href="/wishlist"
-            onClick={onCloseAction}
-            className="flex items-center gap-2 hover:text-blue-600 dark:hover:text-blue-400 text-sm"
-          >
-            <Heart className="w-4 h-4" />
-            Wishlist
-          </Link>
-          <Link
-            href="/checkout"
-            onClick={onCloseAction}
-            className="flex items-center gap-2 hover:text-blue-600 dark:hover:text-blue-400 text-sm"
-          >
-            <ShoppingCart className="w-4 h-4" />
-            Cart
-          </Link>
+        {/* Navigation Links */}
+        <div className="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+          <nav className="p-4 space-y-2">
+            <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
+              Quick Links
+            </h3>
+            
+            <Link
+              href="/user"
+              onClick={onCloseAction}
+              className="flex items-center gap-3 p-3 rounded-lg hover:bg-white dark:hover:bg-gray-800 transition-colors text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+            >
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                <span className="text-white text-sm font-bold">👤</span>
+              </div>
+              <span className="text-sm font-medium">User Profile</span>
+            </Link>
+            
+            <Link
+              href="/wishlist"
+              onClick={onCloseAction}
+              className="flex items-center gap-3 p-3 rounded-lg hover:bg-white dark:hover:bg-gray-800 transition-colors text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+            >
+              <div className="w-8 h-8 bg-gradient-to-br from-pink-500 to-red-500 rounded-lg flex items-center justify-center">
+                <Heart className="w-4 h-4 text-white" />
+              </div>
+              <span className="text-sm font-medium">Wishlist</span>
+            </Link>
+            
+            <Link
+              href="/checkout"
+              onClick={onCloseAction}
+              className="flex items-center gap-3 p-3 rounded-lg hover:bg-white dark:hover:bg-gray-800 transition-colors text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+            >
+              <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
+                <ShoppingCart className="w-4 h-4 text-white" />
+              </div>
+              <span className="text-sm font-medium">Shopping Cart</span>
+            </Link>
 
-          <div className="pt-3">
-            <ThemeToggle />
-          </div>
-        </nav>
+            <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+              <ThemeToggle />
+            </div>
+          </nav>
+        </div>
       </aside>
     </>
   );

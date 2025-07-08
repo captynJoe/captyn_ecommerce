@@ -6,7 +6,7 @@ import Image from "next/image";
 import { Menu, Search, X } from "lucide-react";
 
 interface NavbarProps {
-  onMenuOpenAction: () => void;
+  onMenuOpenAction?: () => void;
   onSearchAction?: (query: string) => void;
   showSearch?: boolean;
   className?: string;
@@ -71,13 +71,15 @@ export default function Navbar({
             <div className="h-32 sm:h-36 md:h-40 flex items-center justify-between px-5 sm:px-6 md:px-8">
               {/* Menu Button */}
               <div className="flex items-center min-w-0">
-                <button
-                  onClick={onMenuOpenAction}
-                  className={`p-2.5 sm:p-3 rounded-xl transition-colors hover:bg-gray-800/30 touch-manipulation ${isDark ? "text-white" : "text-black"}`}
-                  aria-label="Open menu"
-                >
-                  <Menu className="w-6 h-6 sm:w-7 sm:h-7" />
-                </button>
+                {onMenuOpenAction && (
+                  <button
+                    onClick={onMenuOpenAction}
+                    className={`p-2.5 sm:p-3 rounded-xl transition-colors hover:bg-gray-800/30 touch-manipulation ${isDark ? "text-white" : "text-black"}`}
+                    aria-label="Open menu"
+                  >
+                    <Menu className="w-6 h-6 sm:w-7 sm:h-7" />
+                  </button>
+                )}
               </div>
 
               {/* Logo - Centered */}

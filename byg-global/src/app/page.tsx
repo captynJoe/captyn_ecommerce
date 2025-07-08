@@ -50,16 +50,16 @@ export default function HomePage() {
   });
   const [pageNum, setPageNum] = useState(0);
   const [sort, setSort] = useState("newlyListed");
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   // Added missing state variables for SliderMenu props
   const [priceRange, setPriceRange] = useState<{ min: number; max: number }>({ min: 0, max: 10000 });
   const [filterCondition, setFilterCondition] = useState("all");
-  const [rating, setRating] = useState(0);
   const [networkType, setNetworkType] = useState("all");
 
   const [error, setError] = useState<string | null>(null);
+  const [isStarted, setIsStarted] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const fetchProducts = async (resetProducts = false) => {
     setLoading(true);
@@ -263,8 +263,8 @@ export default function HomePage() {
 
   if (initialLoading) return <LoadingAnimation />;
 
-  // Determine if we're in search mode
-  const isSearchMode = query && query.trim().length > 0;
+  // Determine if we're in search mode or started mode
+  const isSearchMode = (query && query.trim().length > 0) || isStarted;
 
   return (
     <main className={`${isDark ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-900"} min-h-screen`}>
@@ -302,8 +302,6 @@ export default function HomePage() {
           }}
           priceRange={priceRange}
           setPriceRangeAction={setPriceRange}
-          rating={rating}
-          setRatingAction={setRating}
           networkType={networkType}
           setNetworkTypeAction={setNetworkType}
         />
@@ -341,6 +339,8 @@ export default function HomePage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
               <button
                 onClick={() => {
+                  // Set started mode to hide marketing content
+                  setIsStarted(true);
                   // Scroll to Shop by Category section and set query to empty to show all
                   const shopSection = document.getElementById('shop-by-category');
                   if (shopSection) {
@@ -880,7 +880,21 @@ export default function HomePage() {
               No hidden fees, no complications, just simple and secure shipping.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="bg-white text-blue-600 px-8 py-4 rounded-xl font-bold text-lg hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-xl">
+              <button 
+                onClick={() => {
+                  // Set started mode to hide marketing content
+                  setIsStarted(true);
+                  // Scroll to Shop by Category section and set query to empty to show all
+                  const shopSection = document.getElementById('shop-by-category');
+                  if (shopSection) {
+                    shopSection.scrollIntoView({ behavior: 'smooth' });
+                  }
+                  setQuery('');
+                  setPageNum(0);
+                  fetchProducts(true);
+                }}
+                className="bg-white text-blue-600 px-8 py-4 rounded-xl font-bold text-lg hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-xl"
+              >
                 Get Started Now
               </button>
               <Link href="/estimator-demo" className="bg-transparent border-2 border-white text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-white hover:text-blue-600 transition-all duration-300 transform hover:scale-105">
@@ -1090,7 +1104,7 @@ export default function HomePage() {
               <div className="text-center py-20">
                 <div className={`inline-block p-8 rounded-xl ${isDark ? "bg-gray-800 border border-gray-700" : "bg-white border border-gray-200"}`}>
                   <div className="text-6xl mb-4">🔍</div>
-                  <h3 className="text-xl font-semibold mb-2">No products found</h3>
+                  <h3 className="text-xl font-semibold mb-2">Start your search or choose a category</h3>
                   <p className="text-gray-500">Try adjusting your search or filters</p>
                 </div>
               </div>

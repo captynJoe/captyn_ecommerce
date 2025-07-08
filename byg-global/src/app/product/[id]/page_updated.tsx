@@ -116,7 +116,7 @@ export default function ProductDetailPage() {
       setLoadingRecommendations(true);
       try {
         // Extract keywords from the current item for similar products
-        const keywords = item?.title?.split(' ').slice(0, 3).join(' ') || 'phone'; // First 3 words
+        const keywords = item?.title?.split(' ').slice(0, 3).join(' ') || 'phone';
         
         // Fetch similar products
         const similarRes = await fetch(`/api/products/ebay?q=${encodeURIComponent(keywords)}&limit=8`);
@@ -324,8 +324,6 @@ export default function ProductDetailPage() {
           onFilterChangeAction={() => {}}
           priceRange={{ min: 0, max: 10000 }}
           setPriceRangeAction={() => {}}
-          rating={0}
-          setRatingAction={() => {}}
           networkType="all"
           setNetworkTypeAction={() => {}}
         />
