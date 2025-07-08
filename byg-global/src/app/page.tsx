@@ -323,7 +323,7 @@ export default function HomePage() {
             <div className="mb-6">
               <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 mb-6">
                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                <span className="text-sm font-medium">Trusted by 10,000+ Customers</span>
+                <span className="text-sm font-medium">Trusted by 300+ Customers</span>
               </div>
             </div>
             
@@ -360,10 +360,7 @@ export default function HomePage() {
             </div>
             
             <div className="flex flex-wrap justify-center gap-6 text-sm opacity-80">
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 bg-green-400 rounded-full"></div>
-                <span>No Hidden Fees</span>
-              </div>
+            
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 bg-green-400 rounded-full"></div>
                 <span>2-4 Week Delivery</span>
@@ -701,7 +698,7 @@ export default function HomePage() {
                       No Hidden Fees
                     </h3>
                     <p className={`${isDark ? "text-gray-400" : "text-gray-600"}`}>
-                      Transparent pricing before you buy. What you see is what you pay - no surprise charges at checkout.
+                      Lot's of veriried sellers, all with different prices, choose your prefered seller. 
                     </p>
                   </div>
                 </div>
@@ -750,7 +747,7 @@ export default function HomePage() {
                 What Our Customers Say
               </h2>
               <p className={`text-lg sm:text-xl ${isDark ? "text-gray-400" : "text-gray-600"} max-w-3xl mx-auto`}>
-                Join thousands of satisfied customers who trust us with their U.S. shopping
+                Join hundreds of satisfied customers who trust us with their U.S. shopping
               </p>
             </div>
             
@@ -762,7 +759,7 @@ export default function HomePage() {
                   ))}
                 </div>
                 <p className={`mb-6 ${isDark ? "text-gray-300" : "text-gray-700"} italic`}>
-                  "Got my iPhone 15 Pro in just 3 weeks — love how smooth the entire process was! No stress, no complications."
+                  "Got my iPhone 15 Pro in 3 weeks — Phone was as indicated, came with protector too."
                 </p>
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
@@ -836,7 +833,7 @@ export default function HomePage() {
                   How long does delivery take?
                 </h3>
                 <p className={`${isDark ? "text-gray-400" : "text-gray-600"}`}>
-                  Standard delivery takes 2-4 weeks from the time we receive your order. Express shipping options are available for faster delivery (7-14 days) at additional cost.
+                  Standard delivery takes 2-3 weeks from the time we receive your order. Express shipping options will be available soon at additional cost.
                 </p>
               </div>
 
@@ -849,21 +846,14 @@ export default function HomePage() {
                 </p>
               </div>
 
-              <div className={`p-6 rounded-2xl ${isDark ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200"} border shadow-lg`}>
-                <h3 className={`text-xl font-bold mb-3 ${isDark ? "text-white" : "text-gray-900"}`}>
-                  Can I order from any U.S. store?
-                </h3>
-                <p className={`${isDark ? "text-gray-400" : "text-gray-600"}`}>
-                  Yes! We can purchase from eBay, Amazon, Best Buy, Target, Walmart, and virtually any U.S. online store. Just share the product link with us.
-                </p>
-              </div>
+          
 
               <div className={`p-6 rounded-2xl ${isDark ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200"} border shadow-lg`}>
                 <h3 className={`text-xl font-bold mb-3 ${isDark ? "text-white" : "text-gray-900"}`}>
                   What if my item is damaged?
                 </h3>
                 <p className={`${isDark ? "text-gray-400" : "text-gray-600"}`}>
-                  We offer full insurance on all shipments. If your item arrives damaged, we'll work with you to get a replacement or full refund within 30 days.
+                  We offer full insurance on all shipments. If your item arrives damaged, we'll work with you to get a replacement or full refund. Unchecking the insurance box puts your product at risk of damage, so we recommend keeping it checked.
                 </p>
               </div>
 
