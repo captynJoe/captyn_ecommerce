@@ -66,9 +66,31 @@ export default function HomePage() {
     setError(null);
     try {
       const currentPage = resetProducts ? 0 : pageNum;
-      const res = await fetch(
-        `/api/products/ebay?limit=50&offset=${currentPage * 50}&sortBy=${sort}&q=${query || "smartphone"}`
-      );
+      
+      // Convert KSh to USD for API (approximate rate: 1 USD = 130 KSh)
+      const USD_TO_KSH_RATE = 130;
+      const minPriceUSD = priceRange.min > 0 ? Math.floor(priceRange.min / USD_TO_KSH_RATE) : undefined;
+      const maxPriceUSD = priceRange.max > 0 ? Math.floor(priceRange.max / USD_TO_KSH_RATE) : undefined;
+      
+      // Build API URL with price range parameters
+      const apiParams = new URLSearchParams({
+        limit: '50',
+        offset: (currentPage * 50).toString(),
+        sortBy: sort,
+        q: query || "smartphone"
+      });
+      
+      if (minPriceUSD) {
+        apiParams.append('minPrice', minPriceUSD.toString());
+      }
+      if (maxPriceUSD) {
+        apiParams.append('maxPrice', maxPriceUSD.toString());
+      }
+      if (filterCondition && filterCondition !== 'all') {
+        apiParams.append('condition', filterCondition);
+      }
+      
+      const res = await fetch(`/api/products/ebay?${apiParams.toString()}`);
       const data = await res.json();
       
       if (!res.ok) {
@@ -122,7 +144,7 @@ export default function HomePage() {
   useEffect(() => {
     const resetProducts = pageNum === 0;
     fetchProducts(resetProducts);
-  }, [query, pageNum, sort]);
+  }, [query, pageNum, sort, priceRange, filterCondition]);
 
   // Separate effect to handle search changes without dependency issues
   useEffect(() => {

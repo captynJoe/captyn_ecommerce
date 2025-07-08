@@ -14,7 +14,7 @@ async function getAccessToken() {
     headers: {
       Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString("base64")}`,
       "Content-Type": "application/x-www-form-urlencoded",
-    },
+    }, 
     body: "grant_type=client_credentials&scope=https://api.ebay.com/oauth/api_scope",
   });
 
@@ -31,10 +31,12 @@ async function getAccessToken() {
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
-  const limit = parseInt(searchParams.get("limit") || "100");  // Increased default limit
-  const offset = parseInt(searchParams.get("offset") || "0");
   // Default search query focused on flagship products
   let query = searchParams.get("q") || "iPhone 14 Pro, iPhone 15 Pro, Samsung Galaxy S23 Ultra, PlayStation 5, MacBook Pro";
+  // Dynamic limit: more products for homepage, fewer for searches
+  const isSearch = query && query !== "iPhone 14 Pro, iPhone 15 Pro, Samsung Galaxy S23 Ultra, PlayStation 5, MacBook Pro";
+  const limit = parseInt(searchParams.get("limit") || (isSearch ? "20" : "50"));  // 20 for searches, 50 for homepage
+  const offset = parseInt(searchParams.get("offset") || "0");
   const sortBy = searchParams.get("sortBy") || "bestMatch";
 
   let token;
@@ -61,14 +63,14 @@ export async function GET(req: Request) {
   const filterArray: string[] = [];
   const lowerQuery = query.toLowerCase();
 
-  // Add category filters and specific exclusions based on product type
+  // Enhanced category filters with intelligent search prioritization like eBay
   if (lowerQuery.includes('gaming pc') || lowerQuery.includes('gaming laptop')) {
     filterArray.push('categoryIds:{177,175672}'); // PC Laptops & Gaming PCs
     query = `${query} -case -skin -keyboard -mouse -adapter -charger -stand -accessories`;
   } else if (lowerQuery.includes('graphics card') || lowerQuery.includes('processor')) {
     filterArray.push('categoryIds:{27386,164}'); // Graphics Cards & Processors
     query = `${query} -fan -cooler -case -accessories`;
-  } else if (lowerQuery.includes('phone') || lowerQuery.includes('smartphone')) {
+  } else if (lowerQuery.includes('phone') || lowerQuery.includes('smartphone') || lowerQuery.includes('iphone') || lowerQuery.includes('samsung')) {
     filterArray.push('categoryIds:{9355}'); // Cell Phones & Smartphones
     query = `${query} -case -screen -protector -cable -charger -accessories -cover -holder -mount -stand -kit`;
   } else if (lowerQuery.includes('hacking') || lowerQuery.includes('rubber ducky')) {
@@ -77,12 +79,30 @@ export async function GET(req: Request) {
   } else if (lowerQuery.includes('wig') || lowerQuery.includes('hair')) {
     filterArray.push('categoryIds:{11854,175630}'); // Wigs & Hair Extensions
     query = `${query} -stand -holder -accessories`;
-  } else if (lowerQuery.includes('playstation') || lowerQuery.includes('ps5') || lowerQuery.includes('xbox')) {
+  } else if (lowerQuery.includes('ps5') || lowerQuery.includes('playstation 5')) {
     filterArray.push('categoryIds:{139971}'); // Video Game Consoles
-    query = `${query} -controller -game -accessory -skin -stand -cable`;
+    query = `${query} console -controller -game -accessory -skin -stand -cable -sticker -decal -vinyl -wrap -cover -case -bag -headset -charging -dock -remote -media -disc`;
+  } else if (lowerQuery.includes('ps4') || lowerQuery.includes('playstation 4')) {
+    filterArray.push('categoryIds:{139971}'); // Video Game Consoles
+    query = `${query} console -controller -game -accessory -skin -stand -cable -sticker -decal -vinyl -wrap -cover -case -bag -headset -charging -dock -remote -media -disc`;
+  } else if (lowerQuery.includes('xbox series') || lowerQuery.includes('xbox one')) {
+    filterArray.push('categoryIds:{139971}'); // Video Game Consoles
+    query = `${query} console -controller -game -accessory -skin -stand -cable -sticker -decal -vinyl -wrap -cover -case -bag -headset -charging -dock -remote -media -disc`;
+  } else if (lowerQuery.includes('nintendo switch') || lowerQuery.includes('switch')) {
+    filterArray.push('categoryIds:{139971}'); // Video Game Consoles
+    query = `${query} console -controller -game -accessory -skin -stand -cable -case -screen -sticker -decal -vinyl -wrap -cover -bag -headset -charging -dock`;
+  } else if ((lowerQuery.includes('playstation') || lowerQuery.includes('xbox')) && !lowerQuery.includes('game')) {
+    filterArray.push('categoryIds:{139971}'); // Video Game Consoles
+    query = `${query} console -controller -game -accessory -skin -stand -cable -sticker -decal -vinyl -wrap -cover -case -bag -headset -charging -dock -remote -media -disc`;
+  } else if (lowerQuery.includes('ps4 games') || lowerQuery.includes('ps5 games') || lowerQuery.includes('xbox games') || lowerQuery.includes('nintendo games') || lowerQuery.includes('games')) {
+    filterArray.push('categoryIds:{139973}'); // Video Games
+    // Don't exclude games for game searches
   } else if (lowerQuery.includes('macbook') || lowerQuery.includes('laptop')) {
     filterArray.push('categoryIds:{111422,177}'); // Apple Laptops & PC Laptops
     query = `${query} -case -skin -keyboard -mouse -adapter -charger -stand -accessories`;
+  } else if (lowerQuery.includes('tablet') || lowerQuery.includes('ipad')) {
+    filterArray.push('categoryIds:{171485}'); // Tablets & eBook Readers
+    query = `${query} -case -screen -protector -keyboard -stand -accessories`;
   }
 
   // Add condition filter if specified
@@ -106,23 +126,6 @@ export async function GET(req: Request) {
   if (minPrice || maxPrice) {
     const priceFilter = `price:[${minPrice || '*'}..${maxPrice || '*'}],priceCurrency:USD`;
     filterArray.push(priceFilter);
-  }
-
-  // Add minimum price filter to exclude very cheap accessories/parts
-  if (!minPrice) {
-    const minPriceMap: { [key: string]: number } = {
-      playstation: 200,
-      ps5: 200,
-      xbox: 200,
-      macbook: 300,
-      laptop: 200,
-      iphone: 100,
-      samsung: 100,
-      default: 50
-    };
-
-    const productType = Object.keys(minPriceMap).find(key => lowerQuery.includes(key)) || 'default';
-    filterArray.push(`price:[${minPriceMap[productType]}..*],priceCurrency:USD`);
   }
 
   // Add location filter for all products
@@ -215,7 +218,37 @@ export async function GET(req: Request) {
       });
     }
 
-    console.log("eBay API returned items:", data.itemSummaries.length);
+    // Light post-processing: Only filter out very obvious cheap accessories when sorting by price
+    if (data.itemSummaries && (sortBy === 'priceAsc' || sortBy === 'priceDesc')) {
+      const filteredItems = data.itemSummaries.filter((item: any) => {
+        const title = item.title?.toLowerCase() || '';
+        const price = parseFloat(item.price?.value || '0');
+        
+        // Only filter out very obvious cheap accessories
+        let shouldFilter = false;
+        
+        // For PS5 searches, only filter out very cheap stickers/decals
+        if (lowerQuery.includes('ps5') || lowerQuery.includes('playstation')) {
+          if ((title.includes('sticker') || title.includes('decal')) && price < 3) {
+            shouldFilter = true;
+          }
+        }
+        
+        // For general searches, only filter out extremely cheap obvious accessories
+        if (price < 2 && (title.includes('sticker') || title.includes('decal'))) {
+          shouldFilter = true;
+        }
+        
+        // Return true if item should NOT be filtered (keep the item)
+        return !shouldFilter;
+      });
+      
+      console.log(`eBay API returned ${data.itemSummaries.length} items, filtered to ${filteredItems.length} relevant items`);
+      data.itemSummaries = filteredItems;
+    } else {
+      console.log("eBay API returned items:", data.itemSummaries.length);
+    }
+    
     return NextResponse.json(data);
   } catch (error) {
     console.error("Unexpected error in eBay API route:", error);

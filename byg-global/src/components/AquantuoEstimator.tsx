@@ -26,19 +26,35 @@ export default function AquantuoEstimator({ cartTotal, cartItems = [], onInsuran
   const [isInsured, setIsInsured] = useState(true);
   const [showInsuranceWarning, setShowInsuranceWarning] = useState(false);
 
-  // Base shipping rates
-  const BASE_SHIPPING_RATE = 14.50; // USD for first kg
+  // Base shipping rates (Updated pricing logic)
+  const BASE_RATE_KES = 2500; // KES for packages under 1kg
+  const PER_KG_RATE_KES = 2500; // KES per kg for items over 1kg
   const LAST_MILE_RATE = 3.44; // USD for last mile delivery
-  const PHONE_BASE_RATE = 2350.14; // Base rate for phones in KES
-  const LAPTOP_BASE_RATE = 25.00; // USD base rate for laptops (first kg)
-  const LAPTOP_PER_KG_RATE = 12.00; // USD per additional kg for laptops
-  const CONSOLIDATION_DISCOUNT = 0.6; // 40% discount on additional items
+  const USD_TO_KES = 133; // Exchange rate
   
-  // Default weights if not provided
+  // Default weights if not provided (auto-detected from product titles)
   const DEFAULT_WEIGHTS = {
-    phone: 0.5, // 500g for phones
-    laptop: 2.5, // 2.5kg for laptops
-    other: 1.0 // 1kg for other items
+    phone: 0.2, // 200g for phones
+    laptop: 2.0, // 2kg for laptops
+    tablet: 0.5, // 500g for tablets
+    gaming: 0.8, // 800g for gaming accessories
+    other: 0.5 // 500g for other items
+  };
+
+  // Detect product type from title for better weight estimation
+  const detectProductType = (title: string): keyof typeof DEFAULT_WEIGHTS => {
+    const lowerTitle = title.toLowerCase();
+    
+    if (lowerTitle.includes('phone') || lowerTitle.includes('iphone') || lowerTitle.includes('samsung') || lowerTitle.includes('mobile')) {
+      return 'phone';
+    } else if (lowerTitle.includes('laptop') || lowerTitle.includes('macbook') || lowerTitle.includes('notebook')) {
+      return 'laptop';
+    } else if (lowerTitle.includes('tablet') || lowerTitle.includes('ipad')) {
+      return 'tablet';
+    } else if (lowerTitle.includes('gaming') || lowerTitle.includes('console') || lowerTitle.includes('playstation') || lowerTitle.includes('xbox')) {
+      return 'gaming';
+    }
+    return 'other';
   };
 
   // Validate weight input
@@ -91,81 +107,59 @@ export default function AquantuoEstimator({ cartTotal, cartItems = [], onInsuran
     onInsuranceChange?.(false, 0);
   };
 
-  // Calculate total weight of cart items
+  // Calculate total weight of cart items with intelligent product detection
   const calculateTotalWeight = () => {
     if (cartItems.length === 0) return weight;
 
     return cartItems.reduce((total, item) => {
-      // Convert weight from grams to kg if provided, otherwise use default weight
-      const itemWeight = item.weight ? item.weight / 1000 : DEFAULT_WEIGHTS[item.type || 'other'];
+      // Convert weight from grams to kg if provided, otherwise detect from title
+      let itemWeight: number;
+      if (item.weight) {
+        itemWeight = item.weight / 1000; // Convert grams to kg
+      } else if (item.type && DEFAULT_WEIGHTS[item.type as keyof typeof DEFAULT_WEIGHTS]) {
+        itemWeight = DEFAULT_WEIGHTS[item.type as keyof typeof DEFAULT_WEIGHTS];
+      } else {
+        // Auto-detect product type from title
+        const detectedType = detectProductType(item.title);
+        itemWeight = DEFAULT_WEIGHTS[detectedType];
+      }
       return total + (itemWeight * item.quantity);
     }, 0);
   };
 
-  // Calculate consolidated shipping cost
+  // Calculate shipping cost with corrected pricing logic
   const calculateShipping = () => {
     if (cartItems.length === 0) {
       return calculateBasicShipping(weight);
     }
 
-    let totalShippingCost = 0;
-    let laptopCount = 0;
-    let phoneCount = 0;
-    let totalWeight = 0;
+    const totalWeight = calculateTotalWeight();
+    let shippingCostKES = 0;
 
-    // First pass: count items and calculate total weight
-    cartItems.forEach(item => {
-      if (item.type === 'laptop') {
-        laptopCount += item.quantity;
-        totalWeight += (item.weight ? item.weight / 1000 : DEFAULT_WEIGHTS.laptop) * item.quantity;
-      } else if (item.type === 'phone') {
-        phoneCount += item.quantity;
-        totalWeight += (item.weight ? item.weight / 1000 : DEFAULT_WEIGHTS.phone) * item.quantity;
-      } else {
-        totalWeight += (item.weight ? item.weight / 1000 : DEFAULT_WEIGHTS.other) * item.quantity;
-      }
-    });
-
-    // Calculate laptop shipping cost if present
-    if (laptopCount > 0) {
-      // Base rate for first laptop
-      totalShippingCost = LAPTOP_BASE_RATE;
-      
-      // Additional weight cost for laptops
-      if (totalWeight > 1) {
-        totalShippingCost += (totalWeight - 1) * LAPTOP_PER_KG_RATE;
-      }
-
-      // Add discounted phone shipping if any
-      if (phoneCount > 0) {
-        const phoneShipping = (PHONE_BASE_RATE / 131) * CONSOLIDATION_DISCOUNT * phoneCount;
-        totalShippingCost += phoneShipping;
-      }
-    } else if (phoneCount > 0) {
-      // Base rate for first phone
-      totalShippingCost = PHONE_BASE_RATE / 131;
-      
-      // Discounted rate for additional phones
-      if (phoneCount > 1) {
-        totalShippingCost += ((PHONE_BASE_RATE / 131) * CONSOLIDATION_DISCOUNT * (phoneCount - 1));
-      }
+    if (totalWeight <= 1) {
+      // Package under 1kg: flat rate regardless of number of items
+      shippingCostKES = BASE_RATE_KES; // 2500 KES
     } else {
-      // Default to weight-based shipping for other items
-      totalShippingCost = calculateBasicShipping(totalWeight).shipping;
+      // Package over 1kg: multiply by total weight
+      shippingCostKES = totalWeight * PER_KG_RATE_KES; // 2500 KES per kg
     }
 
+    // Convert to USD
+    const shippingCostUSD = shippingCostKES / USD_TO_KES;
     const insuranceCost = isInsured ? cartTotal * 0.03 : 0;
-    const totalCost = totalShippingCost + LAST_MILE_RATE + insuranceCost;
+    const totalCost = shippingCostUSD + LAST_MILE_RATE + insuranceCost;
 
     return {
-      shipping: totalShippingCost,
+      shipping: shippingCostUSD,
       lastMile: LAST_MILE_RATE,
       insurance: insuranceCost,
-      total: totalCost
+      total: totalCost,
+      weightKES: shippingCostKES,
+      totalWeightKg: totalWeight
     };
   };
 
-  // Basic weight-based shipping calculation
+  // Basic weight-based shipping calculation with new pricing logic
   const calculateBasicShipping = (weightKg: number) => {
     if (weightKg <= 0) return {
       shipping: 0,
@@ -174,22 +168,21 @@ export default function AquantuoEstimator({ cartTotal, cartItems = [], onInsuran
       total: 0
     };
 
-    // Progressive rate increase for heavier items
-    let shippingCost;
+    let shippingCostKES = 0;
+
     if (weightKg <= 1) {
-      shippingCost = BASE_SHIPPING_RATE;
-    } else if (weightKg <= 5) {
-      shippingCost = BASE_SHIPPING_RATE + ((weightKg - 1) * 8);
-    } else if (weightKg <= 10) {
-      shippingCost = BASE_SHIPPING_RATE + (4 * 8) + ((weightKg - 5) * 10);
+      shippingCostKES = BASE_RATE_KES; // 2500 KES for packages under 1kg
     } else {
-      shippingCost = BASE_SHIPPING_RATE + (4 * 8) + (5 * 10) + ((weightKg - 10) * 12);
+      shippingCostKES = weightKg * PER_KG_RATE_KES; // 2500 KES per kg for items over 1kg
     }
+
+    // Convert to USD
+    const shippingCostUSD = shippingCostKES / USD_TO_KES;
     const insuranceCost = isInsured ? cartTotal * 0.03 : 0;
-    const totalCost = shippingCost + LAST_MILE_RATE + insuranceCost;
+    const totalCost = shippingCostUSD + LAST_MILE_RATE + insuranceCost;
 
     return {
-      shipping: shippingCost,
+      shipping: shippingCostUSD,
       lastMile: LAST_MILE_RATE,
       insurance: insuranceCost,
       total: totalCost
@@ -211,19 +204,47 @@ export default function AquantuoEstimator({ cartTotal, cartItems = [], onInsuran
       </h2>
       
       <div className="space-y-4">
+        {/* Show detected cart items and their weights */}
+        {cartItems.length > 0 && (
+          <div className="p-3 bg-blue-50/50 dark:bg-gray-800/50 rounded-lg border border-blue-100 dark:border-gray-700">
+            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Detected Items & Estimated Weights:
+            </h3>
+            <div className="space-y-1 text-xs text-gray-600 dark:text-gray-400">
+              {cartItems.map((item, index) => {
+                const detectedType = detectProductType(item.title);
+                const itemWeight = item.weight ? item.weight / 1000 : DEFAULT_WEIGHTS[detectedType];
+                return (
+                  <div key={index} className="flex justify-between">
+                    <span>{item.title.substring(0, 30)}... (x{item.quantity})</span>
+                    <span>{(itemWeight * item.quantity).toFixed(2)}kg</span>
+                  </div>
+                );
+              })}
+              <div className="border-t border-gray-200 dark:border-gray-600 pt-1 mt-2 font-medium">
+                <div className="flex justify-between">
+                  <span>Total Weight:</span>
+                  <span>{calculateTotalWeight().toFixed(2)}kg</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Package Weight (kg)
+            Package Weight (kg) {cartItems.length > 0 ? '(Auto-calculated from cart)' : ''}
           </label>
           <input
             type="number"
             min="0.1"
             step="0.1"
-            value={weight || ""}
+            value={cartItems.length > 0 ? calculateTotalWeight().toFixed(2) : (weight || "")}
             onChange={(e) => handleWeightChange(e.target.value)}
+            disabled={cartItems.length > 0}
             className={`w-full px-3 py-2 rounded-lg border ${
               error ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
-            } bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 ${
+            } ${cartItems.length > 0 ? 'bg-gray-100 dark:bg-gray-600' : 'bg-white dark:bg-gray-700'} text-gray-900 dark:text-white focus:outline-none focus:ring-2 ${
               error ? 'focus:ring-red-500' : 'focus:ring-blue-500'
             } transition`}
             placeholder="Enter weight in kg"
@@ -309,15 +330,27 @@ export default function AquantuoEstimator({ cartTotal, cartItems = [], onInsuran
                 ${costs.total.toFixed(2)}
               </div>
               <div className="text-sm text-gray-500 dark:text-gray-400">
-                (In Kenyan Shilling KSh {(costs.total * 131).toFixed(2)})
+                (In Kenyan Shilling KSh {(costs.total * USD_TO_KES).toFixed(2)})
               </div>
             </div>
           </div>
         </div>
 
-        <div className="mt-4 text-xs text-gray-500 dark:text-gray-400">
-          Note: Final shipping fees are calculated based on the higher of the actual or volumetric weight.
-          For shipments over 100kg, please contact our support team for a custom quote.
+        <div className="mt-4 text-xs text-gray-500 dark:text-gray-400 space-y-2">
+          <p>
+            <strong>Pricing Logic:</strong> Packages under 1kg cost KSh 2,500 flat rate. 
+            Items over 1kg are charged KSh 2,500 per kg (e.g., 1.2kg laptop = 1.2 × 2,500 = KSh 3,000).
+          </p>
+          <p>
+            <strong>Weight Detection:</strong> System automatically detects product types (phones: 0.2kg, laptops: 2kg, tablets: 0.5kg, gaming: 0.8kg) from cart items.
+          </p>
+          <p>
+            <strong>Note:</strong> Final shipping fees are calculated based on the higher of the actual or volumetric weight.
+            Volumetric weight may apply for large, lightweight packages. For shipments over 100kg, please contact our support team for a custom quote.
+          </p>
+          <p className="text-red-600 dark:text-red-400">
+            <strong>⚠️ Important:</strong> Guns, drugs, and other illegal items cannot be shipped and will be rejected.
+          </p>
         </div>
       </div>
     </div>
