@@ -12,7 +12,6 @@ import {
   Settings, 
   Shield,
   Tag,
-  TrendingUp,
   FileText,
   LogOut
 } from "lucide-react";
@@ -20,6 +19,15 @@ import {
 const AdminSidebar = () => {
   const pathname = usePathname();
   const { isDark } = useApp();
+
+  const handleLogout = () => {
+    // Clear any stored authentication data
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('userSession');
+    
+    // Redirect to login page or home page
+    window.location.href = '/';
+  };
 
   const menuItems = [
     { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
@@ -73,12 +81,19 @@ const AdminSidebar = () => {
           })}
         </nav>
 
-        <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
-          <button className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors w-full ${
-            isDark
-              ? "text-gray-300 hover:bg-gray-700 hover:text-white"
-              : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-          }`}>
+        <div className={`mt-8 pt-8 border-t ${
+          isDark ? "border-gray-700" : "border-gray-200"
+        }`}>
+          <button 
+            onClick={handleLogout}
+            aria-label="Logout from admin panel"
+            role="button"
+            className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors w-full ${
+              isDark
+                ? "text-gray-300 hover:bg-gray-700 hover:text-white"
+                : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+            }`}
+          >
             <LogOut className="w-5 h-5" />
             <span className="font-medium">Logout</span>
           </button>
