@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
+import { auth } from "@/utils/firebase";
+import { onAuthStateChanged } from "firebase/auth";
 import Image from "next/image";
 import Link from "next/link";
 import { Heart, Star, ShoppingBag, Filter, Grid3X3, List, Laptop, Smartphone, Gamepad2, Shield, Scissors, Cpu, LayoutGrid, Clock, TrendingUp } from "lucide-react";
@@ -30,9 +31,16 @@ interface EbayProduct {
 
 // Main Page
 export default function HomePage() {
-  const { data: session } = useSession();
+  const [user, setUser] = useState(null);
   const { isDark } = useApp();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+    return () => unsubscribe();
+  }, []);
 
   const [products, setProducts] = useState<EbayProduct[]>([]);
   const [personalizedProducts, setPersonalizedProducts] = useState<EbayProduct[]>([]);
@@ -164,10 +172,10 @@ export default function HomePage() {
 
   // Fetch user search history and personalized products
   useEffect(() => {
-    if (session?.user) {
+    if (user) {
       fetchUserSearchHistory();
     }
-  }, [session]);
+  }, [user]);
 
   const fetchUserSearchHistory = async () => {
     try {
@@ -806,8 +814,8 @@ export default function HomePage() {
                     <span className="text-white font-bold">D</span>
                   </div>
                   <div>
-                    <p className={`font-semibold ${isDark ? "text-white" : "text-gray-900"}`}>David Kiprotich</p>
-                    <p className={`text-sm ${isDark ? "text-gray-400" : "text-gray-600"}`}>Eldoret, Kenya</p>
+                    <p className={`font-semibold ${isDark ? "text-white" : "text-gray-900"}`}>Gerri Sifa</p>
+                    <p className={`text-sm ${isDark ? "text-gray-400" : "text-gray-600"}`}>Ngara, Nairobi</p>
                   </div>
                 </div>
               </div>
@@ -907,7 +915,7 @@ export default function HomePage() {
         )}
 
         {/* Recent Searches - Only show for logged in users and not in search mode */}
-        {session?.user && recentSearches.length > 0 && !isSearchMode && (
+        {user && recentSearches.length > 0 && !isSearchMode && (
           <section className="max-w-7xl mx-auto px-4 py-6">
             <div className="flex items-center gap-2 mb-4">
               <Clock className="w-5 h-5 text-gray-600 dark:text-gray-400" />
@@ -927,8 +935,8 @@ export default function HomePage() {
           </section>
         )}
 
-        {/* Personalized Recommendations - Only show for logged in users and not in search mode */}
-        {session?.user && personalizedProducts.length > 0 && !isSearchMode && (
+        {/* Personalized Recommendations - Only show for logged in users and not in search mode */} 
+        {user && personalizedProducts.length > 0 && !isSearchMode && (
           <section className="max-w-7xl mx-auto px-4 py-8">
             <div className="flex items-center gap-2 mb-6">
               <TrendingUp className="w-5 h-5 text-green-600" />
