@@ -330,8 +330,6 @@ export default function ProductDetailPage() {
           onFilterChangeAction={() => {}}
           priceRange={{ min: 0, max: 10000 }}
           setPriceRangeAction={() => {}}
-          rating={0}
-          setRatingAction={() => {}}
           networkType="all"
           setNetworkTypeAction={() => {}}
         />
