@@ -270,7 +270,7 @@ export default function AdminDashboard() {
           Recent Activity
         </h3>
         <div className="space-y-3">
-          {[
+          {[ 
             { action: "New order #1247 received", time: "2 minutes ago", type: "order" },
             { action: "User John Doe registered", time: "15 minutes ago", type: "user" },
             { action: "Product 'iPhone 15 Pro' updated", time: "1 hour ago", type: "product" },

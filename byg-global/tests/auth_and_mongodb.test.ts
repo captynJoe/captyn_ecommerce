@@ -33,7 +33,7 @@ describe('NextAuth Configuration', () => {
 describe('Deprecated NextAuth API Route', () => {
   it('should not expose NextAuth API route', async () => {
     // Since the route is disabled, a GET request should return 404
-    const response = await fetch('http://localhost:3000/api/auth/nextauth');
+    const response = await fetch('http://localhost:3000/api/auth/[...nextauth]');
     expect(response.status).toBe(404);
     const text = await response.text();
     expect(text).toContain('NextAuth has been replaced with Firebase Auth');

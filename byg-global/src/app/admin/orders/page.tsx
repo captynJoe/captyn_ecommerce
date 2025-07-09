@@ -1,21 +1,33 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useApp } from "@/contexts/AppContext";
 import { 
   ShoppingBag, 
   Search, 
-  Filter, 
   Eye,
   Package,
   Truck,
   CheckCircle,
   Clock,
   AlertCircle,
-  DollarSign,
-  User,
-  Calendar
+  DollarSign
 } from "lucide-react";
+
+enum OrderStatus {
+  Pending = 'pending',
+  Processing = 'processing',
+  Shipped = 'shipped',
+  Delivered = 'delivered',
+  Cancelled = 'cancelled'
+}
+
+enum PaymentStatus {
+  Pending = 'pending',
+  Paid = 'paid',
+  Failed = 'failed',
+  Refunded = 'refunded'
+}
 
 interface Order {
   id: string;
@@ -27,8 +39,8 @@ interface Order {
     price: number;
   }[];
   total: number;
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
-  paymentStatus: 'pending' | 'paid' | 'failed' | 'refunded';
+  status: OrderStatus;
+  paymentStatus: PaymentStatus;
   orderDate: string;
   shippingAddress: string;
   trackingNumber?: string;
@@ -38,152 +50,156 @@ export default function AdminOrders() {
   const { isDark } = useApp();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterStatus, setFilterStatus] = useState("all");
-  const [filterPayment, setFilterPayment] = useState("all");
+  const [filterStatus, setFilterStatus] = useState<OrderStatus | "all">("all");
+  const [filterPayment, setFilterPayment] = useState<PaymentStatus | "all">("all");
+
+  async function loadOrders() {
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Mock data - in real app, fetch from API
+      setOrders([
+        {
+          id: "ORD-001",
+          customerName: "John Doe",
+          customerEmail: "john@example.com",
+          items: [
+            { name: "iPhone 15 Pro", quantity: 1, price: 1299 },
+            { name: "AirPods Pro", quantity: 1, price: 249 }
+          ],
+          total: 1548,
+          status: OrderStatus.Delivered,
+          paymentStatus: PaymentStatus.Paid,
+          orderDate: "2024-01-15",
+          shippingAddress: "123 Main St, Nairobi, Kenya",
+          trackingNumber: "TRK123456789"
+        },
+        {
+          id: "ORD-002",
+          customerName: "Jane Smith",
+          customerEmail: "jane@example.com",
+          items: [
+            { name: "USB Rubber Ducky", quantity: 2, price: 89 },
+            { name: "Flipper Zero", quantity: 1, price: 169 }
+          ],
+          total: 347,
+          status: OrderStatus.Shipped,
+          paymentStatus: PaymentStatus.Paid,
+          orderDate: "2024-01-14",
+          shippingAddress: "456 Oak Ave, Mombasa, Kenya",
+          trackingNumber: "TRK987654321"
+        },
+        {
+          id: "ORD-003",
+          customerName: "Mike Johnson",
+          customerEmail: "mike@example.com",
+          items: [
+            { name: "MacBook Pro 16-inch", quantity: 1, price: 2499 }
+          ],
+          total: 2499,
+          status: OrderStatus.Processing,
+          paymentStatus: PaymentStatus.Paid,
+          orderDate: "2024-01-13",
+          shippingAddress: "789 Pine St, Kisumu, Kenya"
+        },
+        {
+          id: "ORD-004",
+          customerName: "Sarah Wilson",
+          customerEmail: "sarah@example.com",
+          items: [
+            { name: "PlayStation 5", quantity: 1, price: 499 },
+            { name: "PS5 Controller", quantity: 2, price: 69 }
+          ],
+          total: 637,
+          status: OrderStatus.Pending,
+          paymentStatus: PaymentStatus.Pending,
+          orderDate: "2024-01-12",
+          shippingAddress: "321 Elm St, Eldoret, Kenya"
+        },
+        {
+          id: "ORD-005",
+          customerName: "David Brown",
+          customerEmail: "david@example.com",
+          items: [
+            { name: "WiFi Pineapple", quantity: 1, price: 199 }
+          ],
+          total: 199,
+          status: OrderStatus.Cancelled,
+          paymentStatus: PaymentStatus.Refunded,
+          orderDate: "2024-01-11",
+          shippingAddress: "654 Maple Dr, Nakuru, Kenya"
+        }
+      ]);
+      setError(null);
+    } catch (error) {
+      console.error("Error loading orders:", error);
+      setError("Failed to load orders.");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   useEffect(() => {
-    // Simulate loading orders data
-    const loadOrders = async () => {
-      try {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Mock data - in real app, fetch from API
-        setOrders([
-          {
-            id: "ORD-001",
-            customerName: "John Doe",
-            customerEmail: "john@example.com",
-            items: [
-              { name: "iPhone 15 Pro", quantity: 1, price: 1299 },
-              { name: "AirPods Pro", quantity: 1, price: 249 }
-            ],
-            total: 1548,
-            status: "delivered",
-            paymentStatus: "paid",
-            orderDate: "2024-01-15",
-            shippingAddress: "123 Main St, Nairobi, Kenya",
-            trackingNumber: "TRK123456789"
-          },
-          {
-            id: "ORD-002",
-            customerName: "Jane Smith",
-            customerEmail: "jane@example.com",
-            items: [
-              { name: "USB Rubber Ducky", quantity: 2, price: 89 },
-              { name: "Flipper Zero", quantity: 1, price: 169 }
-            ],
-            total: 347,
-            status: "shipped",
-            paymentStatus: "paid",
-            orderDate: "2024-01-14",
-            shippingAddress: "456 Oak Ave, Mombasa, Kenya",
-            trackingNumber: "TRK987654321"
-          },
-          {
-            id: "ORD-003",
-            customerName: "Mike Johnson",
-            customerEmail: "mike@example.com",
-            items: [
-              { name: "MacBook Pro 16-inch", quantity: 1, price: 2499 }
-            ],
-            total: 2499,
-            status: "processing",
-            paymentStatus: "paid",
-            orderDate: "2024-01-13",
-            shippingAddress: "789 Pine St, Kisumu, Kenya"
-          },
-          {
-            id: "ORD-004",
-            customerName: "Sarah Wilson",
-            customerEmail: "sarah@example.com",
-            items: [
-              { name: "PlayStation 5", quantity: 1, price: 499 },
-              { name: "PS5 Controller", quantity: 2, price: 69 }
-            ],
-            total: 637,
-            status: "pending",
-            paymentStatus: "pending",
-            orderDate: "2024-01-12",
-            shippingAddress: "321 Elm St, Eldoret, Kenya"
-          },
-          {
-            id: "ORD-005",
-            customerName: "David Brown",
-            customerEmail: "david@example.com",
-            items: [
-              { name: "WiFi Pineapple", quantity: 1, price: 199 }
-            ],
-            total: 199,
-            status: "cancelled",
-            paymentStatus: "refunded",
-            orderDate: "2024-01-11",
-            shippingAddress: "654 Maple Dr, Nakuru, Kenya"
-          }
-        ]);
-      } catch (error) {
-        console.error("Error loading orders:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     loadOrders();
   }, []);
 
-  const filteredOrders = orders.filter(order => {
-    const matchesSearch = order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         order.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         order.customerEmail.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = filterStatus === "all" || order.status === filterStatus;
-    const matchesPayment = filterPayment === "all" || order.paymentStatus === filterPayment;
-    
-    return matchesSearch && matchesStatus && matchesPayment;
-  });
+  const filteredOrders = useMemo(() => {
+    return orders.filter(order => {
+      const matchesSearch = order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           order.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           order.customerEmail.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesStatus = filterStatus === "all" || order.status === filterStatus;
+      const matchesPayment = filterPayment === "all" || order.paymentStatus === filterPayment;
+      
+      return matchesSearch && matchesStatus && matchesPayment;
+    });
+  }, [orders, searchTerm, filterStatus, filterPayment]);
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: OrderStatus) => {
     switch (status) {
-      case 'delivered':
+      case OrderStatus.Delivered:
         return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400';
-      case 'shipped':
+      case OrderStatus.Shipped:
         return 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400';
-      case 'processing':
+      case OrderStatus.Processing:
         return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400';
-      case 'pending':
+      case OrderStatus.Pending:
         return 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400';
-      case 'cancelled':
+      case OrderStatus.Cancelled:
         return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400';
       default:
         return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400';
     }
   };
 
-  const getPaymentStatusColor = (status: string) => {
+  const getPaymentStatusColor = (status: PaymentStatus) => {
     switch (status) {
-      case 'paid':
+      case PaymentStatus.Paid:
         return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400';
-      case 'pending':
+      case PaymentStatus.Pending:
         return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400';
-      case 'failed':
+      case PaymentStatus.Failed:
         return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400';
-      case 'refunded':
+      case PaymentStatus.Refunded:
         return 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400';
       default:
         return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400';
     }
   };
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status: OrderStatus) => {
     switch (status) {
-      case 'delivered':
+      case OrderStatus.Delivered:
         return <CheckCircle className="w-4 h-4" />;
-      case 'shipped':
+      case OrderStatus.Shipped:
         return <Truck className="w-4 h-4" />;
-      case 'processing':
+      case OrderStatus.Processing:
         return <Package className="w-4 h-4" />;
-      case 'pending':
+      case OrderStatus.Pending:
         return <Clock className="w-4 h-4" />;
-      case 'cancelled':
+      case OrderStatus.Cancelled:
         return <AlertCircle className="w-4 h-4" />;
       default:
         return <Clock className="w-4 h-4" />;
@@ -194,6 +210,14 @@ export default function AdminOrders() {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12 text-red-600">
+        <p>{error}</p>
       </div>
     );
   }
@@ -251,7 +275,7 @@ export default function AdminOrders() {
               <p className={`text-2xl font-bold ${
                 isDark ? "text-white" : "text-gray-900"
               }`}>
-                {orders.filter(o => o.status === 'pending').length}
+                {orders.filter(o => o.status === OrderStatus.Pending).length}
               </p>
             </div>
             <Clock className="w-8 h-8 text-orange-600" />
@@ -271,7 +295,7 @@ export default function AdminOrders() {
               <p className={`text-2xl font-bold ${
                 isDark ? "text-white" : "text-gray-900"
               }`}>
-                {orders.filter(o => o.status === 'delivered').length}
+                {orders.filter(o => o.status === OrderStatus.Delivered).length}
               </p>
             </div>
             <CheckCircle className="w-8 h-8 text-green-600" />
@@ -291,7 +315,7 @@ export default function AdminOrders() {
               <p className={`text-2xl font-bold ${
                 isDark ? "text-white" : "text-gray-900"
               }`}>
-                KSh {orders.filter(o => o.paymentStatus === 'paid').reduce((sum, o) => sum + o.total, 0).toLocaleString()}
+                KSh {orders.filter(o => o.paymentStatus === PaymentStatus.Paid).reduce((sum, o) => sum + o.total, 0).toLocaleString()}
               </p>
             </div>
             <DollarSign className="w-8 h-8 text-green-600" />
@@ -323,7 +347,7 @@ export default function AdminOrders() {
           
           <select
             value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
+            onChange={(e) => setFilterStatus(e.target.value as OrderStatus | "all")}
             className={`px-4 py-2 border rounded-lg ${
               isDark 
                 ? "bg-gray-700 border-gray-600 text-white" 
@@ -331,16 +355,16 @@ export default function AdminOrders() {
             } focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
           >
             <option value="all">All Status</option>
-            <option value="pending">Pending</option>
-            <option value="processing">Processing</option>
-            <option value="shipped">Shipped</option>
-            <option value="delivered">Delivered</option>
-            <option value="cancelled">Cancelled</option>
+            <option value={OrderStatus.Pending}>Pending</option>
+            <option value={OrderStatus.Processing}>Processing</option>
+            <option value={OrderStatus.Shipped}>Shipped</option>
+            <option value={OrderStatus.Delivered}>Delivered</option>
+            <option value={OrderStatus.Cancelled}>Cancelled</option>
           </select>
 
           <select
             value={filterPayment}
-            onChange={(e) => setFilterPayment(e.target.value)}
+            onChange={(e) => setFilterPayment(e.target.value as PaymentStatus | "all")}
             className={`px-4 py-2 border rounded-lg ${
               isDark 
                 ? "bg-gray-700 border-gray-600 text-white" 
@@ -348,10 +372,10 @@ export default function AdminOrders() {
             } focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
           >
             <option value="all">All Payments</option>
-            <option value="paid">Paid</option>
-            <option value="pending">Pending</option>
-            <option value="failed">Failed</option>
-            <option value="refunded">Refunded</option>
+            <option value={PaymentStatus.Paid}>Paid</option>
+            <option value={PaymentStatus.Pending}>Pending</option>
+            <option value={PaymentStatus.Failed}>Failed</option>
+            <option value={PaymentStatus.Refunded}>Refunded</option>
           </select>
         </div>
       </div>
