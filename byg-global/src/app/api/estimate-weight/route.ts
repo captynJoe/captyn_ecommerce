@@ -8,16 +8,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Product description is required" }, { status: 400 });
     }
 
-    // Try AI-powered estimation first, fallback to rule-based
+    // Try AI-powered estimation first, fallback to rule-based only if AI fails
     let estimation;
     try {
       estimation = await getAIEstimation(prompt);
-
-      // Validate AI estimation for realistic weights
-      if (estimation.realWeight < 0.5) {
-        // If AI returns unrealistically low weight, fallback to rule-based
-        estimation = estimateProductSpecs(prompt);
-      }
     } catch (aiError) {
       console.log("AI estimation failed, using rule-based fallback:", aiError);
       estimation = estimateProductSpecs(prompt);
