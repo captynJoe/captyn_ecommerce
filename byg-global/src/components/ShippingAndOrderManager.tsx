@@ -26,7 +26,7 @@ export default function ShippingAndOrderManager({
   const [cancelReason, setCancelReason] = useState("");
 
   // Shipping rates
-  const SHIPPING_RATE = 14.50; // USD for first kg
+  const SHIPPING_RATE = 18.50; // USD for first kg
   const LAST_MILE_RATE = 3.44; // USD for last mile delivery
   const KSH_RATE = 131; // KSH to USD exchange rate
 
