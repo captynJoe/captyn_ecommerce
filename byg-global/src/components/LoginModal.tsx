@@ -43,11 +43,16 @@ export default function LoginModal({ onClose, onLogin }: LoginModalProps) {
     setError(null);
     setLoading(true);
     try {
-      await signInWithGoogle();
-      // The actual sign-in will be handled by the redirect
-      // No need to call onLogin/onClose here as the page will refresh
+      const result = await signInWithGoogle();
+      if (result.user) {
+        onLogin();
+        onClose();
+      } else if (result.error) {
+        setError(result.error);
+      }
     } catch (error: any) {
-      setError(error.message || "Failed to start Google sign-in");
+      setError(error.message || "Failed to sign in with Google");
+    } finally {
       setLoading(false);
     }
   };

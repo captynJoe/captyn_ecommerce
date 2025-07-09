@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { auth } from "@/utils/firebase";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { emailPasswordSignUp } from "@/utils/auth";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -32,7 +31,12 @@ export default function RegisterPage() {
     setLoading(true);
     try {
       // Create Firebase user
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const result = await emailPasswordSignUp(email, password, name);
+      
+      if (!result.user) {
+        setError(result.error || "Failed to create account");
+        return;
+      }
       
       // Create user record in MongoDB
       try {
@@ -44,7 +48,7 @@ export default function RegisterPage() {
           body: JSON.stringify({
             email: email,
             name: name,
-            firebaseUid: userCredential.user.uid,
+            firebaseUid: result.user.uid,
             createdAt: new Date().toISOString(),
             searchHistory: [],
           }),
