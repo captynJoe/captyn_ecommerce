@@ -53,7 +53,7 @@ export default function AquantuoEstimator({ cartTotal, cartItems = [], onInsuran
     phone: 0.2, // 200g for phones
     laptop: 2.0, // 2kg for laptops
     tablet: 0.5, // 500g for tablets
-    gaming: 0.8, // 800g for gaming accessories
+    gaming: 4.5, // 4.5kg for gaming consoles (corrected from 0.8kg)
     other: 0.5 // 500g for other items
   };
 
@@ -126,6 +126,11 @@ export default function AquantuoEstimator({ cartTotal, cartItems = [], onInsuran
   // Calculate total weight of cart items with intelligent product detection
   const calculateTotalWeight = () => {
     if (cartItems.length === 0) return weight;
+
+    // If AI estimation is enabled and cart has items, use AI estimation for combined items
+    if (useAIEstimation && cartItems.length > 0 && estimationResult) {
+      return estimationResult.chargeableWeight;
+    }
 
     return cartItems.reduce((total, item) => {
       // Convert weight from grams to kg if provided, otherwise detect from title

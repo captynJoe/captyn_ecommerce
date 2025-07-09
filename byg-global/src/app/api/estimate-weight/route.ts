@@ -34,7 +34,7 @@ async function getAIEstimation(productDescription: string) {
     throw new Error("OpenAI API key not configured");
   }
 
-  const prompt = `You are a shipping expert. Analyze this product description and provide accurate weight and dimensions for shipping calculations.
+  const prompt = `You are a shipping expert. Analyze this product description carefully and provide accurate weight and dimensions for shipping calculations. Consider the product's details to assess how heavy it is and if the volume is large.
 
 Product: "${productDescription}"
 
@@ -55,6 +55,8 @@ Use real-world specifications. For example:
 - iPhone 15: 0.17kg, 15×7×0.8cm
 - MacBook Pro 16": 2.1kg, 35×25×1.6cm
 - Nintendo Switch: 0.4kg, 24×10×1.4cm
+
+Note: The final shipping price will be confirmed by freight forwarders after detailed calculation. Provide a summary estimate for weight and dimensions for now.
 
 Be precise and realistic.`;
 
