@@ -4,7 +4,8 @@ import {
   signInWithPopup,
   createUserWithEmailAndPassword,
   sendPasswordResetEmail,
-  updateProfile
+  updateProfile,
+  sendEmailVerification
 } from 'firebase/auth';
 import { auth } from './firebase';
 
@@ -60,6 +61,11 @@ export const emailPasswordSignUp = async (email: string, password: string, displ
     // Update display name if provided
     if (displayName && userCredential.user) {
       await updateProfile(userCredential.user, { displayName });
+    }
+    
+    // Send email verification
+    if (userCredential.user) {
+      await sendEmailVerification(userCredential.user);
     }
     
     return { user: userCredential.user, error: null };

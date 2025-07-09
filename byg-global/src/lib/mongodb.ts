@@ -1,6 +1,12 @@
 import { MongoClient } from "mongodb";
 
 // Only throw error if MongoDB is actually being used
+import dotenv from 'dotenv';
+import path from 'path';
+
+// Load .env.local explicitly
+dotenv.config({ path: path.resolve(process.cwd(), 'byg-global/.env.local') });
+
 const uri = process.env.MONGODB_URI;
 const options = {};
 
