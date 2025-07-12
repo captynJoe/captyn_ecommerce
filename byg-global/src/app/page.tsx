@@ -395,14 +395,14 @@ export default function HomePage() {
             </p>
           </div>
             
-            <div className="grid grid-cols-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-2 md:gap-4">
+            <div className="grid grid-cols-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 md:gap-4">
               {/* Phones */}
               <button
                 onClick={() => {
                   const url = new URL(window.location.href);
-                  url.searchParams.set('q', 'phone');
+                  url.searchParams.set('q', 'smartphone');
                   window.history.pushState({}, '', url.toString());
-                  setQuery("phone");
+                  setQuery("smartphone");
                   setPageNum(0);
                 }}
                 className={`group flex flex-col items-center p-2 md:p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
@@ -421,13 +421,13 @@ export default function HomePage() {
                 </span>
               </button>
 
-              {/* PCs & Laptops */}
+              {/* Laptops and Tablets */}
               <button
                 onClick={() => {
                   const url = new URL(window.location.href);
-                  url.searchParams.set('q', 'laptop');
+                  url.searchParams.set('q', 'laptop tablet');
                   window.history.pushState({}, '', url.toString());
-                  setQuery("laptop");
+                  setQuery("laptop tablet");
                   setPageNum(0);
                 }}
                 className={`group flex flex-col items-center p-2 md:p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
@@ -442,17 +442,17 @@ export default function HomePage() {
                   <Laptop className={`w-4 h-4 md:w-6 md:h-6 ${isDark ? "text-blue-400" : "text-blue-600"}`} />
                 </div>
                 <span className={`text-xs font-medium text-center ${isDark ? "text-gray-300" : "text-gray-700"}`}>
-                  PCs & Laptops
+                  Laptops & Tablets
                 </span>
               </button>
 
-              {/* Gaming & Consoles */}
+              {/* Gaming PC and Laptops */}
               <button
                 onClick={() => {
                   const url = new URL(window.location.href);
-                  url.searchParams.set('q', 'gaming console');
+                  url.searchParams.set('q', 'gaming pc laptop');
                   window.history.pushState({}, '', url.toString());
-                  setQuery("gaming console");
+                  setQuery("gaming pc laptop");
                   setPageNum(0);
                 }}
                 className={`group flex flex-col items-center p-2 md:p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
@@ -467,117 +467,17 @@ export default function HomePage() {
                   <Gamepad2 className={`w-4 h-4 md:w-6 md:h-6 ${isDark ? "text-red-400" : "text-red-600"}`} />
                 </div>
                 <span className={`text-xs font-medium text-center ${isDark ? "text-gray-300" : "text-gray-700"}`}>
-                  Gaming
+                  Gaming PC & Laptops
                 </span>
               </button>
 
-              {/* Face & Beauty */}
+              {/* Gaming Parts */}
               <button
                 onClick={() => {
                   const url = new URL(window.location.href);
-                  url.searchParams.set('q', 'beauty');
+                  url.searchParams.set('q', 'gaming parts');
                   window.history.pushState({}, '', url.toString());
-                  setQuery("beauty");
-                  setPageNum(0);
-                }}
-                className={`group flex flex-col items-center p-2 md:p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
-                  isDark 
-                    ? "bg-gray-800 hover:bg-gray-700 border border-gray-700" 
-                    : "bg-white hover:bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md"
-                }`}
-              >
-                <div className={`p-1.5 md:p-3 rounded-full mb-1 md:mb-2 transition-colors ${
-                  isDark ? "bg-pink-900/30 group-hover:bg-pink-800/40" : "bg-pink-100 group-hover:bg-pink-200"
-                }`}>
-                  <Scissors className={`w-4 h-4 md:w-6 md:h-6 ${isDark ? "text-pink-400" : "text-pink-600"}`} />
-                </div>
-                <span className={`text-xs font-medium text-center ${isDark ? "text-gray-300" : "text-gray-700"}`}>
-                  Beauty
-                </span>
-              </button>
-
-              {/* Books & Novels */}
-              <button
-                onClick={() => {
-                  const url = new URL(window.location.href);
-                  url.searchParams.set('q', 'book');
-                  window.history.pushState({}, '', url.toString());
-                  setQuery("book");
-                  setPageNum(0);
-                }}
-                className={`group flex flex-col items-center p-2 md:p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
-                  isDark 
-                    ? "bg-gray-800 hover:bg-gray-700 border border-gray-700" 
-                    : "bg-white hover:bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md"
-                }`}
-              >
-                <div className={`p-1.5 md:p-3 rounded-full mb-1 md:mb-2 transition-colors ${
-                  isDark ? "bg-green-900/30 group-hover:bg-green-800/40" : "bg-green-100 group-hover:bg-green-200"
-                }`}>
-                  <ShoppingBag className={`w-4 h-4 md:w-6 md:h-6 ${isDark ? "text-green-400" : "text-green-600"}`} />
-                </div>
-                <span className={`text-xs font-medium text-center ${isDark ? "text-gray-300" : "text-gray-700"}`}>
-                  Books
-                </span>
-              </button>
-
-              {/* Clothing */}
-              <button
-                onClick={() => {
-                  const url = new URL(window.location.href);
-                  url.searchParams.set('q', 'clothing');
-                  window.history.pushState({}, '', url.toString());
-                  setQuery("clothing");
-                  setPageNum(0);
-                }}
-                className={`group flex flex-col items-center p-2 md:p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
-                  isDark 
-                    ? "bg-gray-800 hover:bg-gray-700 border border-gray-700" 
-                    : "bg-white hover:bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md"
-                }`}
-              >
-                <div className={`p-1.5 md:p-3 rounded-full mb-1 md:mb-2 transition-colors ${
-                  isDark ? "bg-indigo-900/30 group-hover:bg-indigo-800/40" : "bg-indigo-100 group-hover:bg-indigo-200"
-                }`}>
-                  <Scissors className={`w-4 h-4 md:w-6 md:h-6 ${isDark ? "text-indigo-400" : "text-indigo-600"}`} />
-                </div>
-                <span className={`text-xs font-medium text-center ${isDark ? "text-gray-300" : "text-gray-700"}`}>
-                  Clothing
-                </span>
-              </button>
-
-              {/* Security */}
-              <button
-                onClick={() => {
-                  const url = new URL(window.location.href);
-                  url.searchParams.set('q', 'security');
-                  window.history.pushState({}, '', url.toString());
-                  setQuery("security");
-                  setPageNum(0);
-                }}
-                className={`group flex flex-col items-center p-2 md:p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
-                  isDark 
-                    ? "bg-gray-800 hover:bg-gray-700 border border-gray-700" 
-                    : "bg-white hover:bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md"
-                }`}
-              >
-                <div className={`p-1.5 md:p-3 rounded-full mb-1 md:mb-2 transition-colors ${
-                  isDark ? "bg-orange-900/30 group-hover:bg-orange-800/40" : "bg-orange-100 group-hover:bg-orange-200"
-                }`}>
-                  <Shield className={`w-4 h-4 md:w-6 md:h-6 ${isDark ? "text-orange-400" : "text-orange-600"}`} />
-                </div>
-                <span className={`text-xs font-medium text-center ${isDark ? "text-gray-300" : "text-gray-700"}`}>
-                  Security
-                </span>
-              </button>
-
-              {/* Electronics */}
-              <button
-                onClick={() => {
-                  const url = new URL(window.location.href);
-                  url.searchParams.set('q', 'electronics');
-                  window.history.pushState({}, '', url.toString());
-                  setQuery("electronics");
+                  setQuery("gaming parts");
                   setPageNum(0);
                 }}
                 className={`group flex flex-col items-center p-2 md:p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
@@ -589,10 +489,35 @@ export default function HomePage() {
                 <div className={`p-1.5 md:p-3 rounded-full mb-1 md:mb-2 transition-colors ${
                   isDark ? "bg-yellow-900/30 group-hover:bg-yellow-800/40" : "bg-yellow-100 group-hover:bg-yellow-200"
                 }`}>
-                  <Star className={`w-4 h-4 md:w-6 md:h-6 ${isDark ? "text-yellow-400" : "text-yellow-600"}`} />
+                  <Cpu className={`w-4 h-4 md:w-6 md:h-6 ${isDark ? "text-yellow-400" : "text-yellow-600"}`} />
                 </div>
                 <span className={`text-xs font-medium text-center ${isDark ? "text-gray-300" : "text-gray-700"}`}>
-                  Electronics
+                  Gaming Parts
+                </span>
+              </button>
+
+              {/* Consoles */}
+              <button
+                onClick={() => {
+                  const url = new URL(window.location.href);
+                  url.searchParams.set('q', 'console consoles');
+                  window.history.pushState({}, '', url.toString());
+                  setQuery("console consoles");
+                  setPageNum(0);
+                }}
+                className={`group flex flex-col items-center p-2 md:p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
+                  isDark 
+                    ? "bg-gray-800 hover:bg-gray-700 border border-gray-700" 
+                    : "bg-white hover:bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md"
+                }`}
+              >
+                <div className={`p-1.5 md:p-3 rounded-full mb-1 md:mb-2 transition-colors ${
+                  isDark ? "bg-green-900/30 group-hover:bg-green-800/40" : "bg-green-100 group-hover:bg-green-200"
+                }`}>
+                  <Cpu className={`w-4 h-4 md:w-6 md:h-6 ${isDark ? "text-green-400" : "text-green-600"}`} />
+                </div>
+                <span className={`text-xs font-medium text-center ${isDark ? "text-gray-300" : "text-gray-700"}`}>
+                  Consoles
                 </span>
               </button>
             </div>

@@ -334,10 +334,14 @@ export default function ProductDetailPage() {
           setNetworkTypeAction={() => {}}
         />
 
-
-        <div className="w-full px-4 py-8">
+        <div className="product-detail-container mx-auto px-4 py-8">
+          <div className="mb-4">
+            <a href="/" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-600 font-semibold">
+              &larr; Go Back to Home
+            </a>
+          </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          {/* Left: Image Gallery */}
+          {/* Left: Image Gallery */} 
           <div className="space-y-4">
             <div className="bg-white dark:bg-gray-100 rounded-xl p-4 shadow-lg">
               {item.image?.imageUrl ? (
