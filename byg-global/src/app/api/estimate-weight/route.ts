@@ -2,31 +2,45 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
-    const { prompt } = await req.json();
-    
-    if (!prompt || typeof prompt !== 'string') {
-      return NextResponse.json({ error: "Product description is required" }, { status: 400 });
+    const { prompts } = await req.json();
+
+    if (!prompts || !Array.isArray(prompts) || prompts.length === 0) {
+      return NextResponse.json({ error: "Product descriptions are required as an array" }, { status: 400 });
     }
 
-    // Try AI-powered estimation first, fallback to rule-based
-    let estimation;
-    try {
-      estimation = await getAIEstimation(prompt);
+    const results = [];
 
-      // Validate AI estimation for realistic weights
-      if (estimation.realWeight < 0.5) {
-        // If AI returns unrealistically low weight, fallback to rule-based
-        estimation = estimateProductSpecs(prompt);
+    for (const prompt of prompts) {
+      if (!prompt || typeof prompt !== 'string') {
+        results.push({ error: "Invalid product description" });
+        continue;
       }
-    } catch (aiError) {
-      console.log("AI estimation failed, using rule-based fallback:", aiError);
-      estimation = estimateProductSpecs(prompt);
+
+      try {
+        const estimation = await getAIEstimation(prompt);
+        results.push(estimation);
+      } catch (aiError) {
+        console.log("AI estimation failed, using rule-based fallback:", aiError);
+        const estimation = estimateProductSpecs(prompt);
+        results.push(estimation);
+      }
     }
-    
-    return NextResponse.json(estimation);
+
+    // Calculate total weights
+    const totalRealWeight = results.reduce((sum, r) => sum + (r.realWeight || 0), 0);
+    const totalVolumetricWeight = results.reduce((sum, r) => sum + (r.volumetricWeight || 0), 0);
+    const totalChargeableWeight = Math.max(totalRealWeight, totalVolumetricWeight);
+
+    return NextResponse.json({
+      items: results,
+      totalRealWeight: Math.round(totalRealWeight * 100) / 100,
+      totalVolumetricWeight: Math.round(totalVolumetricWeight * 100) / 100,
+      totalChargeableWeight: Math.round(totalChargeableWeight * 100) / 100,
+      source: 'batch'
+    });
   } catch (error) {
     console.error("Weight estimation error:", error);
-    return NextResponse.json({ 
+    return NextResponse.json({
       error: "Failed to estimate weight",
       details: error instanceof Error ? error.message : "Unknown error"
     }, { status: 500 });
@@ -96,24 +110,28 @@ Be precise and realistic.`;
     throw new Error("No response from OpenAI");
   }
 
-  try {
-    const parsed = JSON.parse(aiResponse);
-    
-    // Calculate volumetric weight (length × width × height ÷ 5000 for international shipping)
-    const volumetricWeight = (parsed.dimensions.length * parsed.dimensions.width * parsed.dimensions.height) / 5000;
-    
-    // Chargeable weight is the higher of real weight and volumetric weight
-    const chargeableWeight = Math.max(parsed.realWeight, volumetricWeight);
-    
-    return {
-      ...parsed,
-      volumetricWeight: Math.round(volumetricWeight * 100) / 100,
-      chargeableWeight: Math.round(chargeableWeight * 100) / 100,
-      source: 'ai'
-    };
-  } catch (parseError) {
-    throw new Error("Failed to parse AI response");
-  }
+    try {
+      const parsed = JSON.parse(aiResponse);
+
+      // Ensure realWeight is at least 0.1 to avoid defaulting to 0.5 or 1kg
+      const realWeight = parsed.realWeight && parsed.realWeight > 0 ? parsed.realWeight : 0.1;
+
+      // Calculate volumetric weight (length × width × height ÷ 5000 for international shipping)
+      const volumetricWeight = (parsed.dimensions.length * parsed.dimensions.width * parsed.dimensions.height) / 5000;
+
+      // Chargeable weight is the higher of real weight and volumetric weight
+      const chargeableWeight = Math.max(realWeight, volumetricWeight);
+
+      return {
+        ...parsed,
+        realWeight: Math.round(realWeight * 100) / 100,
+        volumetricWeight: Math.round(volumetricWeight * 100) / 100,
+        chargeableWeight: Math.round(chargeableWeight * 100) / 100,
+        source: 'ai'
+      };
+    } catch (parseError) {
+      throw new Error("Failed to parse AI response");
+    }
 }
 
 function estimateProductSpecs(productDescription: string) {

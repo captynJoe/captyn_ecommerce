@@ -4,6 +4,10 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import clientPromise from "@/lib/mongodb";
 import { User } from "next-auth";
+
+interface ExtendedUser extends User {
+  isAdmin?: boolean;
+}
 import { WithId } from "mongodb";
 import bcrypt from "bcrypt";
 
@@ -12,6 +16,7 @@ interface UserDocument extends WithId<Document> {
   hashedPassword?: string;
   name?: string;
   image?: string;
+  isAdmin?: boolean;
 }
 
 export const authOptions: NextAuthOptions = {
@@ -27,7 +32,7 @@ export const authOptions: NextAuthOptions = {
         email: { label: "email", type: "text" },
         password: { label: "password", type: "password" },
       },
-      async authorize(credentials): Promise<User | null> {
+      async authorize(credentials): Promise<ExtendedUser | null> {
         if (!credentials?.email || !credentials?.password) {
           throw new Error("Invalid credentials");
         }
@@ -57,7 +62,8 @@ export const authOptions: NextAuthOptions = {
           email: user.email,
           name: user.name,
           image: user.image,
-        };
+          isAdmin: user.isAdmin || false,
+        } as ExtendedUser;
       },
     }),
   ],
@@ -68,12 +74,14 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user, account }) {
       if (user) {
         token.id = user.id;
+        token.isAdmin = (user as any).isAdmin || false;
       }
       return token;
     },
     async session({ session, token }) {
       if (token && session.user) {
         (session.user as any).id = token.id as string;
+        (session.user as any).isAdmin = token.isAdmin as boolean;
       }
       return session;
     },

@@ -14,6 +14,10 @@ export default async function AdminLayout({
     redirect("/register?redirect=/admin");
   }
 
+  if (!(session.user as any).isAdmin) {
+    redirect("/");
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-white">
       <div className="flex">
