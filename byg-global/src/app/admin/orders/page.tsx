@@ -14,20 +14,7 @@ import {
   DollarSign
 } from "lucide-react";
 
-enum OrderStatus {
-  Pending = 'pending',
-  Processing = 'processing',
-  Shipped = 'shipped',
-  Delivered = 'delivered',
-  Cancelled = 'cancelled'
-}
-
-enum PaymentStatus {
-  Pending = 'pending',
-  Paid = 'paid',
-  Failed = 'failed',
-  Refunded = 'refunded'
-}
+import { OrderStatus, PaymentStatus } from "@/types/orderStatus";
 
 interface Order {
   id: string;
