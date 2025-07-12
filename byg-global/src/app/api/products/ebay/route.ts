@@ -1,3 +1,4 @@
+import allowedSellers from "@/config/allowedSellers";
 import { NextResponse } from "next/server";
 
 const clientId = process.env.EBAY_CLIENT_ID!;
@@ -63,95 +64,7 @@ export async function GET(req: Request) {
   const filterArray: string[] = [];
   const lowerQuery = query.toLowerCase();
 
-  // Enhanced category filters with intelligent search prioritization for ALL products
-  if (lowerQuery.includes('gaming pc') || lowerQuery.includes('gaming laptop')) {
-    filterArray.push('categoryIds:{177,175672}'); // PC Laptops & Gaming PCs
-    query = `${query} -case -skin -keyboard -mouse -adapter -charger -stand -accessories`;
-  } else if (lowerQuery.includes('graphics card') || lowerQuery.includes('processor') || lowerQuery.includes('cpu') || lowerQuery.includes('gpu')) {
-    filterArray.push('categoryIds:{27386,164}'); // Graphics Cards & Processors
-    query = `${query} -fan -cooler -case -accessories -cable`;
-  } else if (lowerQuery.includes('phone') || lowerQuery.includes('smartphone') || lowerQuery.includes('iphone') || lowerQuery.includes('samsung') || lowerQuery.includes('galaxy')) {
-    filterArray.push('categoryIds:{9355}'); // Cell Phones & Smartphones
-    query = `${query} -case -screen -protector -cable -charger -accessories -cover -holder -mount -stand -kit -tempered -glass`;
-  } else if (lowerQuery.includes('airpods') || lowerQuery.includes('earbuds') || lowerQuery.includes('headphones') || lowerQuery.includes('earphones')) {
-    filterArray.push('categoryIds:{15052}'); // Portable Audio Headphones
-    query = `${query} -case -stand -holder -accessories -cable -adapter`;
-  } else if (lowerQuery.includes('watch') || lowerQuery.includes('smartwatch') || lowerQuery.includes('apple watch')) {
-    filterArray.push('categoryIds:{178893}'); // Smart Watches
-    query = `${query} -band -strap -case -screen -protector -charger -stand -accessories`;
-  } else if (lowerQuery.includes('camera') || lowerQuery.includes('dslr') || lowerQuery.includes('canon') || lowerQuery.includes('nikon') || lowerQuery.includes('sony camera')) {
-    filterArray.push('categoryIds:{625}'); // Digital Cameras
-    query = `${query} -lens -case -bag -strap -tripod -accessories -filter -memory`;
-  } else if (lowerQuery.includes('drone') || lowerQuery.includes('quadcopter')) {
-    filterArray.push('categoryIds:{182186}'); // Radio Control Toys
-    query = `${query} -case -bag -propeller -battery -charger -accessories -parts`;
-  } else if (lowerQuery.includes('tv') || lowerQuery.includes('television') || lowerQuery.includes('smart tv')) {
-    filterArray.push('categoryIds:{11071}'); // Televisions
-    query = `${query} -mount -stand -remote -cable -accessories`;
-  } else if (lowerQuery.includes('speaker') || lowerQuery.includes('bluetooth speaker') || lowerQuery.includes('wireless speaker')) {
-    filterArray.push('categoryIds:{14969}'); // Portable Speakers
-    query = `${query} -case -stand -mount -cable -accessories`;
-  } else if (lowerQuery.includes('keyboard') || lowerQuery.includes('mechanical keyboard') || lowerQuery.includes('gaming keyboard')) {
-    filterArray.push('categoryIds:{3676}'); // Computer Keyboards & Keypads
-    query = `${query} -case -cover -wrist -rest -accessories -cable`;
-  } else if (lowerQuery.includes('mouse') || lowerQuery.includes('gaming mouse') || lowerQuery.includes('wireless mouse')) {
-    filterArray.push('categoryIds:{3695}'); // Computer Mice & Trackballs
-    query = `${query} -pad -case -accessories -cable`;
-  } else if (lowerQuery.includes('monitor') || lowerQuery.includes('gaming monitor') || lowerQuery.includes('4k monitor')) {
-    filterArray.push('categoryIds:{80053}'); // Computer Monitors
-    query = `${query} -stand -mount -arm -cable -accessories`;
-  } else if (lowerQuery.includes('hacking') || lowerQuery.includes('rubber ducky') || lowerQuery.includes('penetration testing') || lowerQuery.includes('security')) {
-    // Focus on search terms without problematic category filters
-    query = `"USB Rubber Ducky" OR "Flipper Zero" OR "WiFi Pineapple" OR "Proxmark3" OR "HackRF One" OR "RTL-SDR" OR "Ubertooth One" OR "Yard Stick One" OR "ChipWhisperer" OR "Bus Pirate" OR "Logic Analyzer" OR "RFID Cloner" OR "NFC Tools" OR "Kali Linux" OR "Metasploit" OR "Burp Suite" OR "Wireshark" OR "Aircrack" OR "John the Ripper" OR "Hashcat" OR "Nmap" OR "Penetration Testing" OR "Ethical Hacking" OR "Cybersecurity" OR "Network Security" OR "WiFi Security" OR "Bluetooth Hacking" OR "RFID Hacking" OR "NFC Hacking" OR "Hardware Hacking" OR "Social Engineering" OR "Lock Picking" OR "Digital Forensics" OR "Malware Analysis" OR "Reverse Engineering" OR "Binary Exploitation" OR "Web Application Security" OR "Mobile Security" OR "IoT Security" OR "Red Team" OR "Blue Team" OR "OSCP" OR "CEH" OR "CISSP" OR "Security+" OR "CySA+" OR "GCIH" OR "GPEN" OR "OSEP" OR "CRTP" OR "CRTO" OR "eJPT" OR "eCPPT" OR "WiFi Adapter" OR "USB WiFi" OR "Monitor Mode" OR "Packet Injection" OR "Software Defined Radio" OR "SDR" OR "GNU Radio" OR "HackRF" OR "BladeRF" OR "USRP" OR "Antenna" OR "SMA Connector" OR "Coax Cable" OR "Pigtail" OR "WiFi Antenna" OR "Directional Antenna" OR "Yagi Antenna" OR "Cantenna" OR "Pringles Can Antenna" OR security OR hacking OR penetration OR cybersecurity OR books OR tools OR training OR course OR certification OR guide OR manual OR handbook OR reference`;
-  } else if (lowerQuery.includes('wig') || lowerQuery.includes('hair') || lowerQuery.includes('hair extension')) {
-    filterArray.push('categoryIds:{11854,175630}'); // Wigs & Hair Extensions
-    query = `${query} -stand -holder -accessories -mannequin`;
-  } else if (lowerQuery.includes('ps5') || lowerQuery.includes('playstation 5')) {
-    filterArray.push('categoryIds:{139971}'); // Video Game Consoles
-    query = `${query} console -controller -game -accessory -skin -stand -cable -sticker -decal -vinyl -wrap -cover -case -bag -headset -charging -dock -remote -media -disc`;
-  } else if (lowerQuery.includes('ps4') || lowerQuery.includes('playstation 4')) {
-    filterArray.push('categoryIds:{139971}'); // Video Game Consoles
-    query = `${query} console -controller -game -accessory -skin -stand -cable -sticker -decal -vinyl -wrap -cover -case -bag -headset -charging -dock -remote -media -disc`;
-  } else if (lowerQuery.includes('xbox series') || lowerQuery.includes('xbox one')) {
-    filterArray.push('categoryIds:{139971}'); // Video Game Consoles
-    query = `${query} console -controller -game -accessory -skin -stand -cable -sticker -decal -vinyl -wrap -cover -case -bag -headset -charging -dock -remote -media -disc`;
-  } else if (lowerQuery.includes('nintendo switch') || lowerQuery.includes('switch')) {
-    filterArray.push('categoryIds:{139971}'); // Video Game Consoles
-    query = `${query} console -controller -game -accessory -skin -stand -cable -case -screen -sticker -decal -vinyl -wrap -cover -bag -headset -charging -dock`;
-  } else if ((lowerQuery.includes('playstation') || lowerQuery.includes('xbox')) && !lowerQuery.includes('game')) {
-    filterArray.push('categoryIds:{139971}'); // Video Game Consoles
-    query = `${query} console -controller -game -accessory -skin -stand -cable -sticker -decal -vinyl -wrap -cover -case -bag -headset -charging -dock -remote -media -disc`;
-  } else if (lowerQuery.includes('ps4 games') || lowerQuery.includes('ps5 games') || lowerQuery.includes('xbox games') || lowerQuery.includes('nintendo games') || lowerQuery.includes('games')) {
-    filterArray.push('categoryIds:{139973}'); // Video Games
-    // Don't exclude games for game searches
-  } else if (lowerQuery.includes('macbook') || lowerQuery.includes('laptop') || lowerQuery.includes('notebook')) {
-    filterArray.push('categoryIds:{111422,177}'); // Apple Laptops & PC Laptops
-    query = `${query} -case -skin -keyboard -mouse -adapter -charger -stand -accessories -sleeve -bag`;
-  } else if (lowerQuery.includes('tablet') || lowerQuery.includes('ipad')) {
-    filterArray.push('categoryIds:{171485}'); // Tablets & eBook Readers
-    query = `${query} -case -screen -protector -keyboard -stand -accessories -stylus -pen`;
-  } else if (lowerQuery.includes('router') || lowerQuery.includes('wifi router') || lowerQuery.includes('modem')) {
-    filterArray.push('categoryIds:{182094}'); // Network Hardware
-    query = `${query} -cable -antenna -accessories`;
-  } else if (lowerQuery.includes('printer') || lowerQuery.includes('3d printer') || lowerQuery.includes('inkjet')) {
-    filterArray.push('categoryIds:{617}'); // Printers
-    query = `${query} -ink -cartridge -paper -cable -accessories`;
-  } else if (lowerQuery.includes('hard drive') || lowerQuery.includes('ssd') || lowerQuery.includes('storage')) {
-    filterArray.push('categoryIds:{175669}'); // Computer Hard Drives
-    query = `${query} -case -enclosure -cable -accessories`;
-  } else if (lowerQuery.includes('power bank') || lowerQuery.includes('portable charger') || lowerQuery.includes('battery pack')) {
-    filterArray.push('categoryIds:{20349}'); // Power Banks
-    query = `${query} -case -cable -accessories`;
-  } else if (lowerQuery.includes('book') || lowerQuery.includes('novel') || lowerQuery.includes('textbook') || lowerQuery.includes('fiction') || lowerQuery.includes('non-fiction')) {
-    filterArray.push('categoryIds:{267}'); // Books
-    query = `${query} book novel fiction mystery romance thriller science fantasy biography history textbook`;
-  } else if (lowerQuery.includes('clothing') || lowerQuery.includes('shirt') || lowerQuery.includes('dress') || lowerQuery.includes('fashion')) {
-    filterArray.push('categoryIds:{11450}'); // Clothing, Shoes & Accessories
-    query = `${query} -case -accessories -jewelry`;
-  } else if (lowerQuery.includes('home') || lowerQuery.includes('kitchen') || lowerQuery.includes('furniture') || lowerQuery.includes('decor')) {
-    filterArray.push('categoryIds:{11700}'); // Home & Garden
-    query = `${query} -case -accessories`;
-  }
+  // No category filters
 
   // Add condition filter if specified
   const conditionMap: { [key: string]: string } = {
@@ -179,6 +92,20 @@ export async function GET(req: Request) {
   // Add location filter for all products
   filterArray.push('itemLocationCountry:US');
 
+  // Add seller filter for allowed sellers
+  if (allowedSellers.length > 0) {
+    // eBay API expects sellers filter as sellers:{seller1|seller2}
+    filterArray.push(`sellers:{${allowedSellers.join('|')}}`);
+
+  } else {
+    // If no sellers are allowed, return an empty list of products
+    return NextResponse.json({
+      itemSummaries: [],
+      total: 0,
+      message: "No sellers are allowed"
+    });
+  }
+
   // Convert sort parameter - use valid eBay sort values
   const sortMap: { [key: string]: string } = {
     bestMatch: "",  // Default sort, no parameter needed
@@ -201,10 +128,12 @@ export async function GET(req: Request) {
   }
   
   if (filterArray.length > 0) {
-    apiUrl.searchParams.append("filter", filterArray.join(','));
+    const filterString = filterArray.join(',');
+    apiUrl.searchParams.append("filter", encodeURIComponent(filterString));
   }
 
   const ebayRes = await fetch(apiUrl.toString(),
+
     {
       headers: {
         Authorization: `Bearer ${token}`,

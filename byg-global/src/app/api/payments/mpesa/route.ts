@@ -69,6 +69,7 @@ export async function POST(req: Request) {
       PartyA: phoneNumber,
       PartyB: MPESA_SHORTCODE,
       PhoneNumber: phoneNumber,
+      
       CallBackURL: `${process.env.NEXT_PUBLIC_BASE_URL}/api/payments/mpesa/callback`,
       AccountReference: 'BYG Global',
       TransactionDesc: 'Payment for products',
