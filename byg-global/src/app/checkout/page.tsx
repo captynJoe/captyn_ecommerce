@@ -11,7 +11,7 @@ import LoadingAnimation from "@/components/LoadingAnimation";
 import PaymentModal from "@/components/PaymentModal";
 import ConfirmationModal from "@/components/ConfirmationModal";
 import AquantuoEstimator from "@/components/AquantuoEstimator";
-import { convertToKESWithProfit, calculateProfitPrice } from "@/utils/pricing";
+import { convertToKESWithProfit, calculateProfitPrice, convertToKESWithProfitStorageAndShipping, convertToKESWithProfitAndShipping } from "@/utils/pricing";
 import LoginModal from "@/components/LoginModal";
 
 interface CartItem {
@@ -29,6 +29,7 @@ interface CartItem {
     color?: string;
     network?: string;
   };
+  condition?: string;
 }
 
 export default function CheckoutPage() {
@@ -108,12 +109,32 @@ export default function CheckoutPage() {
 
   const total = cartItems.reduce((sum, item) => {
     if (!item.price?.value) return sum;
-    const priceInfo = calculateProfitPrice(
-      parseFloat(item.price.value),
-      "",
-      item.title
-    );
-    return sum + priceInfo.finalPrice * (item.quantity || 1);
+
+    // Determine if storage configuration exists for storage adjustment
+    const storageCapacity = item.configuration?.storage || '';
+
+    // Use the same pricing function as product page for consistency
+    let priceString: string;
+    if (storageCapacity) {
+      priceString = convertToKESWithProfitStorageAndShipping(
+        item.price.value,
+        item.condition || '',
+        item.title,
+        storageCapacity
+      );
+    } else {
+      priceString = convertToKESWithProfitAndShipping(
+        item.price.value,
+        item.condition || '',
+        item.title
+      );
+    }
+
+    // Extract numeric price from formatted string "Ksh 123,456"
+    const numericPrice = parseInt(priceString.replace(/[^0-9]/g, ''), 10);
+    if (isNaN(numericPrice)) return sum;
+
+    return sum + numericPrice * (item.quantity || 1);
   }, 0);
 
   const paymentAmount = total + (deliveryDetails?.intlShippingAmount || 0);
