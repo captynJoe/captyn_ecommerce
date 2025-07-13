@@ -73,6 +73,38 @@ export default function AquantuoEstimator({ cartTotal, cartItems = [], onInsuran
     return 'other';
   };
 
+  // Calculate total weight of cart items with intelligent product detection and safeguard
+  const calculateTotalWeight = () => {
+    if (cartItems.length === 0) {
+      if (useAIEstimation && estimationResult) {
+        return estimationResult.chargeableWeight;
+      }
+      return weight;
+    }
+
+    // Always use AI estimation if available and useAIEstimation flag is true
+    if (useAIEstimation && estimationResult) {
+      return estimationResult.chargeableWeight;
+    }
+
+    let totalWeight = 0;
+    cartItems.forEach(item => {
+      let itemWeight: number;
+      if (item.weight) {
+        itemWeight = item.weight / 1000; // Convert grams to kg
+      } else if (item.type && DEFAULT_WEIGHTS[item.type as keyof typeof DEFAULT_WEIGHTS]) {
+        itemWeight = DEFAULT_WEIGHTS[item.type as keyof typeof DEFAULT_WEIGHTS];
+      } else {
+        const detectedType = detectProductType(item.title);
+        itemWeight = DEFAULT_WEIGHTS[detectedType];
+      }
+      totalWeight += itemWeight * item.quantity;
+    });
+
+    // Safeguard: ensure totalWeight is at least sum of individual weights
+    return Math.max(totalWeight, 0);
+  };
+
   // Validate weight input
   const handleWeightChange = (value: string) => {
     const numValue = parseFloat(value);
@@ -123,30 +155,6 @@ export default function AquantuoEstimator({ cartTotal, cartItems = [], onInsuran
     onInsuranceChange?.(false, 0);
   };
 
-  // Calculate total weight of cart items with intelligent product detection
-  const calculateTotalWeight = () => {
-    if (cartItems.length === 0) return weight;
-
-    // If AI estimation is enabled and cart has items, use AI estimation for combined items
-    if (useAIEstimation && cartItems.length > 0 && estimationResult) {
-      return estimationResult.chargeableWeight;
-    }
-
-    return cartItems.reduce((total, item) => {
-      // Convert weight from grams to kg if provided, otherwise detect from title
-      let itemWeight: number;
-      if (item.weight) {
-        itemWeight = item.weight / 1000; // Convert grams to kg
-      } else if (item.type && DEFAULT_WEIGHTS[item.type as keyof typeof DEFAULT_WEIGHTS]) {
-        itemWeight = DEFAULT_WEIGHTS[item.type as keyof typeof DEFAULT_WEIGHTS];
-      } else {
-        // Auto-detect product type from title
-        const detectedType = detectProductType(item.title);
-        itemWeight = DEFAULT_WEIGHTS[detectedType];
-      }
-      return total + (itemWeight * item.quantity);
-    }, 0);
-  };
 
   // Calculate shipping cost with corrected pricing logic
   const calculateShipping = () => {
@@ -296,7 +304,7 @@ export default function AquantuoEstimator({ cartTotal, cartItems = [], onInsuran
                       const response = await fetch("/api/estimate-weight", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ prompt: productInfo }),
+                        body: JSON.stringify({ prompts: [productInfo] }),
                       });
                       const data = await response.json();
                       setEstimationResult(data);
@@ -474,7 +482,7 @@ export default function AquantuoEstimator({ cartTotal, cartItems = [], onInsuran
             Items over 1kg are charged KSh 2,500 per kg (e.g., 1.2kg laptop = 1.2 × 2,500 = KSh 3,000).
           </p>
           <p>
-            <strong>Weight Detection:</strong> System automatically detects product types (phones: 0.2kg, laptops: 2kg, tablets: 0.5kg, gaming: 0.8kg) from cart items.
+            <strong>Weight Detection:</strong> System automatically detects product types (phones: 0.2kg, laptops: 2kg, tablets: 0.5kg, gaming: 4.5kg) from cart items.
           </p>
           <p>
             <strong>Note:</strong> Final shipping fees are calculated based on the higher of the actual or volumetric weight.
