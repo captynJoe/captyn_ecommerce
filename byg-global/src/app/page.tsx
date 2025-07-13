@@ -475,9 +475,9 @@ export default function HomePage() {
               <button
                 onClick={() => {
                   const url = new URL(window.location.href);
-                  url.searchParams.set('q', 'gaming parts');
+                  url.searchParams.set('q', 'gaming parts -laptop -macbook');
                   window.history.pushState({}, '', url.toString());
-                  setQuery("gaming parts");
+                  setQuery("gaming parts -laptop -macbook");
                   setPageNum(0);
                 }}
                 className={`group flex flex-col items-center p-2 md:p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
@@ -496,7 +496,7 @@ export default function HomePage() {
                 </span>
               </button>
 
-              {/* Consoles */}
+              {/* Console */}
               <button
                 onClick={() => {
                   const url = new URL(window.location.href);
