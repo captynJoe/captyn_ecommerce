@@ -2,7 +2,7 @@ import { MongoDBAdapter } from "@next-auth/mongodb-adapter";
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
-import clientPromise from "@/lib/mongodb";
+import clientPromise from "../lib/mongodb";
 import { User } from "next-auth";
 
 interface ExtendedUser extends User {

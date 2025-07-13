@@ -414,7 +414,7 @@ export default function ProductDetailPage() {
               <h3 className="font-semibold text-lg text-gray-900 dark:text-white">Options</h3>
               
               {/* Storage Options */}
-              {item.title.toLowerCase().includes('iphone') && (
+              {storageCapacity && storageCapacity.trim() !== '' && (
                 <div>
                   <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Storage Capacity:</label>
                   <select 

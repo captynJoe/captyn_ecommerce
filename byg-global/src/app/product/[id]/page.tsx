@@ -336,9 +336,18 @@ export default function ProductDetailPage() {
 
         <div className="product-detail-container mx-auto px-4 py-8">
           <div className="mb-4">
-            <a href="/" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-600 font-semibold">
-              &larr; Go Back to Home
-            </a>
+            <button
+              onClick={() => {
+                if (window.history.length > 1) {
+                  window.history.back();
+                } else {
+                  window.location.href = '/';
+                }
+              }}
+              className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-600 font-semibold bg-transparent border-none cursor-pointer p-0"
+            >
+              &larr; Go Back
+            </button>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           {/* Left: Image Gallery */} 
@@ -429,7 +438,7 @@ export default function ProductDetailPage() {
               <h3 className="font-semibold text-lg text-gray-900 dark:text-white">Options</h3>
               
               {/* Storage Options */}
-              {item.title.toLowerCase().includes('iphone') && (
+              {storageCapacity && storageCapacity.trim() !== '' && (
                 <div>
                   <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Storage Capacity:</label>
                   <select 
