@@ -30,6 +30,7 @@ export default function PayPalButton({ amount, onSuccess, onError, onCancel }: P
         initializePayPalButtons();
       } else if (retryCount < maxRetries) {
         retryCount++;
+        console.log(`PayPal SDK not detected yet, retrying... (${retryCount})`);
         setTimeout(checkPayPalSDK, retryDelay);
       } else {
         console.error("PayPal SDK not loaded after maximum retries");
@@ -68,6 +69,7 @@ export default function PayPalButton({ amount, onSuccess, onError, onCancel }: P
                 body: JSON.stringify({
                   amount: (amount / 130).toFixed(2), // Convert KSH to USD
                   currency: "USD",
+                  environment: "live", // Added environment flag
                 }),
               });
 
@@ -143,7 +145,10 @@ export default function PayPalButton({ amount, onSuccess, onError, onCancel }: P
         });
 
         if (paypalRef.current) {
-          paypalButtons.render(paypalRef.current).catch((error: any) => {
+          console.log("Rendering PayPal buttons...");
+          paypalButtons.render(paypalRef.current).then(() => {
+            console.log("PayPal buttons rendered successfully.");
+          }).catch((error: any) => {
             console.error("Error rendering PayPal buttons:", error);
             onError(new Error("Failed to load payment options. Please refresh and try again."));
           });
