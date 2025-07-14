@@ -8,12 +8,12 @@ import PayPalButton from "./PayPalButton";
 interface PaymentModalProps {
   amount: number;
   onClose: () => void;
-  onPaymentComplete: () => void;
+  onPaymentCompleteAction: () => void;
 }
 
 type PaymentMethod = "mpesa" | "paypal";
 
-export default function PaymentModal({ amount, onClose, onPaymentComplete }: PaymentModalProps) {
+export default function PaymentModal({ amount, onClose, onPaymentCompleteAction }: PaymentModalProps) {
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -60,7 +60,7 @@ export default function PaymentModal({ amount, onClose, onPaymentComplete }: Pay
         if (data.success) {
           alert(`An M-PESA prompt has been sent to ${phoneNumber}. Please check your phone to complete the payment.`);
           // You might want to poll for payment status here
-          onPaymentComplete();
+          onPaymentCompleteAction();
         } else {
           setError(data.error || 'M-PESA payment failed');
         }
@@ -167,7 +167,7 @@ export default function PaymentModal({ amount, onClose, onPaymentComplete }: Pay
                   amount={amount}
                   onSuccess={(details) => {
                     console.log("PayPal payment successful:", details);
-                    onPaymentComplete();
+                    onPaymentCompleteAction();
                   }}
                   onError={(error) => {
                     console.error("PayPal payment error:", error);
