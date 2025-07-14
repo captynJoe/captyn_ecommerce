@@ -1,6 +1,4 @@
 import { NextResponse } from 'next/server';
-import { getFirestore, doc, setDoc } from 'firebase/firestore';
-import { app } from '@/utils/firebase';
 
 const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID || '';
 const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET || '';
@@ -51,31 +49,23 @@ export async function POST(req: Request) {
 
     const data = await response.json();
 
-    if (response.ok && data.status === 'COMPLETED') {
-      // Store payment details in Firestore
-      const db = getFirestore(app);
-      const paymentDetails = {
-        orderId: data.id,
-        status: data.status,
-        payerId: data.payer?.payer_id,
-        payerEmail: data.payer?.email_address,
-        amount: data.purchase_units[0]?.payments?.captures[0]?.amount?.value,
-        currency: data.purchase_units[0]?.payments?.captures[0]?.amount?.currency_code,
-        captureId: data.purchase_units[0]?.payments?.captures[0]?.id,
-        timestamp: new Date().toISOString(),
-        success: true,
-      };
-
-      const paymentsRef = doc(db, 'paypal_payments', orderId);
-      await setDoc(paymentsRef, paymentDetails);
-
-      console.log('PayPal payment captured:', paymentDetails);
-
-      return NextResponse.json({
-        success: true,
-        captureId: data.purchase_units[0]?.payments?.captures[0]?.id,
-        data,
-      });
+    if (response.ok) {
+      // Check if payment was completed
+      const captureStatus = data.purchase_units?.[0]?.payments?.captures?.[0]?.status;
+      
+      if (captureStatus === 'COMPLETED') {
+        return NextResponse.json({
+          success: true,
+          orderId: data.id,
+          status: captureStatus,
+          paymentDetails: data,
+        });
+      } else {
+        return NextResponse.json(
+          { error: 'Payment not completed', details: data },
+          { status: 400 }
+        );
+      }
     } else {
       return NextResponse.json(
         { error: 'Failed to capture PayPal payment', details: data },

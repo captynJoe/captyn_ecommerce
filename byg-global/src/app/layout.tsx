@@ -2,6 +2,7 @@ import './globals.css';
 import type { Metadata, Viewport } from 'next';
 import { Providers } from './providers';
 import ClientLayout from './ClientLayout';
+import Script from 'next/script';
 
 export const metadata: Metadata = {
   title: 'CAPTYN Global',
@@ -24,6 +25,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="w-full h-full">
+      <head>
+        <Script
+          src={`https://www.paypal.com/sdk/js?client-id=${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID}&currency=USD&components=buttons`}
+          strategy="beforeInteractive"
+        />
+      </head>
       <body className="bg-black text-white w-full h-full">
         <Providers>
           <ClientLayout>

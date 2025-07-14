@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { X, CreditCard, Phone } from "lucide-react";
+import PayPalButton from "./PayPalButton";
 
 interface PaymentModalProps {
   amount: number;
@@ -100,28 +101,9 @@ export default function PaymentModal({ amount, onClose, onPaymentComplete }: Pay
           setError(data.error || 'M-PESA payment failed');
         }
       } else if (selectedMethod === "paypal") {
-        // Initiate PayPal payment
-        const response = await fetch('/api/payments/paypal', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            amount: (amount / 130).toFixed(2), // Convert KSH to USD (approximate rate)
-            currency: 'USD',
-            returnUrl: `${window.location.origin}/payment/success`,
-            cancelUrl: `${window.location.origin}/payment/cancel`,
-          }),
-        });
-
-        const data = await response.json();
-
-        if (data.success && data.approvalUrl) {
-          // Redirect to PayPal for payment approval
-          window.location.href = data.approvalUrl;
-        } else {
-          setError(data.error || 'PayPal payment failed');
-        }
+        // PayPal payments are now handled by the PayPalButton component
+        // This section is no longer needed as the PayPal SDK handles the payment flow
+        setError("Please use the PayPal button above to complete your payment.");
       } else if (selectedMethod === "card") {
         // For card payments, you would integrate with a payment processor like Stripe
         // This is a placeholder - implement actual card processing
@@ -296,15 +278,31 @@ export default function PaymentModal({ amount, onClose, onPaymentComplete }: Pay
             )}
 
             {selectedMethod === "paypal" && (
-              <div className="text-center py-4">
-                <img
-                  src="https://www.paypalobjects.com/webstatic/en_US/i/buttons/checkout-logo-large.png"
-                  alt="PayPal Checkout"
-                  className="mx-auto mb-4"
+              <div className="py-4">
+                <div className="text-center mb-4">
+                  <img
+                    src="https://www.paypalobjects.com/webstatic/en_US/i/buttons/checkout-logo-large.png"
+                    alt="PayPal Checkout"
+                    className="mx-auto mb-2"
+                  />
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Pay securely with PayPal
+                  </p>
+                </div>
+                <PayPalButton
+                  amount={amount}
+                  onSuccess={(details) => {
+                    console.log("PayPal payment successful:", details);
+                    onPaymentComplete();
+                  }}
+                  onError={(error) => {
+                    console.error("PayPal payment error:", error);
+                    setError("PayPal payment failed. Please try again.");
+                  }}
+                  onCancel={() => {
+                    setError("PayPal payment was cancelled.");
+                  }}
                 />
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  You will be redirected to PayPal to complete your payment
-                </p>
               </div>
             )}
 
@@ -314,25 +312,42 @@ export default function PaymentModal({ amount, onClose, onPaymentComplete }: Pay
               </div>
             )}
 
-            <div className="flex gap-4 mt-6">
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedMethod(null);
-                  setError("");
-                }}
-                className="flex-1 px-6 py-3 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-900 dark:text-white font-semibold rounded-xl transition"
-              >
-                Back
-              </button>
-              <button
-                type="submit"
-                disabled={loading}
-                className="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loading ? "Processing..." : "Pay Now"}
-              </button>
-            </div>
+            {selectedMethod !== "paypal" && (
+              <div className="flex gap-4 mt-6">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedMethod(null);
+                    setError("");
+                  }}
+                  className="flex-1 px-6 py-3 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-900 dark:text-white font-semibold rounded-xl transition"
+                >
+                  Back
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loading ? "Processing..." : "Pay Now"}
+                </button>
+              </div>
+            )}
+
+            {selectedMethod === "paypal" && (
+              <div className="flex gap-4 mt-6">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedMethod(null);
+                    setError("");
+                  }}
+                  className="w-full px-6 py-3 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-900 dark:text-white font-semibold rounded-xl transition"
+                >
+                  Back to Payment Methods
+                </button>
+              </div>
+            )}
           </form>
         )}
 
