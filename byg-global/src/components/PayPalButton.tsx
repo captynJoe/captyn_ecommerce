@@ -78,7 +78,9 @@ export default function PayPalButton({ amount, onSuccess, onError, onCancel }: P
               const data = await response.json();
               console.log("PayPal order creation response:", data);
 
-              if (data.success && data.orderId) {
+              if (data.success && data.approvalUrl) {
+                // Redirect user to approvalUrl to complete payment
+                window.location.href = data.approvalUrl;
                 return data.orderId;
               } else {
                 throw new Error(data.error || "Failed to create PayPal order");
