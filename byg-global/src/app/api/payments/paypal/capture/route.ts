@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID || '';
 const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET || '';
-const PAYPAL_ENV = process.env.PAYPAL_ENV || 'sandbox';
+const PAYPAL_ENV = process.env.PAYPAL_ENV || 'live';
 
 const BASE_URL = PAYPAL_ENV === 'sandbox' 
   ? 'https://api-m.sandbox.paypal.com' 
@@ -48,6 +48,8 @@ export async function POST(req: Request) {
     });
 
     const data = await response.json();
+
+    console.log('PayPal capture response:', data); // Added detailed logging
 
     if (response.ok) {
       // Check if payment was completed
