@@ -24,11 +24,12 @@ export default function PayPalButton({ amount, onSuccess, onError, onCancel }: P
     const retryDelay = 1000;
 
     const checkPayPalSDK = () => {
+      console.log(`Checking for PayPal SDK... Attempt ${retryCount + 1}/${maxRetries}`);
       if (window.paypal) {
+        console.log("PayPal SDK detected.");
         initializePayPalButtons();
       } else if (retryCount < maxRetries) {
         retryCount++;
-        console.log(`Waiting for PayPal SDK... Attempt ${retryCount}/${maxRetries}`);
         setTimeout(checkPayPalSDK, retryDelay);
       } else {
         console.error("PayPal SDK not loaded after maximum retries");
@@ -38,6 +39,7 @@ export default function PayPalButton({ amount, onSuccess, onError, onCancel }: P
 
     const initializePayPalButtons = () => {
       if (!window.paypal || !paypalRef.current) {
+        console.warn("PayPal SDK or paypalRef not available");
         return;
       }
 
@@ -164,7 +166,11 @@ export default function PayPalButton({ amount, onSuccess, onError, onCancel }: P
 
   return (
     <div className="w-full">
-      <div ref={paypalRef} className="w-full min-h-[45px]"></div>
+      <div
+        ref={paypalRef}
+        className="w-full"
+        style={{ minHeight: '45px', visibility: 'visible' }}
+      ></div>
     </div>
   );
 }
