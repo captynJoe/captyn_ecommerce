@@ -27,7 +27,7 @@ export default function RootLayout({
     <html lang="en" className="w-full h-full">
       <head>
         <Script
-          src={`https://www.paypal.com/sdk/js?client-id=${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID}&currency=USD&components=buttons`}
+          src={`https://www.paypal.com/sdk/js?client-id=${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID}&currency=USD&components=buttons,card-fields&enable-funding=venmo,paylater&disable-funding=credit`}
           strategy="beforeInteractive"
         />
       </head>
