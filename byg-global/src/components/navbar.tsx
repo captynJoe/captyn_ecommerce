@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, FormEvent, useEffect } from "react";
+import { useState, FormEvent, useEffect, useRef } from "react";
 import { useApp } from "@/contexts/AppContext";
 import Image from "next/image";
 import { Menu, Search, X } from "lucide-react";
@@ -21,13 +21,48 @@ export default function Navbar({
   const { isDark } = useApp();
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
+  const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  const fetchSuggestions = async (query: string) => {
+    if (!query.trim()) {
+      setSuggestions([]);
+      return;
+    }
+    setIsLoadingSuggestions(true);
+    try {
+      const res = await fetch(`/api/products/ebay?q=${encodeURIComponent(query)}&limit=5`);
+      if (res.ok) {
+        const data = await res.json();
+        const titles = data.itemSummaries?.map((item: any) => item.title) || [];
+        setSuggestions(titles);
+      } else {
+        setSuggestions([]);
+      }
+    } catch (error) {
+      setSuggestions([]);
+    } finally {
+      setIsLoadingSuggestions(false);
+    }
+  };
 
   const handleSearch = (e: FormEvent) => {
     e.preventDefault();
     if (onSearchAction && searchQuery.trim()) {
       onSearchAction(searchQuery.trim());
       setIsSearchOpen(false);
+      setSuggestions([]);
     }
+  };
+
+  const handleSuggestionClick = (suggestion: string) => {
+    setSearchQuery(suggestion);
+    if (onSearchAction) {
+      onSearchAction(suggestion);
+    }
+    setIsSearchOpen(false);
+    setSuggestions([]);
   };
 
   const toggleSearch = () => {
@@ -39,8 +74,24 @@ export default function Navbar({
       }, 100);
     } else {
       setSearchQuery("");
+      setSuggestions([]);
     }
   };
+
+  useEffect(() => {
+    if (debounceTimeout.current) {
+      clearTimeout(debounceTimeout.current);
+    }
+    debounceTimeout.current = setTimeout(() => {
+      fetchSuggestions(searchQuery);
+    }, 300);
+
+    return () => {
+      if (debounceTimeout.current) {
+        clearTimeout(debounceTimeout.current);
+      }
+    };
+  }, [searchQuery]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -55,6 +106,7 @@ export default function Navbar({
       ) {
         setIsSearchOpen(false);
         setSearchQuery("");
+        setSuggestions([]);
       }
     };
 
@@ -127,8 +179,8 @@ export default function Navbar({
 
             {/* Search Form - appears below header when open */}
             {showSearch && isSearchOpen && (
-              <div className="flex justify-center pb-6 sm:pb-7 px-4 sm:px-6">
-                <form onSubmit={handleSearch} className="w-full max-w-sm search-form">
+              <div className="flex justify-center pb-6 sm:pb-7 px-4 sm:px-6 relative">
+                <form onSubmit={handleSearch} className="w-full max-w-sm search-form" autoComplete="off">
                   <div className={`relative rounded-xl shadow-sm ${isDark ? "bg-gray-900/80" : "bg-white/95"}`}>
                     <input
                       type="text"
@@ -174,6 +226,36 @@ export default function Navbar({
                     </div>
                   </div>
                 </form>
+                {/* Suggestions Dropdown */}
+                {suggestions.length > 0 && (
+                  <ul className={`absolute z-50 top-full mt-1 max-w-sm w-full rounded-md shadow-lg overflow-hidden ${
+                    isDark ? "bg-gray-800 border border-gray-700 text-gray-300" : "bg-white border border-gray-300 text-gray-900"
+                  }`}>
+                    {suggestions.map((suggestion, index) => (
+                      <li
+                        key={index}
+                        tabIndex={0}
+                        className={`cursor-pointer px-4 py-2 text-sm hover:bg-blue-600 hover:text-white focus:bg-blue-600 focus:text-white ${
+                          isDark ? "text-gray-300" : "text-gray-900"
+                        }`}
+                        onClick={() => handleSuggestionClick(suggestion)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            handleSuggestionClick(suggestion);
+                          }
+                        }}
+                      >
+                        {suggestion}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {isLoadingSuggestions && (
+                  <div className={`absolute right-3 top-3 ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+                    Loading...
+                  </div>
+                )}
               </div>
             )}
           </div>
