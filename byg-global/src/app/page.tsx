@@ -364,9 +364,7 @@ export default function HomePage() {
               >
                 Get Started Now
               </button>
-              <Link href="/estimator-demo" className="bg-transparent border-2 border-white text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-white hover:text-blue-600 transition-all duration-300 transform hover:scale-105">
-                Estimate Shipping
-              </Link>
+              {/* Removed Estimate Shipping link as per user request */}
             </div>
             
             <div className="flex flex-wrap justify-center gap-6 text-sm opacity-80">
@@ -832,9 +830,7 @@ export default function HomePage() {
               >
                 Get Started Now
               </button>
-              <Link href="/estimator-demo" className="bg-transparent border-2 border-white text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-white hover:text-blue-600 transition-all duration-300 transform hover:scale-105">
-                Calculate Shipping Cost
-              </Link>
+              {/* Removed Calculate Shipping Cost link as per user request */}
             </div>
           </div>
         </section>

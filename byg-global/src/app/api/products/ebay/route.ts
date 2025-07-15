@@ -1,6 +1,8 @@
 import allowedSellers from "@/config/allowedSellers";
 import { NextResponse } from "next/server";
 
+console.log("Allowed sellers at runtime:", allowedSellers);
+
 const clientId = process.env.EBAY_CLIENT_ID!;
 const clientSecret = process.env.EBAY_CLIENT_SECRET!;
 
@@ -10,24 +12,45 @@ let tokenExpiry = 0;
 async function getAccessToken() {
   if (accessToken && Date.now() < tokenExpiry) return accessToken;
 
-  const res = await fetch("https://api.ebay.com/identity/v1/oauth2/token", {
-    method: "POST",
-    headers: {
-      Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString("base64")}`,
-      "Content-Type": "application/x-www-form-urlencoded",
-    }, 
-    body: "grant_type=client_credentials&scope=https://api.ebay.com/oauth/api_scope",
-  });
+  const maxRetries = 3;
+  let attempt = 0;
+  let lastError: any = null;
 
-  if (!res.ok) {
-    console.error("Failed to get eBay access token:", res.status, await res.text());
-    throw new Error("Failed to get eBay access token");
+  while (attempt < maxRetries) {
+    try {
+      const res = await fetch("https://api.ebay.com/identity/v1/oauth2/token", {
+        method: "POST",
+        headers: {
+          Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString("base64")}`,
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: "grant_type=client_credentials&scope=https://api.ebay.com/oauth/api_scope",
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error("Failed to get eBay access token:", res.status, errorText);
+        throw new Error("Failed to get eBay access token");
+      }
+
+      const data = await res.json();
+      accessToken = data.access_token;
+      tokenExpiry = Date.now() + data.expires_in * 1000 - 60000;
+      return accessToken;
+    } catch (error) {
+      lastError = error;
+      console.error(`Attempt ${attempt + 1} to get eBay access token failed:`, error);
+      attempt++;
+      if (attempt < maxRetries) {
+        const backoff = 1000 * Math.pow(2, attempt);
+        console.log(`Retrying getAccessToken in ${backoff}ms...`);
+        await new Promise(resolve => setTimeout(resolve, backoff));
+      }
+    }
   }
 
-  const data = await res.json();
-  accessToken = data.access_token;
-  tokenExpiry = Date.now() + data.expires_in * 1000 - 60000;
-  return accessToken;
+  console.error("All attempts to get eBay access token failed.");
+  throw lastError;
 }
 
 export async function GET(req: Request) {
@@ -132,106 +155,119 @@ export async function GET(req: Request) {
     apiUrl.searchParams.append("filter", encodeURIComponent(filterString));
   }
 
-  const ebayRes = await fetch(apiUrl.toString(),
+  let ebayRes;
+  const maxRetries = 3;
+  let attempt = 0;
+  let lastError: any = null;
 
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-        "X-EBAY-C-MARKETPLACE-ID": "EBAY-US",
-        "X-EBAY-C-ENDUSERCTX": "contextualLocation=country=US",
-      },
-    }
-  );
-
-  try {
-    if (!ebayRes.ok) {
-      const errorText = await ebayRes.text();
-      console.error("eBay API request failed:", ebayRes.status, errorText);
-      
-      // Check for specific error conditions
-      if (ebayRes.status === 401) {
-        return NextResponse.json({ 
-          error: "Authentication failed. Please check eBay API credentials.",
-          details: errorText 
-        }, { status: 401 });
-      }
-      
-      if (ebayRes.status === 429) {
-        return NextResponse.json({ 
-          error: "eBay API rate limit exceeded. Please try again later.",
-          details: errorText 
-        }, { status: 429 });
-      }
-
-      return NextResponse.json({ 
-        error: "eBay API request failed", 
-        details: errorText,
-        status: ebayRes.status
-      }, { status: ebayRes.status });
-    }
-
-    // Get response text first to check if it's valid JSON
-    const responseText = await ebayRes.text();
-    
-    // Try to parse as JSON
-    let data;
+  while (attempt < maxRetries) {
     try {
-      data = JSON.parse(responseText);
-    } catch (parseError) {
-      console.error("Failed to parse eBay API response as JSON:", responseText.substring(0, 500));
-      return NextResponse.json({ 
-        error: "Invalid response format from eBay API",
-        details: "The eBay API returned an invalid JSON response"
-      }, { status: 502 });
-    }
-    
-    if (!data.itemSummaries) {
-      console.warn("No items found in eBay API response:", data);
-      return NextResponse.json({ 
-        itemSummaries: [],
-        total: 0,
-        message: "No items found for this search"
+      ebayRes = await fetch(apiUrl.toString(), {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          "X-EBAY-C-MARKETPLACE-ID": "EBAY-US",
+          "X-EBAY-C-ENDUSERCTX": "contextualLocation=country=US",
+        },
       });
-    }
 
-    // Light post-processing: Only filter out very obvious cheap accessories when sorting by price
-    if (data.itemSummaries && (sortBy === 'priceAsc' || sortBy === 'priceDesc')) {
-      const filteredItems = data.itemSummaries.filter((item: any) => {
-        const title = item.title?.toLowerCase() || '';
-        const price = parseFloat(item.price?.value || '0');
-        
-        // Only filter out very obvious cheap accessories
-        let shouldFilter = false;
-        
-        // For PS5 searches, only filter out very cheap stickers/decals
-        if (lowerQuery.includes('ps5') || lowerQuery.includes('playstation')) {
-          if ((title.includes('sticker') || title.includes('decal')) && price < 3) {
+      if (!ebayRes.ok) {
+        const errorText = await ebayRes.text();
+        console.error("eBay API request failed:", ebayRes.status, errorText);
+
+        // Check for specific error conditions
+        if (ebayRes.status === 401) {
+          return NextResponse.json({
+            error: "Authentication failed. Please check eBay API credentials.",
+            details: errorText,
+          }, { status: 401 });
+        }
+
+        if (ebayRes.status === 429) {
+          return NextResponse.json({
+            error: "eBay API rate limit exceeded. Please try again later.",
+            details: errorText,
+          }, { status: 429 });
+        }
+
+        return NextResponse.json({
+          error: "eBay API request failed",
+          details: errorText,
+          status: ebayRes.status,
+        }, { status: ebayRes.status });
+      }
+
+      // Get response text first to check if it's valid JSON
+      const responseText = await ebayRes.text();
+
+      // Try to parse as JSON
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error("Failed to parse eBay API response as JSON:", responseText.substring(0, 500));
+        return NextResponse.json({
+          error: "Invalid response format from eBay API",
+          details: "The eBay API returned an invalid JSON response",
+        }, { status: 502 });
+      }
+
+      if (!data.itemSummaries) {
+        console.warn("No items found in eBay API response:", data);
+        return NextResponse.json({
+          itemSummaries: [],
+          total: 0,
+          message: "No items found for this search",
+        });
+      }
+
+      // Light post-processing: Only filter out very obvious cheap accessories when sorting by price
+      if (data.itemSummaries && (sortBy === "priceAsc" || sortBy === "priceDesc")) {
+        const filteredItems = data.itemSummaries.filter((item: any) => {
+          const title = item.title?.toLowerCase() || "";
+          const price = parseFloat(item.price?.value || "0");
+
+          // Only filter out very obvious cheap accessories
+          let shouldFilter = false;
+
+          // For PS5 searches, only filter out very cheap stickers/decals
+          if (lowerQuery.includes("ps5") || lowerQuery.includes("playstation")) {
+            if ((title.includes("sticker") || title.includes("decal")) && price < 3) {
+              shouldFilter = true;
+            }
+          }
+
+          // For general searches, only filter out extremely cheap obvious accessories
+          if (price < 2 && (title.includes("sticker") || title.includes("decal"))) {
             shouldFilter = true;
           }
-        }
-        
-        // For general searches, only filter out extremely cheap obvious accessories
-        if (price < 2 && (title.includes('sticker') || title.includes('decal'))) {
-          shouldFilter = true;
-        }
-        
-        // Return true if item should NOT be filtered (keep the item)
-        return !shouldFilter;
-      });
-      
-      console.log(`eBay API returned ${data.itemSummaries.length} items, filtered to ${filteredItems.length} relevant items`);
-      data.itemSummaries = filteredItems;
-    } else {
-      console.log("eBay API returned items:", data.itemSummaries.length);
+
+          // Return true if item should NOT be filtered (keep the item)
+          return !shouldFilter;
+        });
+
+        console.log(`eBay API returned ${data.itemSummaries.length} items, filtered to ${filteredItems.length} relevant items`);
+        data.itemSummaries = filteredItems;
+      } else {
+        console.log("eBay API returned items:", data.itemSummaries.length);
+      }
+
+      return NextResponse.json(data);
+    } catch (error) {
+      lastError = error;
+      console.error(`Attempt ${attempt + 1} to fetch eBay API failed:`, error);
+      attempt++;
+      if (attempt < maxRetries) {
+        const backoff = 1000 * Math.pow(2, attempt);
+        console.log(`Retrying eBay API fetch in ${backoff}ms...`);
+        await new Promise(resolve => setTimeout(resolve, backoff));
+      }
     }
-    
-    return NextResponse.json(data);
-  } catch (error) {
-    console.error("Unexpected error in eBay API route:", error);
-    return NextResponse.json({ 
-      error: "Internal server error",
-      details: error instanceof Error ? error.message : "Unknown error occurred"
-    }, { status: 500 });
   }
+
+  console.error("All attempts to fetch eBay API failed.");
+  return NextResponse.json({
+    error: "Failed to fetch eBay API",
+    details: lastError instanceof Error ? lastError.message : "Unknown error",
+  }, { status: 500 });
 }

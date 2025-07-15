@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useApp } from "@/contexts/AppContext";
+import type { LucideIcon } from "lucide-react";
 import { 
   ShoppingBag, 
   Users, 
@@ -69,10 +70,10 @@ export default function AdminDashboard() {
     color, 
     change 
   }: { 
-    title: string; 
-    value: string | number; 
-    icon: any; 
-    color: string; 
+    title: string;
+    value: string | number;
+    icon: LucideIcon;
+    color: string;
     change?: string;
   }) => (
     <div className={`p-6 rounded-xl border ${

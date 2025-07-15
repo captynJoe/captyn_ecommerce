@@ -35,6 +35,6 @@ async function setAdminUser(email: string) {
 }
 
 // Replace with the email of the user you want to make admin
-const adminEmail = "admin@example.com";
+const adminEmail = "captynglobal@gmail.com";
 
 setAdminUser(adminEmail);

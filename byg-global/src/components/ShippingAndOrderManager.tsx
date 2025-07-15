@@ -119,7 +119,7 @@ export default function ShippingAndOrderManager({
     // Last mile delivery
     const lastMileCost = LAST_MILE_RATE;
     
-    // Insurance cost (3% of item value if selected)
+    // Insurance cost (3% of item value if selected, easily cancelled)
     const insuranceCost = isInsured ? cartTotal * 0.03 : 0;
     
     // Total cost

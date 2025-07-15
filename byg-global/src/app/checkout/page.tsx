@@ -13,6 +13,7 @@ import ConfirmationModal from "@/components/ConfirmationModal";
 import AquantuoEstimator from "@/components/AquantuoEstimator";
 import { convertToKESWithProfit, calculateProfitPrice, convertToKESWithProfitStorageAndShipping, convertToKESWithProfitAndShipping } from "@/utils/pricing";
 import LoginModal from "@/components/LoginModal";
+import ShippingAndOrderManager from "@/components/ShippingAndOrderManager";
 
 interface CartItem {
   itemId: string;
@@ -47,6 +48,9 @@ export default function CheckoutPage() {
 
   const [deliveryDetails, setDeliveryDetails] = useState<any>(null);
   const [deliveryFee, setDeliveryFee] = useState(300); // Base local delivery fee
+
+  const [insuranceCost, setInsuranceCost] = useState(0);
+  const [isInsured, setIsInsured] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -137,7 +141,12 @@ export default function CheckoutPage() {
     return sum + numericPrice * (item.quantity || 1);
   }, 0);
 
-  const paymentAmount = total + (deliveryDetails?.intlShippingAmount || 0);
+  const paymentAmount = total + (deliveryDetails?.intlShippingAmount || 0) + insuranceCost;
+
+  const handleInsuranceChange = (insured: boolean, cost: number) => {
+    setIsInsured(insured);
+    setInsuranceCost(cost);
+  };
 
   if (loading && !showLogin) return <LoadingAnimation />;
 

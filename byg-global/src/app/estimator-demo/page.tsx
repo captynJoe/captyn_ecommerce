@@ -78,17 +78,6 @@ export default function EstimatorDemoPage() {
           </div>
         </div>
 
-        <div className="mt-6 text-xs text-gray-500 dark:text-gray-400">
-          <h4 className="font-semibold mb-2">Features Demonstrated:</h4>
-          <ul className="list-disc list-inside space-y-1">
-            <li>Realistic Aquantuo shipping rates ($8-10/kg)</li>
-            <li>Reduced clearance fee ($15 instead of $50)</li>
-            <li>Customs duty calculated on item value only (16%)</li>
-            <li>Optional shipping insurance (3% of item value)</li>
-            <li>Insurance warning when declined</li>
-            <li>Different rates for different Kenyan cities</li>
-          </ul>
-        </div>
       </div>
     </div>
   );

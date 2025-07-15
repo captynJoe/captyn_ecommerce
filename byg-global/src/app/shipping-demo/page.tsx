@@ -1,18 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import ShippingAndOrderManager from "@/components/ShippingAndOrderManager";
 
 export default function ShippingDemoPage() {
   const [cartTotal] = useState(57.00);
-  const [ebayOrderId] = useState("12345-67890-ABCDE"); // Mock order ID for demo
-  const [insuranceCost, setInsuranceCost] = useState(0);
-  const [isInsured, setIsInsured] = useState(false);
-
-  const handleInsuranceChange = (insured: boolean, cost: number) => {
-    setIsInsured(insured);
-    setInsuranceCost(cost);
-  };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
@@ -40,34 +31,16 @@ export default function ShippingDemoPage() {
                 ${cartTotal.toFixed(2)}
               </span>
             </div>
-            {isInsured && (
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-blue-600 dark:text-blue-400">
-                  Shipping Insurance
-                </span>
-                <span className="font-medium text-blue-600 dark:text-blue-400">
-                  +${insuranceCost.toFixed(2)}
-                </span>
-              </div>
-            )}
             <div className="border-t border-gray-200 dark:border-gray-700 pt-3">
               <div className="flex justify-between items-center font-bold">
                 <span className="text-gray-900 dark:text-white">Cart Total:</span>
                 <span className="text-green-600 dark:text-green-400">
-                  ${(cartTotal + insuranceCost).toFixed(2)}
+                  ${cartTotal.toFixed(2)}
                 </span>
               </div>
             </div>
           </div>
         </div>
-
-        {/* Shipping and Order Manager */}
-        <ShippingAndOrderManager
-          cartTotal={cartTotal}
-          ebayOrderId={ebayOrderId}
-          ebayItemId="123456789"
-          onInsuranceChange={handleInsuranceChange}
-        />
 
         {/* Features Overview */}
         <div className="mt-8 bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
