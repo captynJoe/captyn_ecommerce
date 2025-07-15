@@ -475,9 +475,9 @@ export default function HomePage() {
               <button
                 onClick={() => {
                   const url = new URL(window.location.href);
-                  url.searchParams.set('q', 'gaming parts -laptop -macbook');
+                  url.searchParams.set('q', 'graphics card ram processor');
                   window.history.pushState({}, '', url.toString());
-                  setQuery("gaming parts -laptop -macbook");
+                  setQuery("graphics card ram processor");
                   setPageNum(0);
                 }}
                 className={`group flex flex-col items-center p-2 md:p-4 rounded-xl transition-all duration-300 hover:scale-105 ${

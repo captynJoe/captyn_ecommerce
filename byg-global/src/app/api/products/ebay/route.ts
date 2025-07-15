@@ -108,8 +108,16 @@ export async function GET(req: Request) {
   const minPrice = searchParams.get("minPrice");
   const maxPrice = searchParams.get("maxPrice");
   if (minPrice || maxPrice) {
-    const priceFilter = `price:[${minPrice || '*'}..${maxPrice || '*'}],priceCurrency:USD`;
-    filterArray.push(priceFilter);
+    // eBay API expects price filter in format price:[min..max]
+    // and priceCurrency filter separately
+    if (minPrice && maxPrice) {
+      filterArray.push(`price:[${minPrice}..${maxPrice}]`);
+    } else if (minPrice) {
+      filterArray.push(`price:[${minPrice}..*]`);
+    } else if (maxPrice) {
+      filterArray.push(`price:[*..${maxPrice}]`);
+    }
+    filterArray.push("priceCurrency:USD");
   }
 
   // Add location filter for all products
