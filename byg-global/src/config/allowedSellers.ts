@@ -1,8 +1,5 @@
 const allowedSellers: string[] = [
-  "itsworthmore",
-  "fallriverpawnbrokers",
-  "citelectronics",
-  "so.tech"
+"hd2022"
 ];
 
 export default allowedSellers;

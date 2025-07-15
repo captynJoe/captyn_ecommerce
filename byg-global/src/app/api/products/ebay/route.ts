@@ -221,6 +221,14 @@ export async function GET(req: Request) {
         });
       }
 
+      // Server-side filter: Only keep products from allowed sellers
+      if (allowedSellers.length > 0) {
+        data.itemSummaries = data.itemSummaries.filter((item: any) => {
+          const sellerUsername = item.seller?.username?.toLowerCase() || "";
+          return allowedSellers.some(seller => seller.toLowerCase() === sellerUsername);
+        });
+      }
+
       // Light post-processing: Only filter out very obvious cheap accessories when sorting by price
       if (data.itemSummaries && (sortBy === "priceAsc" || sortBy === "priceDesc")) {
         const filteredItems = data.itemSummaries.filter((item: any) => {
