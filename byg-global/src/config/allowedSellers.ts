@@ -1,7 +1,7 @@
 const allowedSellers: string[] = [
   "omahablue",
   "wazno",
-  "itsworthmore",
+  "bestphoneshop",
   "citelectronics",
   "amcelltech",
   "honeststore2019"
