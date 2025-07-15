@@ -46,7 +46,7 @@ export default function AquantuoEstimator({ cartTotal, cartItems = [], onInsuran
   const BASE_RATE_KES = 2500; // KES for packages under 1kg
   const PER_KG_RATE_KES = 2500; // KES per kg for items over 1kg
   const LAST_MILE_RATE = 3.44; // USD for last mile delivery
-  const USD_TO_KES = 133; // Exchange rate
+  const USD_TO_KES = 132; // Exchange rate
   
   // Default weights if not provided (auto-detected from product titles)
   const DEFAULT_WEIGHTS = {

@@ -139,14 +139,14 @@ export async function GET(req: Request) {
 
   // Convert sort parameter - use valid eBay sort values
   const sortMap: { [key: string]: string } = {
-    bestMatch: "",  // Default sort, no parameter needed
+    bestMatch: "bestMatch",
     priceAsc: "price",
-    priceDesc: "-price",
-    newlyListed: "-startTime",
+    priceDesc: "priceDesc",
+    newlyListed: "newlyListed",
     endingSoon: "endingSoonest"
   };
 
-  const sortParam = sortMap[sortBy] || "";
+  const sortParam = sortMap[sortBy] || "bestMatch";
   
   // Build the API URL with all parameters
   const apiUrl = new URL("https://api.ebay.com/buy/browse/v1/item_summary/search");
@@ -154,14 +154,15 @@ export async function GET(req: Request) {
   apiUrl.searchParams.append("limit", limit.toString());
   apiUrl.searchParams.append("offset", offset.toString());
   
-  if (sortParam) {
-    apiUrl.searchParams.append("sort", sortParam);
-  }
+  // Always append sort param
+  apiUrl.searchParams.append("sort", sortParam);
   
   if (filterArray.length > 0) {
     const filterString = filterArray.join(',');
     apiUrl.searchParams.append("filter", encodeURIComponent(filterString));
   }
+
+  console.log("eBay API request URL:", apiUrl.toString());
 
   let ebayRes;
   const maxRetries = 3;
@@ -231,10 +232,17 @@ export async function GET(req: Request) {
 
       // Server-side filter: Only keep products from allowed sellers
       if (allowedSellers.length > 0) {
+        console.log("Filtering products by allowed sellers:", allowedSellers);
+        console.log("Total items before filtering:", data.itemSummaries.length);
         data.itemSummaries = data.itemSummaries.filter((item: any) => {
           const sellerUsername = item.seller?.username?.toLowerCase() || "";
-          return allowedSellers.some(seller => seller.toLowerCase() === sellerUsername);
+          const isAllowed = allowedSellers.some(seller => seller.toLowerCase() === sellerUsername);
+          if (!isAllowed) {
+            console.log(`Filtered out product from seller: ${sellerUsername}, title: ${item.title}`);
+          }
+          return isAllowed;
         });
+        console.log("Total items after filtering:", data.itemSummaries.length);
       }
 
       // Light post-processing: Only filter out very obvious cheap accessories when sorting by price

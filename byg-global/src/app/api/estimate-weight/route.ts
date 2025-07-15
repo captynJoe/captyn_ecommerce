@@ -18,6 +18,7 @@ export async function POST(req: Request) {
 
       try {
         const estimation = await getAIEstimation(prompt);
+        console.log("AI estimation success:", estimation);
         results.push(estimation);
       } catch (aiError) {
         console.log("AI estimation failed, using rule-based fallback:", aiError);
@@ -47,11 +48,16 @@ export async function POST(req: Request) {
   }
 }
 
+
+async function delay(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 async function getAIEstimation(productDescription: string) {
-  const openaiApiKey = process.env.OPENAI_API_KEY;
+  const openrouterApiKey = process.env.OPENROUTER_API_KEY;
   
-  if (!openaiApiKey) {
-    throw new Error("OpenAI API key not configured");
+  if (!openrouterApiKey) {
+    throw new Error("OpenRouter API key not configured");
   }
 
   const prompt = `You are a shipping expert. Analyze this product description carefully and provide accurate weight and dimensions for shipping calculations. Consider the product's details to assess how heavy it is and if the volume is large.
@@ -80,37 +86,44 @@ Note: The final shipping price will be confirmed by freight forwarders after det
 
 Be precise and realistic.`;
 
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${openaiApiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: 'gpt-3.5-turbo',
-      messages: [
-        {
-          role: 'user',
-          content: prompt
-        }
-      ],
-      temperature: 0.1,
-      max_tokens: 200
-    })
-  });
+  const maxRetries = 3;
+  let attempt = 0;
+  let lastError: any = null;
 
-  if (!response.ok) {
-    throw new Error(`OpenAI API error: ${response.status}`);
-  }
-
-  const data = await response.json();
-  const aiResponse = data.choices[0]?.message?.content;
-  
-  if (!aiResponse) {
-    throw new Error("No response from OpenAI");
-  }
-
+  while (attempt < maxRetries) {
     try {
+      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openrouterApiKey}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': 'https://captyn-ecommerce.onrender.com/',
+          'X-Title': 'Captyn Ecommerce'
+        },
+        body: JSON.stringify({
+          model: 'gpt-3.5-turbo',
+          messages: [
+            {
+              role: 'user',
+              content: prompt
+            }
+          ],
+          temperature: 0.1,
+          max_tokens: 200
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`OpenRouter API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const aiResponse = data.choices[0]?.message?.content;
+      
+      if (!aiResponse) {
+        throw new Error("No response from OpenRouter");
+      }
+
       const parsed = JSON.parse(aiResponse);
 
       // Ensure realWeight is at least 0.1 to avoid defaulting to 0.5 or 1kg
@@ -129,9 +142,18 @@ Be precise and realistic.`;
         chargeableWeight: Math.round(chargeableWeight * 100) / 100,
         source: 'ai'
       };
-    } catch (parseError) {
-      throw new Error("Failed to parse AI response");
+    } catch (error) {
+      lastError = error;
+      attempt++;
+      if (attempt < maxRetries) {
+        const delayMs = 1000 * Math.pow(2, attempt); // Exponential backoff: 2s, 4s, etc.
+        console.log(`OpenRouter API call failed (attempt ${attempt}), retrying after ${delayMs}ms...`, error);
+        await delay(delayMs);
+      }
     }
+  }
+
+  throw lastError;
 }
 
 function estimateProductSpecs(productDescription: string) {

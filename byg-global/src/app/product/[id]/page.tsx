@@ -441,7 +441,7 @@ export default function ProductDetailPage() {
                   }
                 </div>
                 <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                  Includes shipping to US
+                  Includes shipping to warehouse
                 </div>
               </div>
             </div>
@@ -709,7 +709,7 @@ export default function ProductDetailPage() {
                             {convertToKESWithProfitAndShipping(product.price?.value, product.condition, product.title)}
                           </p>
                           <p className="text-xs text-gray-500 dark:text-gray-400">
-                            Includes shipping to US
+                            Includes shipping to warehouse
                           </p>
                         </div>
                       </div>
