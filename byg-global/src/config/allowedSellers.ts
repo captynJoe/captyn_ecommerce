@@ -3,7 +3,8 @@ const allowedSellers: string[] = [
   "wazno",
   "itsworthmore",
   "citelectronics",
-  "amcelltech"
+  "amcelltech",
+  "honeststore2019"
 ];
 
 export default allowedSellers;
