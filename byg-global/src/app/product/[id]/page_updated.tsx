@@ -319,7 +319,7 @@ export default function ProductDetailPage() {
           onCloseAction={() => setIsMenuOpen(false)}
           sortBy="newlyListed"
           setSortByAction={() => {}}
-          filterCondition="all"
+          filterCondition={["all"]}
           setFilterConditionAction={() => {}}
           onFilterChangeAction={() => {}}
           priceRange={{ min: 0, max: 10000 }}

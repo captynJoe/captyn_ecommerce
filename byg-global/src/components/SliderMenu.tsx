@@ -10,8 +10,8 @@ interface SliderMenuProps {
   onCloseAction: () => void;
   sortBy: string;
   setSortByAction: (v: string) => void;
-  filterCondition: string;
-  setFilterConditionAction: (v: string) => void;
+  filterCondition: string[];  // changed to array of strings for multi-select
+  setFilterConditionAction: (v: string[]) => void;
   onFilterChangeAction: () => void;
   priceRange: { min: number; max: number };
   setPriceRangeAction: (range: { min: number; max: number }) => void;
@@ -36,10 +36,18 @@ export default function SliderMenu({
   const menuRef = useRef<HTMLDivElement | null>(null);
   const [localPriceRange, setLocalPriceRange] = useState(priceRange);
 
+  // Local state for multi-select conditions
+  const [localConditions, setLocalConditions] = useState<string[]>(Array.isArray(filterCondition) ? filterCondition : ["all"]);
+
   // Sync local price range with props
   useEffect(() => {
     setLocalPriceRange(priceRange);
   }, [priceRange]);
+
+  // Sync local conditions with props when filterCondition changes
+  useEffect(() => {
+    setLocalConditions(Array.isArray(filterCondition) ? filterCondition : ["all"]);
+  }, [filterCondition]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -91,10 +99,44 @@ export default function SliderMenu({
 
   const handleResetFilters = () => {
     setSortByAction("bestMatch");
-    setFilterConditionAction("all");
+    setFilterConditionAction(["all"]);
+    setLocalConditions(["all"]);
     setLocalPriceRange({ min: 0, max: 0 });
     setPriceRangeAction({ min: 0, max: 0 });
     setNetworkTypeAction("all");
+    onFilterChangeAction();
+  };
+
+  // Handle condition checkbox toggle
+  const toggleCondition = (value: string) => {
+    console.log("Toggling condition:", value);
+    if (value === "all") {
+      setLocalConditions(["all"]);
+    } else {
+      let newConditions = localConditions.filter(c => c !== "all");
+      if (localConditions.includes(value)) {
+        newConditions = newConditions.filter(c => c !== value);
+      } else {
+        newConditions.push(value);
+      }
+      if (newConditions.length === 0) {
+        newConditions = ["all"];
+      }
+      setLocalConditions(newConditions);
+    }
+  };
+
+  // Apply selected conditions
+  const applyConditions = () => {
+    console.log("Applying conditions:", localConditions);
+    setFilterConditionAction(localConditions);
+    onFilterChangeAction();
+  };
+
+  // Handle network type change and trigger search immediately
+  const handleNetworkTypeChange = (value: string) => {
+    console.log("Network type changed to:", value);
+    setNetworkTypeAction(value);
     onFilterChangeAction();
   };
 
@@ -191,24 +233,21 @@ export default function SliderMenu({
                 <label
                   key={condition.value}
                   className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
-                    filterCondition === condition.value
+                    localConditions.includes(condition.value)
                       ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300"
                       : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"
                   }`}
                 >
                   <input
-                    type="radio"
+                    type="checkbox"
                     name="condition"
                     value={condition.value}
-                    checked={filterCondition === condition.value}
-                    onChange={(e) => {
-                      setFilterConditionAction(e.target.value);
-                      onFilterChangeAction();
-                    }}
+                    checked={localConditions.includes(condition.value)}
+                    onChange={() => toggleCondition(condition.value)}
                     className="sr-only"
                   />
                   <div className={`w-3 h-3 rounded-full ${
-                    filterCondition === condition.value ? "bg-blue-500" : "bg-gray-300 dark:bg-gray-600"
+                    localConditions.includes(condition.value) ? "bg-blue-500" : "bg-gray-300 dark:bg-gray-600"
                   }`} />
                   <span className={`text-sm font-medium ${condition.color} dark:text-gray-300`}>
                     {condition.label}
@@ -216,6 +255,12 @@ export default function SliderMenu({
                 </label>
               ))}
             </div>
+            <button
+              onClick={applyConditions}
+              className="mt-2 w-full py-2 px-3 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Apply Condition Filters
+            </button>
           </div>
 
           {/* Price Range */}
@@ -294,10 +339,7 @@ export default function SliderMenu({
                     name="network"
                     value={network.id}
                     checked={networkType === network.id}
-                    onChange={(e) => {
-                      setNetworkTypeAction(e.target.value);
-                      onFilterChangeAction();
-                    }}
+                    onChange={() => handleNetworkTypeChange(network.id)}
                     className="sr-only"
                   />
                   <span className="text-lg">{network.icon}</span>

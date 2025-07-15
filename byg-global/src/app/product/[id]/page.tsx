@@ -63,6 +63,19 @@ export default function ProductDetailPage() {
     network: ''
   });
 
+  // Add filter states for SliderMenu
+  const [sortBy, setSortBy] = useState("newlyListed");
+  const [filterCondition, setFilterCondition] = useState<string[]>(["all"]);
+  const [priceRange, setPriceRange] = useState<{ min: number; max: number }>({ min: 0, max: 10000 });
+  const [networkType, setNetworkType] = useState("all");
+
+  // Handler to trigger filter change - can be extended to refetch or filter products
+  const onFilterChange = () => {
+    // For now, just log the filter states - can implement actual filtering logic here
+    console.log("Filters changed:", { sortBy, filterCondition, priceRange, networkType });
+    // TODO: Implement filtering or refetching products based on these filters
+  };
+
   // For swipeable images
   const [currentImage, setCurrentImage] = useState(0);
   
@@ -320,19 +333,31 @@ export default function ProductDetailPage() {
     <>
       {showLogin && <LoginModal onClose={() => setShowLogin(false)} onLogin={handleLoginSuccess} />}
       <main className={`${isDark ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-900"} min-h-screen`}>
-        <SliderMenu
-          isOpen={isMenuOpen}
-          onCloseAction={() => setIsMenuOpen(false)}
-          sortBy="newlyListed"
-          setSortByAction={() => {}}
-          filterCondition="all"
-          setFilterConditionAction={() => {}}
-          onFilterChangeAction={() => {}}
-          priceRange={{ min: 0, max: 10000 }}
-          setPriceRangeAction={() => {}}
-          networkType="all"
-          setNetworkTypeAction={() => {}}
-        />
+          <SliderMenu
+            isOpen={isMenuOpen}
+            onCloseAction={() => setIsMenuOpen(false)}
+            sortBy={sortBy}
+            setSortByAction={(v) => {
+              setSortBy(v);
+              onFilterChange();
+            }}
+            filterCondition={filterCondition}
+            setFilterConditionAction={(v) => {
+              setFilterCondition(v);
+              onFilterChange();
+            }}
+            onFilterChangeAction={onFilterChange}
+            priceRange={priceRange}
+            setPriceRangeAction={(range) => {
+              setPriceRange(range);
+              onFilterChange();
+            }}
+            networkType={networkType}
+            setNetworkTypeAction={(v) => {
+              setNetworkType(v);
+              onFilterChange();
+            }}
+          />
 
         <div className="product-detail-container mx-auto px-4 py-8">
           <div className="mb-4">

@@ -64,7 +64,7 @@ export default function HomePage() {
 
   // Added missing state variables for SliderMenu props
   const [priceRange, setPriceRange] = useState<{ min: number; max: number }>({ min: 0, max: 10000 });
-  const [filterCondition, setFilterCondition] = useState("all");
+  const [filterCondition, setFilterCondition] = useState<string[]>(["all"]);
   const [networkType, setNetworkType] = useState("all");
 
   const [error, setError] = useState<string | null>(null);
@@ -96,8 +96,10 @@ export default function HomePage() {
       if (maxPriceUSD) {
         apiParams.append('maxPrice', maxPriceUSD.toString());
       }
-      if (filterCondition && filterCondition !== 'all') {
-        apiParams.append('condition', filterCondition);
+      if (filterCondition && !(filterCondition.length === 1 && filterCondition[0] === 'all')) {
+        filterCondition.forEach(condition => {
+          apiParams.append('condition', condition);
+        });
       }
       
       const res = await fetch(`/api/products/ebay?${apiParams.toString()}`);
