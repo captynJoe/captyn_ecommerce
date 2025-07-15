@@ -90,7 +90,7 @@ export default function AquantuoEstimator({ cartTotal, cartItems = [], onInsuran
     let totalWeight = 0;
     cartItems.forEach(item => {
       let itemWeight: number;
-      if (item.weight) {
+      if (item.weight !== undefined && item.weight !== null && !isNaN(item.weight)) {
         itemWeight = item.weight / 1000; // Convert grams to kg
       } else if (item.type && DEFAULT_WEIGHTS[item.type as keyof typeof DEFAULT_WEIGHTS]) {
         itemWeight = DEFAULT_WEIGHTS[item.type as keyof typeof DEFAULT_WEIGHTS];
@@ -487,9 +487,6 @@ export default function AquantuoEstimator({ cartTotal, cartItems = [], onInsuran
           <p>
             <strong>Note:</strong> Final shipping fees are calculated based on the higher of the actual or volumetric weight.
             Volumetric weight may apply for large, lightweight packages. For shipments over 100kg, please contact our support team for a custom quote.
-          </p>
-          <p className="text-red-600 dark:text-red-400">
-            <strong>⚠️ Important:</strong> Guns, drugs, and other illegal items cannot be shipped and will be rejected.
           </p>
         </div>
       </div>
