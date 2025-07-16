@@ -59,7 +59,8 @@ export async function GET(req: Request) {
   let query = searchParams.get("q") || "phone laptop gaming console electronics";
   // Dynamic limit: more products for homepage, fewer for searches
   const isSearch = query && query !== "phone laptop gaming console electronics";
-  const limit = parseInt(searchParams.get("limit") || (isSearch ? "20" : "50"));  // 20 for searches, 50 for homepage
+  // Increase limit and offset to fetch more products
+  const limit = parseInt(searchParams.get("limit") || (isSearch ? "50" : "100"));  // Increased limits: 50 for searches, 100 for homepage
   const offset = parseInt(searchParams.get("offset") || "0");
   const sortBy = searchParams.get("sortBy") || "bestMatch";
 
@@ -124,6 +125,8 @@ export async function GET(req: Request) {
   filterArray.push('itemLocationCountry:US');
 
   // Add seller filter for allowed sellers
+  // Temporarily disabled to improve product diversity
+  /*
   if (allowedSellers.length > 0) {
     // eBay API expects sellers filter as sellers:{seller1|seller2}
     filterArray.push(`sellers:{${allowedSellers.join('|')}}`);
@@ -136,6 +139,7 @@ export async function GET(req: Request) {
       message: "No sellers are allowed"
     });
   }
+  */
 
   // Convert sort parameter - use valid eBay sort values
   const sortMap: { [key: string]: string } = {
@@ -159,7 +163,7 @@ export async function GET(req: Request) {
   
   if (filterArray.length > 0) {
     const filterString = filterArray.join(',');
-    apiUrl.searchParams.append("filter", encodeURIComponent(filterString));
+    apiUrl.searchParams.append("filter", filterString);
   }
 
   console.log("eBay API request URL:", apiUrl.toString());
@@ -242,7 +246,25 @@ export async function GET(req: Request) {
           }
           return isAllowed;
         });
-        console.log("Total items after filtering:", data.itemSummaries.length);
+
+        // Limit number of products per seller to avoid dominance
+        // Removed to allow all products from allowed sellers to be displayed
+        /*
+        const maxPerSeller = 5;
+        const sellerCountMap: { [key: string]: number } = {};
+        const balancedItems: any[] = [];
+
+        for (const item of data.itemSummaries) {
+          const sellerUsername = item.seller?.username?.toLowerCase() || "";
+          sellerCountMap[sellerUsername] = (sellerCountMap[sellerUsername] || 0) + 1;
+          if (sellerCountMap[sellerUsername] <= maxPerSeller) {
+            balancedItems.push(item);
+          }
+        }
+
+        data.itemSummaries = balancedItems;
+        */
+        console.log("Total items after filtering and balancing:", data.itemSummaries.length);
       }
 
       // Light post-processing: Only filter out very obvious cheap accessories when sorting by price

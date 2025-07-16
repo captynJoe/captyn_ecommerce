@@ -101,6 +101,9 @@ export default function HomePage() {
           apiParams.append('condition', condition);
         });
       }
+      if (networkType && networkType !== 'all') {
+        apiParams.append('networkType', networkType);
+      }
       
       const res = await fetch(`/api/products/ebay?${apiParams.toString()}`);
       const data = await res.json();
@@ -159,7 +162,7 @@ export default function HomePage() {
       const resetProducts = pageNum === 0;
       fetchProducts(resetProducts);
     }
-  }, [query, pageNum, sort, priceRange, filterCondition]);
+  }, [query, pageNum, sort, priceRange, filterCondition, networkType]);
 
   // Separate effect to handle search changes without dependency issues
   useEffect(() => {
@@ -385,6 +388,72 @@ export default function HomePage() {
         )}
 
         {/* Shop by Category Section - Always visible and positioned high */}
+        <section id="shop-by-category" className="max-w-7xl mx-auto px-4 py-12">
+          <h2 className={`text-3xl font-bold mb-8 ${isDark ? "text-white" : "text-gray-900"}`}>
+            Shop by Category
+          </h2>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
+            <button
+              onClick={() => {
+                setQuery("phones");
+                setPageNum(0);
+                fetchProducts(true);
+              }}
+              className={`flex flex-col items-center justify-center p-6 rounded-xl border cursor-pointer hover:shadow-lg transition-shadow duration-300 ${
+                isDark ? "bg-gray-800 border-gray-700 text-white" : "bg-white border-gray-200 text-gray-900"
+              }`}
+              aria-label="Shop Phones"
+            >
+              <Smartphone className="w-12 h-12 mb-2" />
+              <span className="text-lg font-semibold">Phones</span>
+            </button>
+
+            <button
+              onClick={() => {
+                setQuery("graphics cards computer components");
+                setPageNum(0);
+                fetchProducts(true);
+              }}
+              className={`flex flex-col items-center justify-center p-6 rounded-xl border cursor-pointer hover:shadow-lg transition-shadow duration-300 ${
+                isDark ? "bg-gray-800 border-gray-700 text-white" : "bg-white border-gray-200 text-gray-900"
+              }`}
+              aria-label="Shop PC Parts"
+            >
+              <Cpu className="w-12 h-12 mb-2" />
+              <span className="text-lg font-semibold">PC Parts</span>
+            </button>
+
+            <button
+              onClick={() => {
+                setQuery("laptops");
+                setPageNum(0);
+                fetchProducts(true);
+              }}
+              className={`flex flex-col items-center justify-center p-6 rounded-xl border cursor-pointer hover:shadow-lg transition-shadow duration-300 ${
+                isDark ? "bg-gray-800 border-gray-700 text-white" : "bg-white border-gray-200 text-gray-900"
+              }`}
+              aria-label="Shop Laptops"
+            >
+              <Laptop className="w-12 h-12 mb-2" />
+              <span className="text-lg font-semibold">Laptops</span>
+            </button>
+
+            <button
+              onClick={() => {
+                setQuery("consoles");
+                setPageNum(0);
+                fetchProducts(true);
+              }}
+              className={`flex flex-col items-center justify-center p-6 rounded-xl border cursor-pointer hover:shadow-lg transition-shadow duration-300 ${
+                isDark ? "bg-gray-800 border-gray-700 text-white" : "bg-white border-gray-200 text-gray-900"
+              }`}
+              aria-label="Shop Consoles"
+            >
+              <Gamepad2 className="w-12 h-12 mb-2" />
+              <span className="text-lg font-semibold">Consoles</span>
+            </button>
+          </div>
+        </section>
 
         {/* Marketing Content - Only show when not in search mode */}
         {!isSearchMode && (

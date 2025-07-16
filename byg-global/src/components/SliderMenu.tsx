@@ -72,7 +72,6 @@ export default function SliderMenu({
   const networks = [
     { id: "all", label: "All Networks", icon: "📱" },
     { id: "unlocked", label: "Unlocked Only", icon: "🔓" },
-    { id: "locked", label: "Carrier Locked", icon: "🔒" },
   ];
 
   const conditions = [
@@ -348,16 +347,6 @@ export default function SliderMenu({
               ))}
             </div>
             
-            {networkType === "locked" && (
-              <div className="mt-3 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
-                <div className="flex items-start gap-2">
-                  <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-500 flex-shrink-0 mt-0.5" />
-                  <p className="text-xs text-amber-700 dark:text-amber-400 leading-relaxed">
-                    Carrier-locked devices may only work with specific networks. Please verify compatibility before purchase.
-                  </p>
-                </div>
-              </div>
-            )}
           </div>
 
         </div>
