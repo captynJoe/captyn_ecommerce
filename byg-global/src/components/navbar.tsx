@@ -32,7 +32,7 @@ export default function Navbar({
     }
     setIsLoadingSuggestions(true);
     try {
-      const res = await fetch(`/api/products/ebay?q=${encodeURIComponent(query)}&limit=5`);
+const res = await fetch(`/api/products/ebay?q=${encodeURIComponent(query)}&limit=20`);
       if (res.ok) {
         const data = await res.json();
         const titles = data.itemSummaries?.map((item: any) => item.title) || [];
