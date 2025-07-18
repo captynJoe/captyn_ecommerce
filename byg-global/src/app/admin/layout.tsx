@@ -14,7 +14,7 @@ export default async function AdminLayout({
     redirect("/register?redirect=/admin");
   }
 
-  if (!(session.user as any).isAdmin) {
+  if (!session.user || !(session.user as { isAdmin?: boolean }).isAdmin) {
     redirect("/");
   }
 

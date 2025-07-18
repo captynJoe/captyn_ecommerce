@@ -80,8 +80,8 @@ export async function GET() {
     // Get recent unique search terms
     const recentSearches = searchHistory
       .slice(-10) // Last 10 searches
-      .map((item: any) => item.query)
-      .filter((query: string, index: number, arr: string[]) => arr.indexOf(query) === index) // Remove duplicates
+  .map((item: { query: string }) => item.query)
+  .filter((query: string, index: number, arr: string[]) => arr.indexOf(query) === index) // Remove duplicates
       .reverse(); // Most recent first
 
     return NextResponse.json({ searchHistory: recentSearches });

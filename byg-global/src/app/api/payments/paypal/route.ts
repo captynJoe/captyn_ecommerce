@@ -63,7 +63,7 @@ export async function POST(req: Request) {
 
     if (response.ok) {
       // Find the approval URL
-      const approvalUrl = data.links?.find((link: any) => link.rel === 'approve')?.href;
+      const approvalUrl = data.links?.find((link: { rel: string }) => link.rel === 'approve')?.href;
       
       return NextResponse.json({
         success: true,
@@ -77,7 +77,7 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('PayPal payment error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },

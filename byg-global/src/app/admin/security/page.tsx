@@ -5,7 +5,6 @@ import { useApp } from "@/contexts/AppContext";
 import { 
   Shield, 
   Search, 
-  Filter, 
   Eye,
   Edit,
   Trash2,
@@ -14,7 +13,6 @@ import {
   CheckCircle,
   Clock,
   TrendingUp,
-  Users,
   Package
 } from "lucide-react";
 

@@ -5,7 +5,7 @@ import { useEffect, useRef } from "react";
 declare global {
   interface Window {
     paypal?: {
-      Buttons: (options: any) => {
+      Buttons: (options: unknown) => {
         render: (element: HTMLElement) => Promise<void>;
       };
       FUNDING: {
@@ -144,10 +144,10 @@ export default function PayPalButton({ amount, onSuccess, onError, onCancel }: P
             let errorMessage = "Payment failed. Please try again.";
 
             if (err && typeof err === 'object' && err !== null) {
-              if ('message' in err && typeof (err as any).message === 'string') {
-                errorMessage = (err as any).message;
-              } else if ('details' in err && Array.isArray((err as any).details) && (err as any).details.length > 0) {
-                errorMessage = (err as any).details[0].description || errorMessage;
+              if ('message' in err && typeof (err as unknown as { message?: string }).message === 'string') {
+                errorMessage = (err as unknown as { message: string }).message;
+              } else if ('details' in err && Array.isArray((err as unknown as { details?: unknown[] }).details) && (err as unknown as { details: unknown[] }).details.length > 0) {
+                errorMessage = ((err as unknown as { details: { description?: string }[] }).details[0].description) || errorMessage;
               }
             }
 

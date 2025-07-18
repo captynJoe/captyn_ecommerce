@@ -12,9 +12,8 @@ import LoadingAnimation from "@/components/LoadingAnimation";
 import PaymentModal from "@/components/PaymentModal";
 import ConfirmationModal from "@/components/ConfirmationModal";
 import AquantuoEstimator from "@/components/AquantuoEstimator";
-import { convertToKESWithProfit, calculateProfitPrice, convertToKESWithProfitStorageAndShipping, convertToKESWithProfitAndShipping } from "@/utils/pricing";
+import { convertToKESWithProfit, convertToKESWithProfitStorageAndShipping, convertToKESWithProfitAndShipping } from "@/utils/pricing";
 import LoginModal from "@/components/LoginModal";
-import ShippingAndOrderManager from "@/components/ShippingAndOrderManager";
 
 interface CartItem {
   itemId: string;

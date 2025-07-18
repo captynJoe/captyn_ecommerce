@@ -67,7 +67,7 @@ async function getAccessToken() {
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
-  let query = searchParams.get("q") || "phone laptop gaming console electronics";
+const query = searchParams.get("q") || "phone laptop gaming console electronics";
   const isSearch = query && query !== "phone laptop gaming console electronics";
   const limit = parseInt(searchParams.get("limit") || (isSearch ? "150" : "100"));
   const offset = parseInt(searchParams.get("offset") || "0");
@@ -124,7 +124,7 @@ export async function GET(req: Request) {
   let ebayRes;
   const maxRetries = 3;
   let attempt = 0;
-  let lastError: any = null;
+  let lastError: unknown = null;
   
   while (attempt < maxRetries) {
     try {

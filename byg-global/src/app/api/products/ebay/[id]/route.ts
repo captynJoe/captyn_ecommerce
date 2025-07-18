@@ -11,7 +11,7 @@ async function getAccessToken() {
 
   const maxRetries = 3;
   let attempt = 0;
-  let lastError: any = null;
+  let lastError: unknown = null;
 
   while (attempt < maxRetries) {
     try {

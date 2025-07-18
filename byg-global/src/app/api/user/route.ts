@@ -5,31 +5,28 @@ import authOptions from "@/lib/authOptions";
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
-    
+
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Check if MongoDB is configured
     if (!process.env.MONGODB_URI) {
       return NextResponse.json({ error: "Database not configured" }, { status: 503 });
     }
 
-    // Dynamic import to prevent build errors when MongoDB isn't configured
     const { default: clientPromise } = await import("@/lib/mongodb");
-    
+
     const client = await clientPromise;
     const db = client.db();
     const collection = db.collection("users");
 
     const user = await collection.findOne({ email: session.user.email });
-    
+
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Remove sensitive data before sending response
-    const { hashedPassword, ...safeUser } = user;
+    const { hashedPassword: _hashedPassword, ...safeUser } = user;
 
     return NextResponse.json(safeUser);
   } catch (error) {
@@ -132,7 +129,7 @@ export async function PUT(req: Request) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const { hashedPassword, ...safeUser } = result.value;
+    const { hashedPassword: _hashedPassword, ...safeUser } = result.value;
 
     return NextResponse.json(safeUser);
   } catch (error) {

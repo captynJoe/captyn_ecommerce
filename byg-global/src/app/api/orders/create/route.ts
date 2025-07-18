@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getFirestore, doc, setDoc, collection, addDoc } from 'firebase/firestore';
+import { getFirestore, collection, addDoc } from 'firebase/firestore';
 import { app } from '../../../../utils/firebase';
 import allowedSellers from '../../../../config/allowedSellers';
 

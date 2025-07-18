@@ -32,8 +32,12 @@ export default function LoginModal({ onClose, onLogin }: LoginModalProps) {
       } else {
         setError(res.error || "Login failed");
       }
-    } catch (error: any) {
-      setError(error.message || "Login failed");
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError("Login failed");
+      }
     } finally {
       setLoading(false);
     }
@@ -50,8 +54,12 @@ export default function LoginModal({ onClose, onLogin }: LoginModalProps) {
       } else if (result.error) {
         setError(result.error);
       }
-    } catch (error: any) {
-      setError(error.message || "Failed to sign in with Google");
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError("Failed to sign in with Google");
+      }
     } finally {
       setLoading(false);
     }
@@ -72,8 +80,12 @@ export default function LoginModal({ onClose, onLogin }: LoginModalProps) {
       await sendPasswordResetEmail(auth, email);
       setResetEmailSent(true);
       setError(null);
-    } catch (error: any) {
-      setError(error.message || "Failed to send reset email");
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError("Failed to send reset email");
+      }
     } finally {
       setLoading(false);
     }

@@ -5,12 +5,14 @@ import { getAuth } from 'firebase/auth';
 import { getFirestore, doc, setDoc, collection, query, orderBy, onSnapshot, addDoc, serverTimestamp } from 'firebase/firestore';
 import { app } from '../utils/firebase';
 
+import { ReactNode } from "react";
+
 interface Message {
   id?: string;
   text: string;
   senderId: string;
   senderName: string;
-  timestamp: any;
+  timestamp: ReactNode;
 }
 
 interface ChatModalProps {
@@ -25,7 +27,7 @@ interface ChatModalProps {
 export default function ChatModal({ isOpen, onClose, sellerId, sellerName, productId, productTitle }: ChatModalProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
-  const [error, setError] = useState('');
+  const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -161,7 +163,9 @@ export default function ChatModal({ isOpen, onClose, sellerId, sellerName, produ
                   <p>{message.text}</p>
                   {message.timestamp && (
                     <p className="text-xs opacity-70 mt-1">
-                      {message.timestamp.toDate?.()?.toLocaleTimeString() || 'Sending...'}
+                      {typeof message.timestamp === 'object' && message.timestamp !== null && 'toDate' in message.timestamp && typeof (message.timestamp as any).toDate === 'function'
+                        ? (message.timestamp as any).toDate().toLocaleTimeString()
+                        : <>{String(message.timestamp)}</>}
                     </p>
                   )}
                 </div>
