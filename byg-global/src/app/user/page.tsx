@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
+import { getAuth, onAuthStateChanged, signOut, User as FirebaseUser } from "firebase/auth";
 import { getFirestore, doc, getDoc, updateDoc, arrayRemove } from "firebase/firestore";
 import { app } from "../../utils/firebase";
 import { useRouter } from "next/navigation";
-import { User, ShoppingCart, Package, Settings, LogOut, Trash2, Eye } from "lucide-react";
+import { User as UserIcon, ShoppingCart, Package, Settings, LogOut, Trash2, Eye } from "lucide-react";
 import LoadingAnimation from "@/components/LoadingAnimation";
 import LoginModal from "@/components/LoginModal";
 
@@ -32,7 +32,7 @@ function convertToKES(value: string | undefined, currency: string | undefined) {
 
 export default function UserPage() {
   const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<FirebaseUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [activeTab, setActiveTab] = useState("profile");
@@ -169,7 +169,7 @@ export default function UserPage() {
                   : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
               }`}
             >
-              <User className="w-5 h-5" />
+              <UserIcon className="w-5 h-5" />
               Profile
             </button>
             <button
@@ -197,7 +197,7 @@ export default function UserPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 p-6 rounded-xl">
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                      <User className="w-5 h-5 text-blue-600" />
+                  <UserIcon className="w-5 h-5 text-blue-600" />
                       Account Information
                     </h3>
                     <div className="space-y-3">

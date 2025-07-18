@@ -104,7 +104,13 @@ export default function TestCheckoutPage() {
         {/* Delivery Details */}
         <DeliveryDetails 
           onDetailsChange={(details) => {
-            setDeliveryDetails(details);
+            setDeliveryDetails({
+              name: details.fullName,
+              phone: details.phone,
+              email: details.email,
+              county: details.county,
+              address: details.address
+            });
             // Calculate delivery fee based on county
             if (details.county) {
               const county = kenyanCounties.find(c => c.name === details.county);

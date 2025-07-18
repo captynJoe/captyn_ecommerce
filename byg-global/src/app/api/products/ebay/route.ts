@@ -164,6 +164,11 @@ const query = searchParams.get("q") || "phone laptop gaming console electronics"
 
       const responseText = await ebayRes.text();
 
+      // Added detailed logging for debugging priceAsc sorting
+      if (sortBy === "priceAsc") {
+        console.log("Raw eBay API response for priceAsc sorting:", responseText.substring(0, 2000));
+      }
+
       let data;
       try {
         data = JSON.parse(responseText);
@@ -208,9 +213,19 @@ const query = searchParams.get("q") || "phone laptop gaming console electronics"
           }
 
           const isPhoneCover = title.includes("phone cover") || title.includes("phone case");
-          if (priceInKsh < 4000 && !isPhoneCover) {
-            console.log(`Filtered out low price product: '${item.title}' priced at ${priceInKsh} Ksh`);
-            return false;
+          if (priceInKsh < 4000) {
+            if (sortBy === "priceAsc") {
+              // Exclude phone covers/cases below 4000 Ksh when sorting by price ascending
+              if (isPhoneCover) {
+                console.log(`Filtered out phone cover/case below 4000 Ksh in priceAsc sorting: '${item.title}' priced at ${priceInKsh} Ksh`);
+                return false;
+              }
+            } else {
+              if (!isPhoneCover) {
+                console.log(`Filtered out low price product: '${item.title}' priced at ${priceInKsh} Ksh`);
+                return false;
+              }
+            }
           }
 
           return true;

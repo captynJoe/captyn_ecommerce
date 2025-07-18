@@ -12,6 +12,7 @@ import LoadingAnimation from "@/components/LoadingAnimation";
 import { useApp } from "@/contexts/AppContext";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { convertToKESWithProfitAndShipping } from "@/utils/pricing";
+import ModernFilters from "@/components/ModernFilters";
 
 
 // Types
@@ -67,7 +68,7 @@ export default function HomePage() {
     return "";
   });
   const [pageNum, setPageNum] = useState(0);
-  const [sort, setSort] = useState("bestMatch");
+  const [sort, setSort] = useState("");
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   // Added missing state variables for SliderMenu props
@@ -171,10 +172,13 @@ export default function HomePage() {
   }, [loading, products.length]);
 
   useEffect(() => {
-    // Only fetch products if there's a query (search term or category selected)
-    if (query) {
+    // Only fetch products if there's a query (search term or category selected) and sort is selected
+    if (query && sort) {
       const resetProducts = pageNum === 0;
       fetchProducts(resetProducts);
+    } else if (!query) {
+      // Clear products if no query
+      setProducts([]);
     }
   }, [query, pageNum, sort, priceRange, filterCondition, networkType]);
 
@@ -403,80 +407,43 @@ export default function HomePage() {
         </section>
         )}
 
-        {/* Shop by Category Section - Always visible and positioned high */}
-        <section id="shop-by-category" className="max-w-7xl mx-auto px-4 py-12">
-          <h2 className={`text-3xl font-bold mb-8 ${isDark ? "text-white" : "text-gray-900"}`}>
-            Shop by Category
-          </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
-            <button
-              onClick={() => {
-          setQuery("phones");
-          setPageNum(0);
-          setProducts([]);
-          setLoading(true);
-          fetchProducts(true);
-        }}
-              className={`flex flex-col items-center justify-center p-8 rounded-2xl border cursor-pointer shadow-sm hover:shadow-2xl transform hover:scale-105 transition-all duration-300 ${
-                isDark ? "bg-gray-800 border-gray-700 text-white" : "bg-white border-gray-200 text-gray-900"
-              }`}
-              aria-label="Shop Phones"
-            >
-              <Smartphone className="w-14 h-14 mb-3" />
-              <span className="text-xl font-semibold">Phones</span>
-            </button>
-
-            <button
-              onClick={() => {
-          setQuery("graphics cards computer components");
-          setPageNum(0);
-          setProducts([]);
-          setLoading(true);
-          fetchProducts(true);
-        }}
-              className={`flex flex-col items-center justify-center p-8 rounded-2xl border cursor-pointer shadow-sm hover:shadow-2xl transform hover:scale-105 transition-all duration-300 ${
-                isDark ? "bg-gray-800 border-gray-700 text-white" : "bg-white border-gray-200 text-gray-900"
-              }`}
-              aria-label="Shop PC Parts"
-            >
-              <Cpu className="w-14 h-14 mb-3" />
-              <span className="text-xl font-semibold">PC Parts</span>
-            </button>
-
-            <button
-              onClick={() => {
-          setQuery("laptops");
-          setPageNum(0);
-          setProducts([]);
-          setLoading(true);
-          fetchProducts(true);
-        }}
-              className={`flex flex-col items-center justify-center p-8 rounded-2xl border cursor-pointer shadow-sm hover:shadow-2xl transform hover:scale-105 transition-all duration-300 ${
-                isDark ? "bg-gray-800 border-gray-700 text-white" : "bg-white border-gray-200 text-gray-900"
-              }`}
-              aria-label="Shop Laptops"
-            >
-              <Laptop className="w-14 h-14 mb-3" />
-              <span className="text-xl font-semibold">Laptops</span>
-            </button>
-
-            <button
-              onClick={() => {
-          setQuery("consoles");
-          setPageNum(0);
-          setProducts([]);
-          setLoading(true);
-          fetchProducts(true);
-        }}
-              className={`flex flex-col items-center justify-center p-8 rounded-2xl border cursor-pointer shadow-sm hover:shadow-2xl transform hover:scale-105 transition-all duration-300 ${
-                isDark ? "bg-gray-800 border-gray-700 text-white" : "bg-white border-gray-200 text-gray-900"
-              }`}
-              aria-label="Shop Consoles"
-            >
-              <Gamepad2 className="w-14 h-14 mb-3" />
-              <span className="text-xl font-semibold">Consoles</span>
-            </button>
-          </div>
+        {/* Modern Filters Section - replacing Shop by Category */}
+        <section className="max-w-7xl mx-auto px-4 py-12">
+          <ModernFilters
+            sortBy={sort}
+            setSortByAction={(newSort) => {
+              setSort(newSort);
+              setPageNum(0);
+            }}
+            filterCondition={filterCondition.length === 1 ? filterCondition[0] : "all"}
+            setFilterConditionAction={(newCondition) => {
+              setFilterCondition([newCondition]);
+              setPageNum(0);
+            }}
+            onFilterChangeAction={() => {
+              setPageNum(0);
+              fetchProducts(true);
+            }}
+            priceRange={priceRange}
+            setPriceRangeAction={(range) => {
+              setPriceRange(range);
+              setPageNum(0);
+            }}
+            rating={0} // No rating state in page.tsx, default to 0
+            setRatingAction={() => {}} // No rating setter, no-op
+            networkType={networkType}
+            setNetworkTypeAction={(newNetwork) => {
+              setNetworkType(newNetwork);
+              setPageNum(0);
+            }}
+            isDark={isDark}
+          />
+          {!sort && !query && (
+            <div className={`mt-6 p-4 rounded-lg border text-center ${isDark ? "bg-gray-800 border-gray-700 text-gray-300" : "bg-white border-gray-200 text-gray-700"}`}>
+              <p className="text-lg font-medium mb-2">Welcome to Captyn Global!</p>
+              <p>Use the search bar above to start exploring products. Enter keywords and press enter to find your desired items.</p>
+            </div>
+          )}
         </section>
 
         {/* Marketing Content - Only show when not in search mode */}
