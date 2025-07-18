@@ -10,7 +10,7 @@ import {
 import { auth } from './firebase';
 
 interface AuthResponse {
-  user: any | null;
+  user: unknown | null;
   error: string | null;
 }
 
@@ -19,33 +19,35 @@ export const emailPasswordSignIn = async (email: string, password: string): Prom
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     return { user: userCredential.user, error: null };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Email/Password sign-in error:', error);
     let errorMessage = 'Failed to sign in';
-    
-    switch (error.code) {
-      case 'auth/user-not-found':
-        errorMessage = 'No account found with this email address';
-        break;
-      case 'auth/wrong-password':
-        errorMessage = 'Incorrect password';
-        break;
-      case 'auth/invalid-email':
-        errorMessage = 'Invalid email address';
-        break;
-      case 'auth/user-disabled':
-        errorMessage = 'This account has been disabled';
-        break;
-      case 'auth/too-many-requests':
-        errorMessage = 'Too many failed attempts. Please try again later';
-        break;
-      case 'auth/invalid-credential':
-        errorMessage = 'Invalid email or password';
-        break;
-      default:
-        errorMessage = error.message || 'Failed to sign in';
+
+    if (typeof error === 'object' && error !== null && 'code' in error) {
+      switch ((error as any).code) {
+        case 'auth/user-not-found':
+          errorMessage = 'No account found with this email address';
+          break;
+        case 'auth/wrong-password':
+          errorMessage = 'Incorrect password';
+          break;
+        case 'auth/invalid-email':
+          errorMessage = 'Invalid email address';
+          break;
+        case 'auth/user-disabled':
+          errorMessage = 'This account has been disabled';
+          break;
+        case 'auth/too-many-requests':
+          errorMessage = 'Too many failed attempts. Please try again later';
+          break;
+        case 'auth/invalid-credential':
+          errorMessage = 'Invalid email or password';
+          break;
+        default:
+          errorMessage = (error as any).message || 'Failed to sign in';
+      }
     }
-    
+
     return {
       user: null,
       error: errorMessage
@@ -57,36 +59,38 @@ export const emailPasswordSignIn = async (email: string, password: string): Prom
 export const emailPasswordSignUp = async (email: string, password: string, displayName?: string): Promise<AuthResponse> => {
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    
+
     // Update display name if provided
     if (displayName && userCredential.user) {
       await updateProfile(userCredential.user, { displayName });
     }
-    
+
     // Send email verification
     if (userCredential.user) {
       await sendEmailVerification(userCredential.user);
     }
-    
+
     return { user: userCredential.user, error: null };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Email/Password sign-up error:', error);
     let errorMessage = 'Failed to create account';
-    
-    switch (error.code) {
-      case 'auth/email-already-in-use':
-        errorMessage = 'An account with this email already exists';
-        break;
-      case 'auth/invalid-email':
-        errorMessage = 'Invalid email address';
-        break;
-      case 'auth/weak-password':
-        errorMessage = 'Password should be at least 6 characters';
-        break;
-      default:
-        errorMessage = error.message || 'Failed to create account';
+
+    if (typeof error === 'object' && error !== null && 'code' in error) {
+      switch ((error as any).code) {
+        case 'auth/email-already-in-use':
+          errorMessage = 'An account with this email already exists';
+          break;
+        case 'auth/invalid-email':
+          errorMessage = 'Invalid email address';
+          break;
+        case 'auth/weak-password':
+          errorMessage = 'Password should be at least 6 characters';
+          break;
+        default:
+          errorMessage = (error as any).message || 'Failed to create account';
+      }
     }
-    
+
     return {
       user: null,
       error: errorMessage
@@ -101,34 +105,36 @@ export const signInWithGoogle = async (): Promise<AuthResponse> => {
     provider.setCustomParameters({
       prompt: 'select_account'
     });
-    
+
     // Add additional scopes if needed
     provider.addScope('email');
     provider.addScope('profile');
-    
+
     const result = await signInWithPopup(auth, provider);
     return { user: result.user, error: null };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Google sign-in error:', error);
     let errorMessage = 'Failed to sign in with Google';
-    
-    switch (error.code) {
-      case 'auth/popup-closed-by-user':
-        errorMessage = 'Sign-in was cancelled';
-        break;
-      case 'auth/popup-blocked':
-        errorMessage = 'Popup was blocked by browser. Please allow popups and try again';
-        break;
-      case 'auth/cancelled-popup-request':
-        errorMessage = 'Sign-in was cancelled';
-        break;
-      case 'auth/account-exists-with-different-credential':
-        errorMessage = 'An account already exists with this email using a different sign-in method';
-        break;
-      default:
-        errorMessage = error.message || 'Failed to sign in with Google';
+
+    if (typeof error === 'object' && error !== null && 'code' in error) {
+      switch ((error as any).code) {
+        case 'auth/popup-closed-by-user':
+          errorMessage = 'Sign-in was cancelled';
+          break;
+        case 'auth/popup-blocked':
+          errorMessage = 'Popup was blocked by browser. Please allow popups and try again';
+          break;
+        case 'auth/cancelled-popup-request':
+          errorMessage = 'Sign-in was cancelled';
+          break;
+        case 'auth/account-exists-with-different-credential':
+          errorMessage = 'An account already exists with this email using a different sign-in method';
+          break;
+        default:
+          errorMessage = (error as any).message || 'Failed to sign in with Google';
+      }
     }
-    
+
     return {
       user: null,
       error: errorMessage
@@ -141,21 +147,23 @@ export const resetPassword = async (email: string): Promise<AuthResponse> => {
   try {
     await sendPasswordResetEmail(auth, email);
     return { user: null, error: null };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Password reset error:', error);
     let errorMessage = 'Failed to send reset email';
-    
-    switch (error.code) {
-      case 'auth/user-not-found':
-        errorMessage = 'No account found with this email address';
-        break;
-      case 'auth/invalid-email':
-        errorMessage = 'Invalid email address';
-        break;
-      default:
-        errorMessage = error.message || 'Failed to send reset email';
+
+    if (typeof error === 'object' && error !== null && 'code' in error) {
+      switch ((error as any).code) {
+        case 'auth/user-not-found':
+          errorMessage = 'No account found with this email address';
+          break;
+        case 'auth/invalid-email':
+          errorMessage = 'Invalid email address';
+          break;
+        default:
+          errorMessage = (error as any).message || 'Failed to send reset email';
+      }
     }
-    
+
     return {
       user: null,
       error: errorMessage
@@ -167,7 +175,7 @@ export const resetPassword = async (email: string): Promise<AuthResponse> => {
 export const signOut = async (): Promise<void> => {
   try {
     await auth.signOut();
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Sign-out error:', error);
     throw error;
   }
@@ -179,6 +187,6 @@ export const getCurrentUser = () => {
 };
 
 // Subscribe to auth state changes
-export const onAuthStateChanged = (callback: (user: any) => void) => {
+export const onAuthStateChanged = (callback: (user: unknown) => void) => {
   return auth.onAuthStateChanged(callback);
 };
