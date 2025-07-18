@@ -3,7 +3,16 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { getAuth, onAuthStateChanged, User } from "firebase/auth";
+
+interface DeliveryDetailsType {
+  county: string;
+  name: string;
+  phone: string;
+  address: string;
+  email: string;
+  intlShippingAmount?: number;
+}
 import { getFirestore, doc, getDoc, updateDoc, arrayRemove } from "firebase/firestore";
 import { app } from "../../utils/firebase";
 import { ShoppingCart, ArrowLeft, Trash2 } from "lucide-react";
@@ -38,7 +47,7 @@ export default function CheckoutPage() {
   const auth = getAuth(app);
   const db = getFirestore(app);
 
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [removing, setRemoving] = useState<string | null>(null);
@@ -46,7 +55,7 @@ export default function CheckoutPage() {
   const [showPayment, setShowPayment] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
 
-  const [deliveryDetails, setDeliveryDetails] = useState<any>(null);
+  const [deliveryDetails, setDeliveryDetails] = useState<DeliveryDetailsType | null>(null);
   const [deliveryFee, setDeliveryFee] = useState(300); // Base local delivery fee
 
   const [insuranceCost, setInsuranceCost] = useState(0);
@@ -270,7 +279,13 @@ export default function CheckoutPage() {
             {/* Delivery Details */}
             <DeliveryDetails
               onDetailsChange={(details) => {
-                setDeliveryDetails(details);
+                setDeliveryDetails({
+                  name: details.fullName,
+                  phone: details.phone,
+                  email: details.email,
+                  county: details.county,
+                  address: details.address,
+                });
                 if (details.county) {
                   const county = kenyanCounties.find((c) => c.name === details.county);
                   const distance = county?.distance || 0;

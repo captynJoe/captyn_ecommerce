@@ -5,9 +5,9 @@
   "scripts": {
     "dev": "cd byg-global && npm run dev",
     "build": "cd byg-global && npm install && npm run build",
-    "start": "cd byg-global && npm run start",
-    "lint": "cd byg-global && npm run lint"
+    "start": "cd byg-global && npm run start"
   },
+
   "devDependencies": {
     "@playwright/test": "^1.54.1",
     "@testing-library/jest-dom": "^6.6.3",

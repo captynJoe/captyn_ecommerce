@@ -32,7 +32,7 @@ function convertToKES(value: string | undefined, currency: string | undefined) {
 
 export default function UserPage() {
   const router = useRouter();
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [activeTab, setActiveTab] = useState("profile");

@@ -26,8 +26,12 @@ export default function RegisterPage() {
     try {
       await createUserWithEmailAndPassword(auth, email, password);
       router.push("/"); // Redirect to homepage or login page after successful registration
-    } catch (err: any) {
-      setError(err.message || "Failed to create account");
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message || "Failed to create account");
+      } else {
+        setError("An unknown error occurred");
+      }
     } finally {
       setLoading(false);
     }

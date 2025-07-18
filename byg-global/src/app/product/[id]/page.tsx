@@ -266,11 +266,11 @@ export default function ProductDetailPage() {
     if (!html) return "";
     
     // Remove eBay-specific content and seller information
-    let filtered = html
+    const filtered = html
       // Remove links to eBay
       .replace(/<a[^>]+href="https?:\/\/[^"]*ebay\.[^"]*"[^>]*>.*?<\/a>/gi, "")
       // Remove eBay references (case-insensitive)
-      .replace(/>([^<]*)</gi, (match, text) =>
+      .replace(/>([^<]*)</gi, (match: string, text: string) =>
         ">" + text.replace(/ebay/gi, "").replace(/eBay/gi, "") + "<"
       )
 

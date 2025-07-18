@@ -250,7 +250,7 @@ export default function ProductDetailPage() {
     if (!html) return "";
     
     // Remove eBay-specific content and seller information
-    let filtered = html
+    const filtered = html
       // Remove eBay references (case-insensitive)
       .replace(/>([^<]*)</gi, (match, text) =>
         ">" + text.replace(/ebay/gi, "").replace(/eBay/gi, "") + "<"

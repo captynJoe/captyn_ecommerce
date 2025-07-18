@@ -31,6 +31,14 @@ interface EbayProduct {
 
 import type { User } from "firebase/auth";
 
+interface WishlistItem {
+  id: string;
+  title: string;
+  price: string;
+  image: string;
+  condition?: string;
+}
+
 // Main Page
 export default function HomePage() {
   const [user, setUser] = useState<User | null>(null);
@@ -356,7 +364,7 @@ export default function HomePage() {
             
             <p className="text-lg sm:text-xl md:text-2xl mb-8 opacity-90 max-w-4xl mx-auto leading-relaxed">
               We make buying, shipping, and delivery simple, secure, and affordable. 
-              From various sellers in the USA, we handle everything so you don't have to.
+              From various sellers in the USA, we handle everything so you don&apos;t have to.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
@@ -522,7 +530,7 @@ export default function HomePage() {
                   Place Your Order
                 </h3>
                 <p className={`${isDark ? "text-gray-400" : "text-gray-600"}`}>
-                  We'll handle the buying, packaging, and safe delivery to Kenya. Sit back and relax.
+                  We&apos;ll handle the buying, packaging, and safe delivery to Kenya. Sit back and relax.
                 </p>
               </div>
 
@@ -581,7 +589,7 @@ export default function HomePage() {
                       No Hidden Fees
                     </h3>
                     <p className={`${isDark ? "text-gray-400" : "text-gray-600"}`}>
-                      Lot's of veriried sellers, all with different prices, choose your prefered seller. 
+                      Lot&apos;s of veriried sellers, all with different prices, choose your prefered seller. 
                     </p>
                   </div>
                 </div>
@@ -642,7 +650,7 @@ export default function HomePage() {
                   ))}
                 </div>
                 <p className={`mb-6 ${isDark ? "text-gray-300" : "text-gray-700"} italic`}>
-                  "Got my iPhone 15 Pro in 3 weeks — Phone was as indicated, came with protector too."
+                                    "Got my iPhone 15 Pro in 3 weeks &mdash; Phone was as indicated, came with protector too."
                 </p>
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
@@ -839,7 +847,7 @@ export default function HomePage() {
                                 price: convertToKESWithProfitAndShipping(product.price.value.toString(), product.condition, product.title),
                                 image: product.image?.imageUrl || '/placeholder-image.jpg',
                                 condition: product.condition,
-                              } as any)
+                              } as WishlistItem)
                         }
                         className="absolute top-2 right-2 p-1.5 sm:p-2 rounded-full bg-white/90 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all z-10 group-hover:scale-110"
                         title={isInWishlist(product.itemId) ? "Remove from Wishlist" : "Add to Wishlist"}
@@ -1025,7 +1033,7 @@ export default function HomePage() {
                                   price: convertToKESWithProfitAndShipping(product.price.value.toString(), product.condition, product.title),
                                   image: product.image?.imageUrl || '/placeholder-image.jpg',
                                   condition: product.condition,
-                                } as any)
+                                } as WishlistItem)
                           }
                           className="absolute top-2 right-2 p-1.5 sm:p-2 rounded-full bg-white/90 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all z-10 group-hover:scale-110"
                           title={isInWishlist(product.itemId) ? "Remove from Wishlist" : "Add to Wishlist"}

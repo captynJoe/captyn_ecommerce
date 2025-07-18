@@ -7,11 +7,20 @@ import AquantuoEstimator from "@/components/AquantuoEstimator";
 import DeliveryDetails, { kenyanCounties } from "@/components/DeliveryDetails";
 import { useRouter } from "next/navigation";
 
+interface DeliveryDetailsType {
+  county: string;
+  name: string;
+  phone: string;
+  address: string;
+  email: string;
+  intlShippingAmount?: number;
+}
+
 export default function TestCheckoutPage() {
   const router = useRouter();
   const [showPayment, setShowPayment] = useState(false);
   const [insuranceCost, setInsuranceCost] = useState(0);
-  const [deliveryDetails, setDeliveryDetails] = useState<any>(null);
+  const [deliveryDetails, setDeliveryDetails] = useState<DeliveryDetailsType | null>(null);
   const [deliveryFee, setDeliveryFee] = useState(300); // Base delivery fee for Nairobi
 
   // Mock cart items for testing

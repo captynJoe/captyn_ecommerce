@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { getAuth } from 'firebase/auth';
-import { getFirestore, doc, setDoc, collection, query, orderBy, onSnapshot, addDoc, serverTimestamp } from 'firebase/firestore';
+import { getFirestore, doc, setDoc, collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { app } from '../utils/firebase';
 
 import { ReactNode } from "react";
@@ -12,7 +12,7 @@ interface Message {
   text: string;
   senderId: string;
   senderName: string;
-  timestamp: ReactNode;
+  timestamp: Timestamp | ReactNode;
 }
 
 interface ChatModalProps {
@@ -164,7 +164,7 @@ export default function ChatModal({ isOpen, onClose, sellerId, sellerName, produ
                   {message.timestamp && (
                     <p className="text-xs opacity-70 mt-1">
                       {typeof message.timestamp === 'object' && message.timestamp !== null && 'toDate' in message.timestamp && typeof (message.timestamp as any).toDate === 'function'
-                        ? (message.timestamp as any).toDate().toLocaleTimeString()
+                        ? (message.timestamp as Timestamp).toDate().toLocaleTimeString()
                         : <>{String(message.timestamp)}</>}
                     </p>
                   )}
