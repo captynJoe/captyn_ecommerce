@@ -439,8 +439,9 @@ export default function HomePage() {
             isDark={isDark}
           />
           {!sort && !query && (
-            <div className={`mt-6 p-4 rounded-lg border text-center ${isDark ? "bg-gray-800 border-gray-700 text-gray-300" : "bg-white border-gray-200 text-gray-700"}`}>
-              <p className="text-lg font-medium mb-2">Welcome to Captyn Global!</p>
+            <div className={`block p-8 rounded-xl border text-center mx-auto mt-6 max-w-xl ${isDark ? "bg-gray-800 border-gray-700 text-gray-300" : "bg-white border-gray-200 text-gray-700"}`}>
+              <div className="text-6xl mb-4">🔍</div>
+              <h3 className="text-xl font-semibold mb-2">Welcome to Captyn Global!</h3>
               <p>Use the search bar above to start exploring products. Enter keywords and press enter to find your desired items.</p>
             </div>
           )}
@@ -909,44 +910,6 @@ export default function HomePage() {
         {/* Filter and View Controls - Only show when there are products or in search mode */}
         {(isSearchMode || products.length > 0) && (
           <section className="max-w-7xl mx-auto px-4 py-6">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-              <div className="flex items-center gap-4">
-                <button
-                  onClick={() => setIsMenuOpen(true)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
-                    isDark 
-                      ? "border-gray-600 hover:bg-gray-800 text-white" 
-                      : "border-gray-300 hover:bg-gray-100 text-gray-700"
-                  }`}
-                >
-                  <Filter className="w-4 h-4" />
-                  Filters
-                </button>
-              </div>
-              
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setViewMode('grid')}
-                  className={`p-2 rounded-lg transition-colors ${
-                    viewMode === 'grid'
-                      ? isDark ? "bg-blue-600 text-white" : "bg-blue-500 text-white"
-                      : isDark ? "hover:bg-gray-800 text-gray-400" : "hover:bg-gray-200 text-gray-600"
-                  }`}
-                >
-                  <Grid3X3 className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => setViewMode('list')}
-                  className={`p-2 rounded-lg transition-colors ${
-                    viewMode === 'list'
-                      ? isDark ? "bg-blue-600 text-white" : "bg-blue-500 text-white"
-                      : isDark ? "hover:bg-gray-800 text-gray-400" : "hover:bg-gray-200 text-gray-600"
-                  }`}
-                >
-                  <List className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
 
             {/* Products Grid/List */}
             {loading && pageNum === 0 ? (
@@ -968,13 +931,7 @@ export default function HomePage() {
                 </div>
               </div>
             ) : products.length === 0 && isSearchMode ? (
-              <div className="text-center py-20">
-                <div className={`inline-block p-8 rounded-xl ${isDark ? "bg-gray-800 border border-gray-700" : "bg-white border border-gray-200"}`}>
-                  <div className="text-6xl mb-4">🔍</div>
-                  <h3 className="text-xl font-semibold mb-2">Start your search or choose a category</h3>
-                  <p className="text-gray-500">Try adjusting your search or filters</p>
-                </div>
-              </div>
+              <></>
             ) : (
               <>
                 <div className={`grid gap-4 sm:gap-6 ${
