@@ -9,12 +9,24 @@ const clientSecret = process.env.EBAY_CLIENT_SECRET!;
 let accessToken: string | null = null;
 let tokenExpiry = 0;
 
+interface EbayItemSummary {
+  title?: string;
+  description?: string;
+  price?: {
+    value?: string;
+    currency?: string;
+  };
+  seller?: {
+    feedbackScore?: number;
+  };
+}
+
 async function getAccessToken() {
   if (accessToken && Date.now() < tokenExpiry) return accessToken;
 
   const maxRetries = 3;
   let attempt = 0;
-  let lastError: any = null;
+  let lastError: unknown = null;
 
   while (attempt < maxRetries) {
     try {
@@ -176,7 +188,7 @@ export async function GET(req: Request) {
       // Allow items with no description only if seller has at least 10 sold items
       if (data.itemSummaries.length > 0) {
         console.log("Filtering products for description, prohibited items, and price...");
-        data.itemSummaries = data.itemSummaries.filter((item: any) => {
+        data.itemSummaries = data.itemSummaries.filter((item: EbayItemSummary) => {
           const title = (item.title || "").toLowerCase();
           const description = (item.description || "").toLowerCase();
           const priceValue = parseFloat(item.price?.value || "0");
@@ -208,7 +220,7 @@ export async function GET(req: Request) {
 
       // Light post-processing: filter out very cheap accessories when sorting by price
       if (data.itemSummaries && (sortBy === "priceAsc" || sortBy === "priceDesc")) {
-        const filteredItems = data.itemSummaries.filter((item: any) => {
+        const filteredItems = data.itemSummaries.filter((item: EbayItemSummary) => {
           const title = item.title?.toLowerCase() || "";
           const price = parseFloat(item.price?.value || "0");
 

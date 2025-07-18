@@ -6,7 +6,8 @@ import clientPromise from "../lib/mongodb";
 import { User } from "next-auth";
 
 interface ExtendedUser extends User {
-  isAdmin?: boolean;
+  isAdmin: boolean;
+  id: string;
 }
 import { WithId } from "mongodb";
 import bcrypt from "bcrypt";
@@ -72,16 +73,16 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async jwt({ token, user, account }) {
-      if (user) {
-        token.id = user.id;
-        token.isAdmin = (user as any).isAdmin || false;
+      if (user && 'isAdmin' in user && 'id' in user) {
+        token.id = (user as ExtendedUser).id;
+        token.isAdmin = (user as ExtendedUser).isAdmin;
       }
       return token;
     },
     async session({ session, token }) {
       if (token && session.user) {
-        (session.user as any).id = token.id as string;
-        (session.user as any).isAdmin = token.isAdmin as boolean;
+        (session.user as ExtendedUser).id = token.id as string;
+        (session.user as ExtendedUser).isAdmin = token.isAdmin as boolean;
       }
       return session;
     },

@@ -14,6 +14,11 @@ interface AuthResponse {
   error: string | null;
 }
 
+interface FirebaseAuthError {
+  code?: string;
+  message?: string;
+}
+
 // Email/Password Sign In
 export const emailPasswordSignIn = async (email: string, password: string): Promise<AuthResponse> => {
   try {
@@ -24,7 +29,7 @@ export const emailPasswordSignIn = async (email: string, password: string): Prom
     let errorMessage = 'Failed to sign in';
 
     if (typeof error === 'object' && error !== null && 'code' in error) {
-      switch ((error as any).code) {
+      switch ((error as FirebaseAuthError).code) {
         case 'auth/user-not-found':
           errorMessage = 'No account found with this email address';
           break;
@@ -44,7 +49,7 @@ export const emailPasswordSignIn = async (email: string, password: string): Prom
           errorMessage = 'Invalid email or password';
           break;
         default:
-          errorMessage = (error as any).message || 'Failed to sign in';
+          errorMessage = (error as FirebaseAuthError).message || 'Failed to sign in';
       }
     }
 
@@ -76,7 +81,7 @@ export const emailPasswordSignUp = async (email: string, password: string, displ
     let errorMessage = 'Failed to create account';
 
     if (typeof error === 'object' && error !== null && 'code' in error) {
-      switch ((error as any).code) {
+      switch ((error as FirebaseAuthError).code) {
         case 'auth/email-already-in-use':
           errorMessage = 'An account with this email already exists';
           break;
@@ -87,7 +92,7 @@ export const emailPasswordSignUp = async (email: string, password: string, displ
           errorMessage = 'Password should be at least 6 characters';
           break;
         default:
-          errorMessage = (error as any).message || 'Failed to create account';
+          errorMessage = (error as FirebaseAuthError).message || 'Failed to create account';
       }
     }
 
@@ -117,7 +122,7 @@ export const signInWithGoogle = async (): Promise<AuthResponse> => {
     let errorMessage = 'Failed to sign in with Google';
 
     if (typeof error === 'object' && error !== null && 'code' in error) {
-      switch ((error as any).code) {
+      switch ((error as FirebaseAuthError).code) {
         case 'auth/popup-closed-by-user':
           errorMessage = 'Sign-in was cancelled';
           break;
@@ -131,7 +136,7 @@ export const signInWithGoogle = async (): Promise<AuthResponse> => {
           errorMessage = 'An account already exists with this email using a different sign-in method';
           break;
         default:
-          errorMessage = (error as any).message || 'Failed to sign in with Google';
+          errorMessage = (error as FirebaseAuthError).message || 'Failed to sign in with Google';
       }
     }
 
@@ -152,7 +157,7 @@ export const resetPassword = async (email: string): Promise<AuthResponse> => {
     let errorMessage = 'Failed to send reset email';
 
     if (typeof error === 'object' && error !== null && 'code' in error) {
-      switch ((error as any).code) {
+      switch ((error as FirebaseAuthError).code) {
         case 'auth/user-not-found':
           errorMessage = 'No account found with this email address';
           break;
@@ -160,7 +165,7 @@ export const resetPassword = async (email: string): Promise<AuthResponse> => {
           errorMessage = 'Invalid email address';
           break;
         default:
-          errorMessage = (error as any).message || 'Failed to send reset email';
+          errorMessage = (error as FirebaseAuthError).message || 'Failed to send reset email';
       }
     }
 
