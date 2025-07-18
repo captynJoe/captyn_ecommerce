@@ -4,14 +4,21 @@ import { useEffect, useRef } from "react";
 
 declare global {
   interface Window {
-    paypal?: any;
+    paypal?: {
+      Buttons: (options: any) => {
+        render: (element: HTMLElement) => Promise<void>;
+      };
+      FUNDING: {
+        PAYPAL: string;
+      };
+    };
   }
 }
 
 interface PayPalButtonProps {
   amount: number;
-  onSuccess: (details: any) => void;
-  onError: (error: any) => void;
+  onSuccess: (details: unknown) => void;
+  onError: (error: Error) => void;
   onCancel?: () => void;
 }
 
@@ -86,22 +93,26 @@ export default function PayPalButton({ amount, onSuccess, onError, onCancel }: P
               } else {
                 throw new Error(data.error || "Failed to create PayPal order");
               }
-            } catch (error) {
+            } catch (error: unknown) {
               console.error("Error creating PayPal order:", error);
               onError(new Error("Failed to create payment order. Please try again."));
               throw error;
             }
           },
-          onApprove: async (data: any) => {
+          onApprove: async (data: unknown) => {
             try {
-              console.log("PayPal payment approved, capturing order:", data.orderID);
+              // Narrow type for data
+              const orderID = (data as { orderID?: string }).orderID;
+              if (!orderID) throw new Error("Missing orderID");
+
+              console.log("PayPal payment approved, capturing order:", orderID);
               const response = await fetch("/api/payments/paypal/capture", {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                  orderId: data.orderID,
+                  orderId: orderID,
                 }),
               });
 
@@ -117,29 +128,29 @@ export default function PayPalButton({ amount, onSuccess, onError, onCancel }: P
               } else {
                 throw new Error(captureData.error || "Payment capture failed");
               }
-            } catch (error) {
+            } catch (error: unknown) {
               console.error("Error capturing PayPal payment:", error);
               onError(new Error("Payment processing failed. Please try again."));
             }
           },
-          onCancel: (data: any) => {
+          onCancel: (data: unknown) => {
             console.log("PayPal payment cancelled:", data);
             if (onCancel) {
               onCancel();
             }
           },
-          onError: (err: any) => {
+          onError: (err: unknown) => {
             console.error("PayPal payment error:", err);
             let errorMessage = "Payment failed. Please try again.";
-            
-            if (err && typeof err === 'object') {
-              if (err.message) {
-                errorMessage = err.message;
-              } else if (err.details && err.details.length > 0) {
-                errorMessage = err.details[0].description || errorMessage;
+
+            if (err && typeof err === 'object' && err !== null) {
+              if ('message' in err && typeof (err as any).message === 'string') {
+                errorMessage = (err as any).message;
+              } else if ('details' in err && Array.isArray((err as any).details) && (err as any).details.length > 0) {
+                errorMessage = (err as any).details[0].description || errorMessage;
               }
             }
-            
+
             onError(new Error(errorMessage));
           },
         });
@@ -148,12 +159,12 @@ export default function PayPalButton({ amount, onSuccess, onError, onCancel }: P
           console.log("Rendering PayPal buttons...");
           paypalButtons.render(paypalRef.current).then(() => {
             console.log("PayPal buttons rendered successfully.");
-          }).catch((error: any) => {
+          }).catch((error: unknown) => {
             console.error("Error rendering PayPal buttons:", error);
             onError(new Error("Failed to load payment options. Please refresh and try again."));
           });
         }
-      } catch (error) {
+      } catch (error: unknown) {
         console.error("Error initializing PayPal buttons:", error);
         onError(new Error("Failed to initialize payment system. Please refresh and try again."));
       }
