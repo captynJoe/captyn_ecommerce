@@ -1,9 +1,14 @@
 const allowedSellers: string[] = [
-  "omahablue",
-  "wazno",
-  "itsworthmore",
-  "misterbuyback"
-  
+  "bidallies",
+  "never-msrp",
+  "auditmacstech",
+  "directauth",
+  "verizon",
+  "highclassmobile",
+  "smartsalesusa",
+  "ideal-mobile",
+  "mobilemarvel",
+  "fonelogics"
 ];
 
 export default allowedSellers;

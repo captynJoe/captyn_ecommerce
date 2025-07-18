@@ -25,7 +25,7 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [sort, setSort] = useState('newlyListed');
+  const [sort, setSort] = useState('bestMatch');
   const [filterCondition, setFilterCondition] = useState('all');
   const [priceRange, setPriceRange] = useState({ min: 0, max: 0 });
   const [rating, setRating] = useState(90);

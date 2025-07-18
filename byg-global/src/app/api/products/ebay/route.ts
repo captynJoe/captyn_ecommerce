@@ -55,14 +55,20 @@ async function getAccessToken() {
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
-  // Default search query focused on popular items that are likely to have results
   let query = searchParams.get("q") || "phone laptop gaming console electronics";
-  // Dynamic limit: more products for homepage, fewer for searches
   const isSearch = query && query !== "phone laptop gaming console electronics";
-  // Increase limit and offset to fetch more products
-  const limit = parseInt(searchParams.get("limit") || (isSearch ? "50" : "100"));  // Increased limits: 50 for searches, 100 for homepage
+  const limit = parseInt(searchParams.get("limit") || (isSearch ? "150" : "100"));
   const offset = parseInt(searchParams.get("offset") || "0");
-  const sortBy = searchParams.get("sortBy") || "bestMatch";
+  const isHomepage = !searchParams.get("q") || searchParams.get("q") === "phone laptop gaming console electronics";
+  let sortBy = searchParams.get("sortBy") || (isHomepage ? "bestMatch" : "bestMatch");
+
+  const lowerQuery = query.toLowerCase();
+
+  const validSortKeys = ["bestMatch", "priceAsc", "priceDesc", "endingSoon"];
+  if (!validSortKeys.includes(sortBy)) {
+    console.warn(`Invalid sortBy value '${sortBy}' received, falling back to 'bestMatch'`);
+    sortBy = "bestMatch";
+  }
 
   let token;
   try {
@@ -84,95 +90,30 @@ export async function GET(req: Request) {
     }, { status: 500 });
   }
 
-  // Build filter array
-  const filterArray: string[] = [];
-  const lowerQuery = query.toLowerCase();
-
-  // No category filters
-
-  // Add condition filter if specified
-  const conditionMap: { [key: string]: string } = {
-    new: "NEW",
-    refurbished: "CERTIFIED_REFURBISHED,SELLER_REFURBISHED",
-    "very good": "VERY_GOOD",
-    good: "GOOD",
-    used: "USED",
-    "for parts": "FOR_PARTS_OR_NOT_WORKING"
-  };
-
-  const condition = searchParams.get("condition");
-  if (condition && condition !== "all" && conditionMap[condition]) {
-    filterArray.push(`conditions:{${conditionMap[condition]}}`);
-  }
-
-  // Add price range filter if specified
-  const minPrice = searchParams.get("minPrice");
-  const maxPrice = searchParams.get("maxPrice");
-  if (minPrice || maxPrice) {
-    // eBay API expects price filter in format price:[min..max]
-    // and priceCurrency filter separately
-    if (minPrice && maxPrice) {
-      filterArray.push(`price:[${minPrice}..${maxPrice}]`);
-    } else if (minPrice) {
-      filterArray.push(`price:[${minPrice}..*]`);
-    } else if (maxPrice) {
-      filterArray.push(`price:[*..${maxPrice}]`);
-    }
-    filterArray.push("priceCurrency:USD");
-  }
-
-  // Add location filter for all products
-  filterArray.push('itemLocationCountry:US');
-
-  // Add seller filter for allowed sellers
-  // Temporarily disabled to improve product diversity
-  /*
-  if (allowedSellers.length > 0) {
-    // eBay API expects sellers filter as sellers:{seller1|seller2}
-    filterArray.push(`sellers:{${allowedSellers.join('|')}}`);
-
-  } else {
-    // If no sellers are allowed, return an empty list of products
-    return NextResponse.json({
-      itemSummaries: [],
-      total: 0,
-      message: "No sellers are allowed"
-    });
-  }
-  */
-
-  // Convert sort parameter - use valid eBay sort values
   const sortMap: { [key: string]: string } = {
-    bestMatch: "bestMatch",
     priceAsc: "price",
     priceDesc: "priceDesc",
-    newlyListed: "newlyListed",
-    endingSoon: "endingSoonest"
+    bestMatch: "bestMatch"
   };
-
+  
   const sortParam = sortMap[sortBy] || "bestMatch";
   
-  // Build the API URL with all parameters
   const apiUrl = new URL("https://api.ebay.com/buy/browse/v1/item_summary/search");
   apiUrl.searchParams.append("q", query);
   apiUrl.searchParams.append("limit", limit.toString());
   apiUrl.searchParams.append("offset", offset.toString());
   
-  // Always append sort param
-  apiUrl.searchParams.append("sort", sortParam);
-  
-  if (filterArray.length > 0) {
-    const filterString = filterArray.join(',');
-    apiUrl.searchParams.append("filter", filterString);
+  if (sortParam && sortParam !== "bestMatch") {
+    apiUrl.searchParams.append("sort", sortParam);
   }
-
+  
   console.log("eBay API request URL:", apiUrl.toString());
-
+  
   let ebayRes;
   const maxRetries = 3;
   let attempt = 0;
   let lastError: any = null;
-
+  
   while (attempt < maxRetries) {
     try {
       ebayRes = await fetch(apiUrl.toString(), {
@@ -188,7 +129,6 @@ export async function GET(req: Request) {
         const errorText = await ebayRes.text();
         console.error("eBay API request failed:", ebayRes.status, errorText);
 
-        // Check for specific error conditions
         if (ebayRes.status === 401) {
           return NextResponse.json({
             error: "Authentication failed. Please check eBay API credentials.",
@@ -210,10 +150,8 @@ export async function GET(req: Request) {
         }, { status: ebayRes.status });
       }
 
-      // Get response text first to check if it's valid JSON
       const responseText = await ebayRes.text();
 
-      // Try to parse as JSON
       let data;
       try {
         data = JSON.parse(responseText);
@@ -234,61 +172,58 @@ export async function GET(req: Request) {
         });
       }
 
-      // Server-side filter: Only keep products from allowed sellers
-      if (allowedSellers.length > 0) {
-        console.log("Filtering products by allowed sellers:", allowedSellers);
-        console.log("Total items before filtering:", data.itemSummaries.length);
+      // Filter products: exclude guns, sex dolls, low-priced items except phone covers/cases
+      // Allow items with no description only if seller has at least 10 sold items
+      if (data.itemSummaries.length > 0) {
+        console.log("Filtering products for description, prohibited items, and price...");
         data.itemSummaries = data.itemSummaries.filter((item: any) => {
-          const sellerUsername = item.seller?.username?.toLowerCase() || "";
-          const isAllowed = allowedSellers.some(seller => seller.toLowerCase() === sellerUsername);
-          if (!isAllowed) {
-            console.log(`Filtered out product from seller: ${sellerUsername}, title: ${item.title}`);
+          const title = (item.title || "").toLowerCase();
+          const description = (item.description || "").toLowerCase();
+          const priceValue = parseFloat(item.price?.value || "0");
+          const currency = item.price?.currency || "USD";
+          const priceInKsh = currency === "USD" ? priceValue * 130 : priceValue;
+          const sellerSoldCount = item.seller?.feedbackScore || 0;
+
+          if ((!item.description || item.description.trim() === "") && sellerSoldCount < 10) {
+            console.log(`Filtered out product with no description and low seller sales: '${item.title}'`);
+            return false;
           }
-          return isAllowed;
+
+          const prohibitedKeywords = ["gun", "guns", "sex doll", "sex dolls"];
+          if (prohibitedKeywords.some(keyword => title.includes(keyword) || description.includes(keyword))) {
+            console.log(`Filtered out prohibited product: '${item.title}'`);
+            return false;
+          }
+
+          const isPhoneCover = title.includes("phone cover") || title.includes("phone case");
+          if (priceInKsh < 4000 && !isPhoneCover) {
+            console.log(`Filtered out low price product: '${item.title}' priced at ${priceInKsh} Ksh`);
+            return false;
+          }
+
+          return true;
         });
-
-        // Limit number of products per seller to avoid dominance
-        // Removed to allow all products from allowed sellers to be displayed
-        /*
-        const maxPerSeller = 5;
-        const sellerCountMap: { [key: string]: number } = {};
-        const balancedItems: any[] = [];
-
-        for (const item of data.itemSummaries) {
-          const sellerUsername = item.seller?.username?.toLowerCase() || "";
-          sellerCountMap[sellerUsername] = (sellerCountMap[sellerUsername] || 0) + 1;
-          if (sellerCountMap[sellerUsername] <= maxPerSeller) {
-            balancedItems.push(item);
-          }
-        }
-
-        data.itemSummaries = balancedItems;
-        */
-        console.log("Total items after filtering and balancing:", data.itemSummaries.length);
+        console.log("Total items after filtering:", data.itemSummaries.length);
       }
 
-      // Light post-processing: Only filter out very obvious cheap accessories when sorting by price
+      // Light post-processing: filter out very cheap accessories when sorting by price
       if (data.itemSummaries && (sortBy === "priceAsc" || sortBy === "priceDesc")) {
         const filteredItems = data.itemSummaries.filter((item: any) => {
           const title = item.title?.toLowerCase() || "";
           const price = parseFloat(item.price?.value || "0");
 
-          // Only filter out very obvious cheap accessories
           let shouldFilter = false;
 
-          // For PS5 searches, only filter out very cheap stickers/decals
           if (lowerQuery.includes("ps5") || lowerQuery.includes("playstation")) {
             if ((title.includes("sticker") || title.includes("decal")) && price < 3) {
               shouldFilter = true;
             }
           }
 
-          // For general searches, only filter out extremely cheap obvious accessories
           if (price < 2 && (title.includes("sticker") || title.includes("decal"))) {
             shouldFilter = true;
           }
 
-          // Return true if item should NOT be filtered (keep the item)
           return !shouldFilter;
         });
 

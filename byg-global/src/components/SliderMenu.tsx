@@ -88,7 +88,6 @@ export default function SliderMenu({
     { value: "bestMatch", label: "Best Match", icon: "🎯" },
     { value: "priceAsc", label: "Price: Low to High", icon: "📈" },
     { value: "priceDesc", label: "Price: High to Low", icon: "📉" },
-    { value: "newlyListed", label: "Newly Listed", icon: "🆕" },
   ];
 
   const handleApplyPriceRange = () => {

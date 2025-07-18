@@ -77,7 +77,6 @@ export default function ModernFilters({
     { value: 'bestMatch', label: 'Best Match', icon: <Star className="w-4 h-4" /> },
     { value: 'priceAsc', label: 'Price: Low to High', icon: <DollarSign className="w-4 h-4" /> },
     { value: 'priceDesc', label: 'Price: High to Low', icon: <DollarSign className="w-4 h-4" /> },
-    { value: 'newlyListed', label: 'Newly Listed', icon: <Zap className="w-4 h-4" /> },
   ];
 
   const conditionOptions = [

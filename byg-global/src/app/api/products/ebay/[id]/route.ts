@@ -7,83 +7,105 @@ let accessToken: string | null = null;
 let tokenExpiry = 0;
 
 async function getAccessToken() {
-  try {
-    if (accessToken && Date.now() < tokenExpiry) return accessToken;
+  if (accessToken && Date.now() < tokenExpiry) return accessToken;
 
-    console.log("Requesting new eBay access token...");
-    
-    if (!clientId || !clientSecret) {
-      throw new Error("eBay credentials not configured");
+  const maxRetries = 3;
+  let attempt = 0;
+  let lastError: any = null;
+
+  while (attempt < maxRetries) {
+    try {
+      const res = await fetch("https://api.ebay.com/identity/v1/oauth2/token", {
+        method: "POST",
+        headers: {
+          Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString("base64")}`,
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: "grant_type=client_credentials&scope=https://api.ebay.com/oauth/api_scope",
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error("Failed to get eBay access token:", res.status, errorText);
+        throw new Error("Failed to get eBay access token");
+      }
+
+      const data = await res.json();
+      accessToken = data.access_token;
+      tokenExpiry = Date.now() + data.expires_in * 1000 - 60000;
+      return accessToken;
+    } catch (error) {
+      lastError = error;
+      console.error(`Attempt ${attempt + 1} to get eBay access token failed:`, error);
+      attempt++;
+      if (attempt < maxRetries) {
+        const backoff = 1000 * Math.pow(2, attempt);
+        console.log(`Retrying getAccessToken in ${backoff}ms...`);
+        await new Promise(resolve => setTimeout(resolve, backoff));
+      }
     }
-
-    const res = await fetch("https://api.ebay.com/identity/v1/oauth2/token", {
-      method: "POST",
-      headers: {
-        Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString("base64")}`,
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: "grant_type=client_credentials&scope=https://api.ebay.com/oauth/api_scope",
-    });
-
-    if (!res.ok) {
-      const errorText = await res.text();
-      console.error("Failed to get eBay access token:", res.status, errorText);
-      throw new Error(`Failed to get eBay access token: ${res.status} ${errorText}`);
-    }
-
-    const data = await res.json();
-    
-    if (!data.access_token) {
-      console.error("Invalid token response:", data);
-      throw new Error("Invalid token response from eBay");
-    }
-
-    accessToken = data.access_token;
-    tokenExpiry = Date.now() + (data.expires_in * 1000) - 60000; // Expire 1 minute early
-    console.log("Successfully obtained new eBay access token");
-    return accessToken;
-  } catch (error) {
-    console.error("Error getting eBay access token:", error);
-    throw error;
   }
+
+  console.error("All attempts to get eBay access token failed.");
+  throw lastError;
 }
 
-export async function GET(
-  req: Request,
-  context: { params: Promise<{ id: string }> }
-) {
+export async function GET(req: Request, context: { params: Promise<{ id: string }> }) {
+  const params = await context.params;
+  const id = decodeURIComponent(params.id);
+
+  if (!id) {
+    return NextResponse.json({ error: "Missing product ID" }, { status: 400 });
+  }
+
+  let token;
   try {
-    const params = await context.params;
-    const id = decodeURIComponent(params.id);
+    if (!clientId || !clientSecret) {
+      console.error("Missing eBay API credentials");
+      return NextResponse.json({
+        error: "Configuration error",
+        details: "eBay API credentials are not properly configured",
+      }, { status: 500 });
+    }
 
-    console.log("Fetching product with ID:", id);
+    token = await getAccessToken();
+  } catch (error) {
+    console.error("Error getting access token:", error);
+    return NextResponse.json({
+      error: "Failed to get access token",
+      details: error instanceof Error ? error.message : "Unknown error occurred while getting access token",
+    }, { status: 500 });
+  }
 
-    const token = await getAccessToken();
+  const apiUrl = `https://api.ebay.com/buy/browse/v1/item/${encodeURIComponent(id)}`;
 
-    const res = await fetch(`https://api.ebay.com/buy/browse/v1/item/${id}`, {
+  try {
+    const res = await fetch(apiUrl, {
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
+        "X-EBAY-C-MARKETPLACE-ID": "EBAY-US",
+        "X-EBAY-C-ENDUSERCTX": "contextualLocation=country=US",
       },
     });
 
     if (!res.ok) {
       const errorText = await res.text();
-      console.error("eBay API error:", res.status, errorText);
-      return NextResponse.json(
-        { error: "Failed to fetch product details", details: errorText },
-        { status: res.status }
-      );
+      console.error("eBay API request failed:", res.status, errorText);
+      return NextResponse.json({
+        error: "eBay API request failed",
+        details: errorText,
+        status: res.status,
+      }, { status: res.status });
     }
 
-    const product = await res.json();
-    console.log("Product fetched successfully:", product.title);
-    return NextResponse.json(product);
+    const data = await res.json();
+    return NextResponse.json(data);
   } catch (error) {
-    console.error("Unexpected error in product API:", error);
-    return NextResponse.json(
-      { error: "Unexpected error", details: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
-    );
+    console.error("Failed to fetch product details from eBay API:", error);
+    return NextResponse.json({
+      error: "Failed to fetch product details",
+      details: error instanceof Error ? error.message : "Unknown error",
+    }, { status: 500 });
   }
 }

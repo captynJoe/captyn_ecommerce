@@ -59,7 +59,7 @@ export default function HomePage() {
     return "";
   });
   const [pageNum, setPageNum] = useState(0);
-  const [sort, setSort] = useState("newlyListed");
+  const [sort, setSort] = useState("bestMatch");
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   // Added missing state variables for SliderMenu props
@@ -71,17 +71,23 @@ export default function HomePage() {
   const [isStarted, setIsStarted] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+
   const fetchProducts = async (resetProducts = false) => {
-    setLoading(true);
     setError(null);
     try {
       const currentPage = resetProducts ? 0 : pageNum;
-      
+
+      // Clear products and set loading immediately on reset
+      if (resetProducts || currentPage === 0) {
+        setProducts([]);
+        setLoading(true);
+      }
+
       // Convert KSh to USD for API (approximate rate: 1 USD = 130 KSh)
       const USD_TO_KSH_RATE = 130;
       const minPriceUSD = priceRange.min > 0 ? Math.floor(priceRange.min / USD_TO_KSH_RATE) : undefined;
       const maxPriceUSD = priceRange.max > 0 ? Math.floor(priceRange.max / USD_TO_KSH_RATE) : undefined;
-      
+
       // Build API URL with price range parameters
       const apiParams = new URLSearchParams({
         limit: '50',
@@ -89,7 +95,7 @@ export default function HomePage() {
         sortBy: sort,
         q: query || ""
       });
-      
+
       if (minPriceUSD) {
         apiParams.append('minPrice', minPriceUSD.toString());
       }
@@ -104,14 +110,14 @@ export default function HomePage() {
       if (networkType && networkType !== 'all') {
         apiParams.append('networkType', networkType);
       }
-      
+
       const res = await fetch(`/api/products/ebay?${apiParams.toString()}`);
       const data = await res.json();
-      
+
       if (!res.ok) {
         throw new Error(data.error || 'Failed to fetch products');
       }
-      
+
       if (!data.itemSummaries || data.itemSummaries.length === 0) {
         console.warn('No itemSummaries in response:', data);
         setProducts(resetProducts || currentPage === 0 ? [] : products);
@@ -167,6 +173,8 @@ export default function HomePage() {
   // Separate effect to handle search changes without dependency issues
   useEffect(() => {
     if (query) {
+      setProducts([]);
+      setLoading(true);
       setPageNum(0);
       fetchProducts(true);
     }
@@ -395,10 +403,12 @@ export default function HomePage() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
             <button
               onClick={() => {
-                setQuery("phones");
-                setPageNum(0);
-                fetchProducts(true);
-              }}
+          setQuery("phones");
+          setPageNum(0);
+          setProducts([]);
+          setLoading(true);
+          fetchProducts(true);
+        }}
               className={`flex flex-col items-center justify-center p-6 rounded-xl border cursor-pointer hover:shadow-lg transition-shadow duration-300 ${
                 isDark ? "bg-gray-800 border-gray-700 text-white" : "bg-white border-gray-200 text-gray-900"
               }`}
@@ -410,10 +420,12 @@ export default function HomePage() {
 
             <button
               onClick={() => {
-                setQuery("graphics cards computer components");
-                setPageNum(0);
-                fetchProducts(true);
-              }}
+          setQuery("graphics cards computer components");
+          setPageNum(0);
+          setProducts([]);
+          setLoading(true);
+          fetchProducts(true);
+        }}
               className={`flex flex-col items-center justify-center p-6 rounded-xl border cursor-pointer hover:shadow-lg transition-shadow duration-300 ${
                 isDark ? "bg-gray-800 border-gray-700 text-white" : "bg-white border-gray-200 text-gray-900"
               }`}
@@ -425,10 +437,12 @@ export default function HomePage() {
 
             <button
               onClick={() => {
-                setQuery("laptops");
-                setPageNum(0);
-                fetchProducts(true);
-              }}
+          setQuery("laptops");
+          setPageNum(0);
+          setProducts([]);
+          setLoading(true);
+          fetchProducts(true);
+        }}
               className={`flex flex-col items-center justify-center p-6 rounded-xl border cursor-pointer hover:shadow-lg transition-shadow duration-300 ${
                 isDark ? "bg-gray-800 border-gray-700 text-white" : "bg-white border-gray-200 text-gray-900"
               }`}
@@ -440,10 +454,12 @@ export default function HomePage() {
 
             <button
               onClick={() => {
-                setQuery("consoles");
-                setPageNum(0);
-                fetchProducts(true);
-              }}
+          setQuery("consoles");
+          setPageNum(0);
+          setProducts([]);
+          setLoading(true);
+          fetchProducts(true);
+        }}
               className={`flex flex-col items-center justify-center p-6 rounded-xl border cursor-pointer hover:shadow-lg transition-shadow duration-300 ${
                 isDark ? "bg-gray-800 border-gray-700 text-white" : "bg-white border-gray-200 text-gray-900"
               }`}

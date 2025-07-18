@@ -317,7 +317,7 @@ export default function ProductDetailPage() {
         <SliderMenu
           isOpen={isMenuOpen}
           onCloseAction={() => setIsMenuOpen(false)}
-          sortBy="newlyListed"
+          sortBy="bestMatch"
           setSortByAction={() => {}}
           filterCondition={["all"]}
           setFilterConditionAction={() => {}}

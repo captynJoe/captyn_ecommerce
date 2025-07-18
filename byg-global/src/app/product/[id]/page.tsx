@@ -463,23 +463,27 @@ export default function ProductDetailPage() {
               <h3 className="font-semibold text-lg text-gray-900 dark:text-white">Options</h3>
               
               {/* Storage Options */}
-              {storageCapacity && storageCapacity.trim() !== '' && (
+              {(storageCapacity && storageCapacity.trim() !== '') || (item.itemSpecifics?.Size && item.itemSpecifics.Size.trim() !== '') ? (
                 <div>
-                  <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Storage Capacity:</label>
+                  <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Storage Capacity / Size:</label>
                   <select 
                     className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-black dark:text-white p-3"
-                    value={selectedConfig.storage || storageCapacity || ''}
+                    value={selectedConfig.storage || storageCapacity || item.itemSpecifics?.Size || ''}
                     onChange={(e) => handleConfigChange('storage', e.target.value)}
                   >
-                    <option value="">Select Storage</option>
+                    <option value="">Select Storage / Size</option>
                     <option value="64GB">64GB</option>
                     <option value="128GB">128GB</option>
                     <option value="256GB">256GB</option>
                     <option value="512GB">512GB</option>
                     <option value="1TB">1TB</option>
+                    <option value="Small">Small</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Large">Large</option>
+                    <option value="XL">XL</option>
                   </select>
                 </div>
-              )}
+              ) : null}
 
               {/* Color Options */}
               {item.itemSpecifics?.Color && (
