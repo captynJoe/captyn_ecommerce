@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getFirestore, collection, addDoc } from 'firebase/firestore';
 import { app } from '../../../../utils/firebase';
-import allowedSellers from '../../../../config/allowedSellers';
 
 interface OrderItem {
   itemId: string;
@@ -46,19 +45,6 @@ export async function POST(req: Request) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
-      );
-    }
-
-    // Validate sellers are allowed
-    const disallowedSellers = orderData.items.filter(item => {
-      const sellerUsername = item.sellerInfo?.username?.toLowerCase() || '';
-      return !allowedSellers.some(seller => seller.toLowerCase() === sellerUsername);
-    });
-
-    if (disallowedSellers.length > 0) {
-      return NextResponse.json(
-        { error: 'One or more sellers are not allowed to create orders.' },
-        { status: 403 }
       );
     }
 

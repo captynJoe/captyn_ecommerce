@@ -1,7 +1,4 @@
-import allowedSellers from "@/config/allowedSellers";
 import { NextResponse } from "next/server";
-
-console.log("Allowed sellers at runtime:", allowedSellers);
 
 const clientId = process.env.EBAY_CLIENT_ID!;
 const clientSecret = process.env.EBAY_CLIENT_SECRET!;
@@ -67,7 +64,7 @@ async function getAccessToken() {
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
-const query = searchParams.get("q") || "phone laptop gaming console electronics";
+  const query = searchParams.get("q") || "phone laptop gaming console electronics";
   const isSearch = query && query !== "phone laptop gaming console electronics";
   const limit = parseInt(searchParams.get("limit") || (isSearch ? "150" : "100"));
   const offset = parseInt(searchParams.get("offset") || "0");
