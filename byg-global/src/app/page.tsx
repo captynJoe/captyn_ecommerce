@@ -409,13 +409,13 @@ export default function HomePage() {
           setLoading(true);
           fetchProducts(true);
         }}
-              className={`flex flex-col items-center justify-center p-6 rounded-xl border cursor-pointer hover:shadow-lg transition-shadow duration-300 ${
+              className={`flex flex-col items-center justify-center p-8 rounded-2xl border cursor-pointer shadow-sm hover:shadow-2xl transform hover:scale-105 transition-all duration-300 ${
                 isDark ? "bg-gray-800 border-gray-700 text-white" : "bg-white border-gray-200 text-gray-900"
               }`}
               aria-label="Shop Phones"
             >
-              <Smartphone className="w-12 h-12 mb-2" />
-              <span className="text-lg font-semibold">Phones</span>
+              <Smartphone className="w-14 h-14 mb-3" />
+              <span className="text-xl font-semibold">Phones</span>
             </button>
 
             <button
@@ -426,13 +426,13 @@ export default function HomePage() {
           setLoading(true);
           fetchProducts(true);
         }}
-              className={`flex flex-col items-center justify-center p-6 rounded-xl border cursor-pointer hover:shadow-lg transition-shadow duration-300 ${
+              className={`flex flex-col items-center justify-center p-8 rounded-2xl border cursor-pointer shadow-sm hover:shadow-2xl transform hover:scale-105 transition-all duration-300 ${
                 isDark ? "bg-gray-800 border-gray-700 text-white" : "bg-white border-gray-200 text-gray-900"
               }`}
               aria-label="Shop PC Parts"
             >
-              <Cpu className="w-12 h-12 mb-2" />
-              <span className="text-lg font-semibold">PC Parts</span>
+              <Cpu className="w-14 h-14 mb-3" />
+              <span className="text-xl font-semibold">PC Parts</span>
             </button>
 
             <button
@@ -443,13 +443,13 @@ export default function HomePage() {
           setLoading(true);
           fetchProducts(true);
         }}
-              className={`flex flex-col items-center justify-center p-6 rounded-xl border cursor-pointer hover:shadow-lg transition-shadow duration-300 ${
+              className={`flex flex-col items-center justify-center p-8 rounded-2xl border cursor-pointer shadow-sm hover:shadow-2xl transform hover:scale-105 transition-all duration-300 ${
                 isDark ? "bg-gray-800 border-gray-700 text-white" : "bg-white border-gray-200 text-gray-900"
               }`}
               aria-label="Shop Laptops"
             >
-              <Laptop className="w-12 h-12 mb-2" />
-              <span className="text-lg font-semibold">Laptops</span>
+              <Laptop className="w-14 h-14 mb-3" />
+              <span className="text-xl font-semibold">Laptops</span>
             </button>
 
             <button
@@ -460,13 +460,13 @@ export default function HomePage() {
           setLoading(true);
           fetchProducts(true);
         }}
-              className={`flex flex-col items-center justify-center p-6 rounded-xl border cursor-pointer hover:shadow-lg transition-shadow duration-300 ${
+              className={`flex flex-col items-center justify-center p-8 rounded-2xl border cursor-pointer shadow-sm hover:shadow-2xl transform hover:scale-105 transition-all duration-300 ${
                 isDark ? "bg-gray-800 border-gray-700 text-white" : "bg-white border-gray-200 text-gray-900"
               }`}
               aria-label="Shop Consoles"
             >
-              <Gamepad2 className="w-12 h-12 mb-2" />
-              <span className="text-lg font-semibold">Consoles</span>
+              <Gamepad2 className="w-14 h-14 mb-3" />
+              <span className="text-xl font-semibold">Consoles</span>
             </button>
           </div>
         </section>

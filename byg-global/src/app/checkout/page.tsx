@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { getFirestore, doc, getDoc, updateDoc, arrayRemove } from "firebase/firestore";
@@ -154,15 +155,21 @@ export default function CheckoutPage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-200 dark:from-gray-900 dark:to-gray-800 py-10 px-2 relative">
       {/* Background Logo */}
       <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-0">
-        <img
+        <Image
           src="/captynlogo-white.png"
           alt="CAPTYN GLOBAL Background Logo"
-          className="w-96 h-96 object-contain opacity-10 block dark:hidden"
+          width={384}
+          height={384}
+          className="object-contain opacity-10 block dark:hidden"
+          priority
         />
-        <img
+        <Image
           src="/captynlogo.png"
           alt="CAPTYN GLOBAL Background Logo"
-          className="w-96 h-96 object-contain opacity-10 hidden dark:block"
+          width={384}
+          height={384}
+          className="object-contain opacity-10 hidden dark:block"
+          priority
         />
       </div>
       <div className="max-w-2xl mx-auto bg-white dark:bg-gray-900 rounded-3xl shadow-2xl p-8 relative">
@@ -200,10 +207,12 @@ export default function CheckoutPage() {
                   key={item.itemId + "-" + item.addedAt}
                   className="flex items-center gap-4 py-6 group"
                 >
-                  <img
+                  <Image
                     src={item.image || "/placeholder.png"}
                     alt={item.title}
-                    className="w-20 h-20 object-contain rounded-xl border border-blue-100 dark:border-gray-800 bg-white dark:bg-gray-800 shadow"
+                    width={80}
+                    height={80}
+                    className="object-contain rounded-xl border border-blue-100 dark:border-gray-800 bg-white dark:bg-gray-800 shadow"
                   />
                   <div className="flex-1">
                     <div className="font-bold text-lg text-gray-900 dark:text-white line-clamp-2">

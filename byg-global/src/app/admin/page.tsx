@@ -127,7 +127,7 @@ export default function AdminDashboard() {
           <p className={`text-sm ${
             isDark ? "text-gray-400" : "text-gray-600"
           }`}>
-            Welcome back! Here's what's happening with your store.
+            Welcome back! Here&apos;s what&apos;s happening with your store.
           </p>
         </div>
         <div className={`px-4 py-2 rounded-lg ${
@@ -274,7 +274,7 @@ export default function AdminDashboard() {
           {[ 
             { action: "New order #1247 received", time: "2 minutes ago", type: "order" },
             { action: "User John Doe registered", time: "15 minutes ago", type: "user" },
-            { action: "Product 'iPhone 15 Pro' updated", time: "1 hour ago", type: "product" },
+            {action: "Product &apos;iPhone 15 Pro&apos; updated", time: "1 hour ago", type: "product" },
             { action: "Payment of KSh 45,000 processed", time: "2 hours ago", type: "payment" },
             { action: "New security search performed", time: "3 hours ago", type: "search" }
           ].map((activity, index) => (

@@ -88,7 +88,7 @@ Be precise and realistic.`;
 
   const maxRetries = 3;
   let attempt = 0;
-  let lastError: any = null;
+  let lastError: unknown = null;
 
   while (attempt < maxRetries) {
     try {
@@ -142,7 +142,7 @@ Be precise and realistic.`;
         chargeableWeight: Math.round(chargeableWeight * 100) / 100,
         source: 'ai'
       };
-    } catch (error) {
+    } catch (error: unknown) {
       lastError = error;
       attempt++;
       if (attempt < maxRetries) {
