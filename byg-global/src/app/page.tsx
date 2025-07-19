@@ -182,6 +182,16 @@ export default function HomePage() {
     }
   }, [query, pageNum, sort, priceRange, filterCondition, networkType]);
 
+  // Reset filters when no search query is present
+  useEffect(() => {
+    if (!query || query.trim() === "") {
+      setFilterCondition(["all"]);
+      setNetworkType("all");
+      setPriceRange({ min: 0, max: 10000 });
+      setSort("bestMatch");
+    }
+  }, [query]);
+
   // Separate effect to handle search changes without dependency issues
   useEffect(() => {
     if (query) {
@@ -321,6 +331,22 @@ export default function HomePage() {
     saveSearchHistory(q);
           }}
         />
+        <div className="px-5 py-2">
+          <ModernFilters
+            sortBy={sort}
+            setSortByAction={setSort}
+            filterCondition={filterCondition}
+            setFilterConditionAction={setFilterCondition}
+            onFilterChangeAction={() => setPageNum(0)}
+            priceRange={priceRange}
+            setPriceRangeAction={setPriceRange}
+            rating={0}
+            setRatingAction={() => {}}
+            networkType={networkType}
+            setNetworkTypeAction={setNetworkType}
+            isDark={isDark}
+          />
+        </div>
 
         <SliderMenu
           isOpen={isMenuOpen}
@@ -408,44 +434,14 @@ export default function HomePage() {
         )}
 
         {/* Modern Filters Section - replacing Shop by Category */}
-        <section className="max-w-7xl mx-auto px-4 py-12">
-          <ModernFilters
-            sortBy={sort}
-            setSortByAction={(newSort) => {
-              setSort(newSort);
-              setPageNum(0);
-            }}
-            filterCondition={filterCondition.length === 1 ? filterCondition[0] : "all"}
-            setFilterConditionAction={(newCondition) => {
-              setFilterCondition([newCondition]);
-              setPageNum(0);
-            }}
-            onFilterChangeAction={() => {
-              setPageNum(0);
-              fetchProducts(true);
-            }}
-            priceRange={priceRange}
-            setPriceRangeAction={(range) => {
-              setPriceRange(range);
-              setPageNum(0);
-            }}
-            rating={0} // No rating state in page.tsx, default to 0
-            setRatingAction={() => {}} // No rating setter, no-op
-            networkType={networkType}
-            setNetworkTypeAction={(newNetwork) => {
-              setNetworkType(newNetwork);
-              setPageNum(0);
-            }}
-            isDark={isDark}
-          />
-          {!sort && !query && (
-            <div className={`block p-8 rounded-xl border text-center mx-auto mt-6 max-w-xl ${isDark ? "bg-gray-800 border-gray-700 text-gray-300" : "bg-white border-gray-200 text-gray-700"}`}>
-              <div className="text-6xl mb-4">🔍</div>
-              <h3 className="text-xl font-semibold mb-2">Welcome to Captyn Global!</h3>
-              <p>Use the search bar above to start exploring products. Enter keywords and press enter to find your desired items.</p>
-            </div>
-          )}
-        </section>
+        {/* Removed ModernFilters usage as per user request */}
+        {!sort && !query && (
+          <div className={`block p-8 rounded-xl border text-center mx-auto mt-6 max-w-xl ${isDark ? "bg-gray-800 border-gray-700 text-gray-300" : "bg-white border-gray-200 text-gray-700"}`}>
+            <div className="text-6xl mb-4">🔍</div>
+            <h3 className="text-xl font-semibold mb-2">Welcome to Captyn Global!</h3>
+            <p>Use the search bar above to start exploring products. Enter keywords and press enter to find your desired items.</p>
+          </div>
+        )}
 
         {/* Marketing Content - Only show when not in search mode */}
         {!isSearchMode && (

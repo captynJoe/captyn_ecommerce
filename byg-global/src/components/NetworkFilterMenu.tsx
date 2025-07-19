@@ -11,7 +11,7 @@ export default function NetworkFilterMenu() {
   const networks = [
     { id: "all", label: "All Networks" },
     { id: "unlocked", label: "Unlocked Only" },
-    { id: "locked", label: "Carrier Locked" },
+
   ];
 
   return (

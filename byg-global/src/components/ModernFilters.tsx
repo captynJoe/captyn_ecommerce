@@ -6,13 +6,13 @@ import { ChevronDown, X, Filter, Star, DollarSign, Package, Zap, SlidersHorizont
 interface ModernFiltersProps {
   sortBy: string;
   setSortByAction: (v: string) => void;
-  filterCondition: string;
-  setFilterConditionAction: (v: string) => void;
+  filterCondition: string[];
+  setFilterConditionAction: (v: string[]) => void;
   onFilterChangeAction: () => void;
   priceRange: { min: number; max: number };
   setPriceRangeAction: (range: { min: number; max: number }) => void;
   rating: number;
-  setRatingAction: (rating: number) => void;
+  setRatingAction: (value: number) => void;
   networkType: string;
   setNetworkTypeAction: (network: string) => void;
   isDark: boolean;
@@ -52,7 +52,8 @@ export default function ModernFilters({
   useEffect(() => {
     const filters = [];
     if (sortBy !== 'bestMatch') filters.push('sort');
-    if (filterCondition !== 'all') filters.push('condition');
+    // For filterCondition as array, check if not only 'all'
+    if (!(filterCondition.length === 1 && filterCondition[0] === 'all')) filters.push('condition');
     if (priceRange.min > 0 || priceRange.max > 0) filters.push('price');
     if (rating > 0) filters.push('rating');
     if (networkType !== 'all') filters.push('network');
@@ -61,7 +62,7 @@ export default function ModernFilters({
 
   const clearAllFilters = () => {
     setSortByAction('bestMatch');
-    setFilterConditionAction('all');
+    setFilterConditionAction(['all']);
     setPriceRangeAction({ min: 0, max: 0 });
     setRatingAction(0);
     setNetworkTypeAction('all');
@@ -92,18 +93,10 @@ export default function ModernFilters({
   const networkOptions = [
     { value: 'all', label: 'All Networks' },
     { value: 'unlocked', label: 'Unlocked Only' },
-    { value: 'locked', label: 'Carrier Locked' },
+    
   ];
 
-  const ratingOptions = [
-    { value: 0, label: 'Any Rating' },
-    { value: 1, label: '⭐ & up' },
-    { value: 2, label: '⭐⭐ & up' },
-    { value: 3, label: '⭐⭐⭐ & up' },
-    { value: 4, label: '⭐⭐⭐⭐ & up' },
-    { value: 5, label: '⭐⭐⭐⭐⭐ only' },
-  ];
-
+  
   return (
     <div className="relative" ref={dropdownRef}>
       {/* Filter Button */}
@@ -199,27 +192,44 @@ export default function ModernFilters({
               }`}>
                 Condition
               </label>
-              <div className="grid grid-cols-2 gap-2">
-                {conditionOptions.map((option) => (
-                  <button
-                    key={option.value}
-                    onClick={() => {
-                      setFilterConditionAction(option.value);
-                      onFilterChangeAction();
-                    }}
-                    className={`p-2.5 rounded-lg border text-sm font-medium transition-all ${
-                      filterCondition === option.value
-                        ? isDark 
-                          ? "border-blue-500 bg-blue-500/10 text-blue-400" 
-                          : "border-blue-500 bg-blue-50 text-blue-600"
-                        : isDark
-                          ? "border-gray-600 hover:border-gray-500 text-gray-300 hover:bg-gray-700"
-                          : "border-gray-200 hover:border-gray-300 text-gray-700 hover:bg-gray-50"
-                    }`}
-                  >
-                    {option.label}
-                  </button>
-                ))}
+            <div className="grid grid-cols-2 gap-2">
+                {conditionOptions.map((option) => {
+                  const isSelected = filterCondition.includes(option.value);
+                  return (
+                    <button
+                      key={option.value}
+                      onClick={() => {
+                        let newConditions: string[] = [];
+                        if (option.value === "all") {
+                          newConditions = ["all"];
+                        } else {
+                          newConditions = filterCondition.filter(c => c !== "all");
+                          if (filterCondition.includes(option.value)) {
+                            newConditions = newConditions.filter(c => c !== option.value);
+                            if (newConditions.length === 0) {
+                              newConditions = ["all"];
+                            }
+                          } else {
+                            newConditions.push(option.value);
+                          }
+                        }
+                        setFilterConditionAction(newConditions);
+                        onFilterChangeAction();
+                      }}
+                      className={`p-2.5 rounded-lg border text-sm font-medium transition-all ${
+                        isSelected
+                          ? isDark 
+                            ? "border-blue-500 bg-blue-500/10 text-blue-400" 
+                            : "border-blue-500 bg-blue-50 text-blue-600"
+                          : isDark
+                            ? "border-gray-600 hover:border-gray-500 text-gray-300 hover:bg-gray-700"
+                            : "border-gray-200 hover:border-gray-300 text-gray-700 hover:bg-gray-50"
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -273,37 +283,6 @@ export default function ModernFilters({
                 >
                   Apply Price Range
                 </button>
-              </div>
-            </div>
-
-            {/* Seller Rating */}
-            <div>
-              <label className={`block text-sm font-semibold mb-3 ${
-                isDark ? "text-gray-300" : "text-gray-700"
-              }`}>
-                Seller Rating
-              </label>
-              <div className="grid grid-cols-1 gap-2">
-                {ratingOptions.map((option) => (
-                  <button
-                    key={option.value}
-                    onClick={() => {
-                      setRatingAction(option.value);
-                      onFilterChangeAction();
-                    }}
-                    className={`p-2.5 rounded-lg border text-sm font-medium transition-all ${
-                      rating === option.value
-                        ? isDark 
-                          ? "border-blue-500 bg-blue-500/10 text-blue-400" 
-                          : "border-blue-500 bg-blue-50 text-blue-600"
-                        : isDark
-                          ? "border-gray-600 hover:border-gray-500 text-gray-300 hover:bg-gray-700"
-                          : "border-gray-200 hover:border-gray-300 text-gray-700 hover:bg-gray-50"
-                    }`}
-                  >
-                    {option.label}
-                  </button>
-                ))}
               </div>
             </div>
 

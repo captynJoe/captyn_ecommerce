@@ -1,5 +1,7 @@
 "use client";
 
+import ModernFilters from "./ModernFilters";
+
 import { useState, FormEvent, useEffect, useRef } from "react";
 import { useApp } from "@/contexts/AppContext";
 import Image from "next/image";
@@ -25,14 +27,50 @@ export default function Navbar({
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
+  // Additional state and handlers for ModernFilters integration
+  const [sortBy, setSortBy] = useState("bestMatch");
+  const [filterCondition, setFilterCondition] = useState("all");
+  const [priceRange, setPriceRange] = useState({ min: 0, max: 0 });
+  const [rating, setRating] = useState(0);
+  const [networkType, setNetworkType] = useState("all");
+
+  const onFilterChange = () => {
+    // Implement filter change logic here, e.g., refetch products or update search results
+    if (onSearchAction) {
+      // Compose a query string based on filters (example: add filter params to search query)
+      let filterQuery = searchQuery;
+      if (sortBy && sortBy !== "bestMatch") {
+        filterQuery += ` sort:${sortBy}`;
+      }
+      if (filterCondition && filterCondition !== "all") {
+        filterQuery += ` condition:${filterCondition}`;
+      }
+      if (priceRange.min > 0) {
+        filterQuery += ` priceMin:${priceRange.min}`;
+      }
+      if (priceRange.max > 0) {
+        filterQuery += ` priceMax:${priceRange.max}`;
+      }
+      if (rating > 0) {
+        filterQuery += ` rating:${rating}`;
+      }
+      if (networkType && networkType !== "all") {
+        filterQuery += ` network:${networkType}`;
+      }
+      onSearchAction(filterQuery.trim());
+    }
+  };
+
   const fetchSuggestions = async (query: string) => {
     if (!query.trim()) {
       setSuggestions([]);
       return;
     }
+    // Make suggestions more general by increasing limit and modifying query to lowercase
     setIsLoadingSuggestions(true);
     try {
-const res = await fetch(`/api/products/ebay?q=${encodeURIComponent(query)}&limit=20`);
+      // Using a broader search by increasing limit to 50 and converting query to lowercase
+      const res = await fetch(`/api/products/ebay?q=${encodeURIComponent(query.toLowerCase())}&limit=50`);
       if (res.ok) {
         const data = await res.json();
         const titles = data.itemSummaries?.map((item: any) => item.title) || [];
@@ -120,7 +158,7 @@ const res = await fetch(`/api/products/ebay?q=${encodeURIComponent(query)}&limit
         <div className="max-w-7xl mx-auto">
           {/* Header with Menu, Logo, and Search */}
           <div className="flex flex-col w-full">
-            <div className="h-32 sm:h-36 md:h-40 flex items-center justify-between px-5 sm:px-6 md:px-8">
+          <div className="h-32 sm:h-36 md:h-40 flex items-center justify-between px-5 sm:px-6 md:px-8">
               {/* Menu Button */}
               <div className="flex items-center min-w-0">
                 {onMenuOpenAction && (
@@ -134,7 +172,7 @@ const res = await fetch(`/api/products/ebay?q=${encodeURIComponent(query)}&limit
                 )}
               </div>
 
-              {/* Logo - Centered */}
+              {/* Logo - Centered */} 
               <div className="flex items-center justify-center flex-1">
                 <a
                   href="/"
@@ -178,8 +216,8 @@ const res = await fetch(`/api/products/ebay?q=${encodeURIComponent(query)}&limit
             </div>
 
             {/* Search Form - appears below header when open */}
-            {showSearch && isSearchOpen && (
-              <div className="flex justify-center pb-6 sm:pb-7 px-4 sm:px-6 relative">
+              {showSearch && isSearchOpen && (
+              <div className="flex flex-col justify-center items-center pb-6 sm:pb-7 px-4 sm:px-6 relative">
                 <form onSubmit={handleSearch} className="w-full max-w-sm search-form" autoComplete="off">
                   <div className={`relative rounded-xl shadow-sm ${isDark ? "bg-gray-900/80" : "bg-white/95"}`}>
                     <input
@@ -251,11 +289,12 @@ const res = await fetch(`/api/products/ebay?q=${encodeURIComponent(query)}&limit
                     ))}
                   </ul>
                 )}
-                {isLoadingSuggestions && (
+                {/* Removed loading text as per request */}
+                {/* {isLoadingSuggestions && (
                   <div className={`absolute right-3 top-3 ${isDark ? "text-gray-300" : "text-gray-600"}`}>
                     Loading...
                   </div>
-                )}
+                )} */}
               </div>
             )}
           </div>

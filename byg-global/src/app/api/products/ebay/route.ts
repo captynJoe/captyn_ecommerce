@@ -71,6 +71,10 @@ export async function GET(req: Request) {
   const isHomepage = !searchParams.get("q") || searchParams.get("q") === "phone laptop gaming console electronics";
   let sortBy = searchParams.get("sortBy") || (isHomepage ? "bestMatch" : "bestMatch");
 
+  // Read minPrice parameter from searchParams (in USD)
+  const minPriceParam = searchParams.get("minPrice");
+  const minPriceUSD = minPriceParam ? parseFloat(minPriceParam) : undefined;
+
   const lowerQuery = query.toLowerCase();
 
   const validSortKeys = ["bestMatch", "priceAsc", "priceDesc", "endingSoon"];
@@ -209,19 +213,56 @@ export async function GET(req: Request) {
             return false;
           }
 
-          const isPhoneCover = title.includes("phone cover") || title.includes("phone case");
-          if (priceInKsh < 4000) {
-            if (sortBy === "priceAsc") {
-              // Exclude phone covers/cases below 4000 Ksh when sorting by price ascending
-              if (isPhoneCover) {
-                console.log(`Filtered out phone cover/case below 4000 Ksh in priceAsc sorting: '${item.title}' priced at ${priceInKsh} Ksh`);
-                return false;
-              }
-            } else {
-              if (!isPhoneCover) {
-                console.log(`Filtered out low price product: '${item.title}' priced at ${priceInKsh} Ksh`);
-                return false;
-              }
+          const accessoryKeywords = [
+            "phone cover",
+            "phone case",
+            "screen protector",
+            "screen guard",
+            "tempered glass",
+            "protector film",
+            "phone skin",
+            "phone wrap"
+          ];
+          const isAccessory = accessoryKeywords.some(keyword => title.includes(keyword) || description.includes(keyword));
+          // Define isPhoneCover for filtering phone covers/cases and screen protectors
+          const phoneCoverKeywords = [
+            "phone cover",
+            "phone case",
+            "screen protector",
+            "screen guard",
+            "tempered glass",
+            "protector film"
+          ];
+          const isPhoneCover = phoneCoverKeywords.some(keyword => title.includes(keyword) || description.includes(keyword));
+          // Removed 4000 Ksh price filter block as per user request
+          console.log(`Product passed filter: '${item.title}' priced at ${priceInKsh} Ksh, isAccessory: ${isAccessory}, isPhoneCover: ${isPhoneCover}`);
+
+          // New filter: exclude products cheaper than minPriceUSD when sorting by priceAsc
+          if (sortBy === "priceAsc" && minPriceUSD !== undefined) {
+            // Convert minPriceUSD to Ksh for comparison
+            const minPriceKsh = minPriceUSD * 130;
+
+            // Additional check: exclude phone covers/cases and screen protectors below minPriceKsh
+            if (isPhoneCover && priceInKsh < minPriceKsh) {
+              console.log(`Filtered out phone cover/case or screen protector below minPrice filter: '${item.title}' priced at ${priceInKsh} Ksh, minPrice is ${minPriceKsh} Ksh`);
+              return false;
+            }
+
+            if (priceInKsh < minPriceKsh) {
+              console.log(`Filtered out product below minPrice filter: '${item.title}' priced at ${priceInKsh} Ksh, minPrice is ${minPriceKsh} Ksh`);
+              return false;
+            }
+          }
+
+          // Additional filtering to ensure relevance to search query when sorting by price
+          if (sortBy === "priceAsc" || sortBy === "priceDesc") {
+            // Split query into keywords
+            const queryKeywords = lowerQuery.split(/\s+/).filter(k => k.length > 0);
+            // Check if any keyword is present in title or description
+            const matchesKeyword = queryKeywords.some(keyword => title.includes(keyword) || description.includes(keyword));
+            if (!matchesKeyword) {
+              console.log(`Filtered out unrelated product in price sorting: '${item.title}' does not match query keywords`);
+              return false;
             }
           }
 

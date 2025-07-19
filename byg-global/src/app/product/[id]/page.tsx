@@ -516,7 +516,7 @@ export default function ProductDetailPage() {
                   >
                     <option value="">Select Network Status</option>
                     <option value="Unlocked">Unlocked</option>
-                    <option value="Locked">Carrier Locked</option>
+                 
                   </select>
                 </div>
               )}
