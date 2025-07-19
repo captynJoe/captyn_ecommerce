@@ -1,4 +1,4 @@
-"use client";
+  "use client";
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -107,6 +107,34 @@ export default function ProductDetailPage() {
 
     fetchItem();
   }, [id]);
+
+  // New function to fetch product details on demand
+  const fetchProductDetails = async () => {
+    if (!id || typeof id !== "string") return;
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/products/ebay/${encodeURIComponent(id as string)}`);
+      if (!res.ok) throw new Error("Failed to fetch product");
+      const data = await res.json();
+
+      if (!data.description) {
+        try {
+          const descRes = await fetch(`/api/products/ebay/${encodeURIComponent(id as string)}/description`);
+          if (descRes.ok) {
+            const descData = await descRes.json();
+            data.description = descData.description;
+          }
+        } catch {}
+      }
+
+      setItem(data);
+    } catch (err: any) {
+      setError(err.message || "Failed to fetch product details");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Fetch recommendations when item is loaded
   useEffect(() => {
@@ -399,15 +427,21 @@ export default function ProductDetailPage() {
 
             {/* Quick Actions */}
             <div className="flex items-center gap-4 mb-6">
-              <button
-                onClick={() => {
-                  document.getElementById('description')?.scrollIntoView({ behavior: 'smooth' });
-                }}
-                className="flex-1 max-w-[200px] bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-900 dark:text-white font-medium py-2 px-4 rounded-lg transition"
-              >
-                View Description
-              </button>
-            </div>
+            <button
+              onClick={() => {
+                document.getElementById('description')?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="flex-1 max-w-[200px] bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-900 dark:text-white font-medium py-2 px-4 rounded-lg transition"
+            >
+              View Description
+            </button>
+            <button
+              onClick={fetchProductDetails}
+              className="flex-1 max-w-[200px] bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition"
+            >
+              Fetch Product Details
+            </button>
+          </div>
 
             {/* Product Configuration */}
             <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 space-y-4">
