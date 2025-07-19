@@ -54,8 +54,8 @@ async function getAccessToken() {
         const backoff = 1000 * Math.pow(2, attempt);
         console.log(`Retrying getAccessToken in ${backoff}ms...`);
         await new Promise(resolve => setTimeout(resolve, backoff));
-      }
-    }
+  }
+}
   }
 
   console.error("All attempts to get eBay access token failed.");
@@ -84,13 +84,6 @@ export async function GET(req: Request) {
   }
 
   let token;
-  try {
-  const query = searchParams.get("q") || "";
-  const isSearch = query && query !== "";
-  const limit = parseInt(searchParams.get("limit") || (isSearch ? "150" : "100"));
-  const offset = parseInt(searchParams.get("offset") || "0");
-  const isHomepage = !searchParams.get("q") || searchParams.get("q") === "";
-  let sortBy = searchParams.get("sortBy") || (isHomepage ? "bestMatch" : "bestMatch");
 
   if (!query) {
     return NextResponse.json({
@@ -277,4 +270,12 @@ export async function GET(req: Request) {
     error: "Failed to fetch eBay API",
     details: lastError instanceof Error ? lastError.message : "Unknown error",
   }, { status: 500 });
+}
+} catch (error) {
+  console.error("Unexpected error in GET handler:", error);
+  return NextResponse.json({
+    error: "Internal server error",
+    details: error instanceof Error ? error.message : String(error),
+  }, { status: 500 });
+  }
 }
