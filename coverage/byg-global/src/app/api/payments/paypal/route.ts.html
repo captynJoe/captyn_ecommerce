@@ -241,10 +241,10 @@
 &nbsp;
 <span class="cstat-no" title="statement not covered" >const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID || '';</span>
 <span class="cstat-no" title="statement not covered" >const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET || '';</span>
-<span class="cstat-no" title="statement not covered" >const PAYPAL_ENV = process.env.PAYPAL_ENV || 'sandbox';</span>
+<span class="cstat-no" title="statement not covered" >const PAYPAL_ENV = process.env.PAYPAL_ENV || 'live';</span>
 &nbsp;
-<span class="cstat-no" title="statement not covered" >const BASE_URL = PAYPAL_ENV === 'sandbox' </span>
-<span class="cstat-no" title="statement not covered" >  ? 'https://api-m.sandbox.paypal.com' </span>
+<span class="cstat-no" title="statement not covered" >const BASE_URL = PAYPAL_ENV === 'live' </span>
+<span class="cstat-no" title="statement not covered" >  ? 'https://api-m.live.paypal.com' </span>
 <span class="cstat-no" title="statement not covered" >  : 'https://api-m.paypal.com';</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >async function getAccessToken() {</span>

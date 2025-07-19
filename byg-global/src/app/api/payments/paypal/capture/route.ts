@@ -4,8 +4,8 @@ const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID || '';
 const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET || '';
 const PAYPAL_ENV = process.env.PAYPAL_ENV || 'live';
 
-const BASE_URL = PAYPAL_ENV === 'sandbox' 
-  ? 'https://api-m.sandbox.paypal.com' 
+const BASE_URL = PAYPAL_ENV === 'live' 
+  ? 'https://api-m.live.paypal.com' 
   : 'https://api-m.paypal.com';
 
 async function getAccessToken() {
