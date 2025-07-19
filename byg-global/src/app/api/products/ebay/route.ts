@@ -64,11 +64,11 @@ async function getAccessToken() {
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
-  const query = searchParams.get("q") || "phone laptop gaming console electronics";
-  const isSearch = query && query !== "phone laptop gaming console electronics";
+  const query = searchParams.get("q") || "";
+  const isSearch = query && query !== "";
   const limit = parseInt(searchParams.get("limit") || (isSearch ? "150" : "100"));
   const offset = parseInt(searchParams.get("offset") || "0");
-  const isHomepage = !searchParams.get("q") || searchParams.get("q") === "phone laptop gaming console electronics";
+  const isHomepage = !searchParams.get("q") || searchParams.get("q") === "";
   let sortBy = searchParams.get("sortBy") || (isHomepage ? "bestMatch" : "bestMatch");
 
   // Read minPrice parameter from searchParams (in USD)
@@ -85,48 +85,56 @@ export async function GET(req: Request) {
 
   let token;
   try {
-    if (!clientId || !clientSecret) {
-      console.error("Missing eBay API credentials");
-      return NextResponse.json({ 
-        error: "Configuration error", 
-        details: "eBay API credentials are not properly configured"
-      }, { status: 500 });
-    }
+  const query = searchParams.get("q") || "";
+  const isSearch = query && query !== "";
+  const limit = parseInt(searchParams.get("limit") || (isSearch ? "150" : "100"));
+  const offset = parseInt(searchParams.get("offset") || "0");
+  const isHomepage = !searchParams.get("q") || searchParams.get("q") === "";
+  let sortBy = searchParams.get("sortBy") || (isHomepage ? "bestMatch" : "bestMatch");
 
-    token = await getAccessToken();
-    console.log("Successfully obtained eBay access token");
-  } catch (error) {
-    console.error("Error getting access token:", error);
-    return NextResponse.json({ 
-      error: "Failed to get access token",
-      details: error instanceof Error ? error.message : "Unknown error occurred while getting access token"
-    }, { status: 500 });
+  if (!query) {
+    return NextResponse.json({
+      itemSummaries: [],
+      total: 0,
+      message: "No search query provided",
+    });
   }
 
+  if (!clientId || !clientSecret) {
+    console.error("Missing eBay API credentials");
+    return NextResponse.json({ 
+      error: "Configuration error", 
+      details: "eBay API credentials are not properly configured"
+    }, { status: 500 });
+  }
+  token = await getAccessToken();
+  console.log("Successfully obtained eBay access token");
+
   const sortMap: { [key: string]: string } = {
-    priceAsc: "price",
-    priceDesc: "priceDesc",
-    bestMatch: "bestMatch"
+    priceAsc: "price+asc",
+    priceDesc: "price+desc",
+    bestMatch: "bestMatch",
+    endingSoon: "endingSoon"
   };
-  
+
   const sortParam = sortMap[sortBy] || "bestMatch";
-  
+
   const apiUrl = new URL("https://api.ebay.com/buy/browse/v1/item_summary/search");
   apiUrl.searchParams.append("q", query);
   apiUrl.searchParams.append("limit", limit.toString());
   apiUrl.searchParams.append("offset", offset.toString());
-  
   if (sortParam && sortParam !== "bestMatch") {
     apiUrl.searchParams.append("sort", sortParam);
   }
-  
+
+  console.log("Sort param being sent to eBay:", sortParam);
   console.log("eBay API request URL:", apiUrl.toString());
-  
+
   let ebayRes;
   const maxRetries = 3;
   let attempt = 0;
   let lastError: unknown = null;
-  
+
   while (attempt < maxRetries) {
     try {
       ebayRes = await fetch(apiUrl.toString(), {
@@ -163,18 +171,11 @@ export async function GET(req: Request) {
         }, { status: ebayRes.status });
       }
 
-      const responseText = await ebayRes.text();
-
-      // Added detailed logging for debugging priceAsc sorting
-      if (sortBy === "priceAsc") {
-        console.log("Raw eBay API response for priceAsc sorting:", responseText.substring(0, 2000));
-      }
-
       let data;
       try {
-        data = JSON.parse(responseText);
+        data = await ebayRes.json();
       } catch (parseError) {
-        console.error("Failed to parse eBay API response as JSON:", responseText.substring(0, 500));
+        console.error("Failed to parse eBay API response as JSON:", parseError);
         return NextResponse.json({
           error: "Invalid response format from eBay API",
           details: "The eBay API returned an invalid JSON response",
@@ -190,10 +191,8 @@ export async function GET(req: Request) {
         });
       }
 
-      // Filter products: exclude guns, sex dolls, low-priced items except phone covers/cases
-      // Allow items with no description only if seller has at least 10 sold items
+      // Filtering logic
       if (data.itemSummaries.length > 0) {
-        console.log("Filtering products for description, prohibited items, and price...");
         data.itemSummaries = data.itemSummaries.filter((item: EbayItemSummary) => {
           const title = (item.title || "").toLowerCase();
           const description = (item.description || "").toLowerCase();
@@ -202,100 +201,62 @@ export async function GET(req: Request) {
           const priceInKsh = currency === "USD" ? priceValue * 130 : priceValue;
           const sellerSoldCount = item.seller?.feedbackScore || 0;
 
-          if ((!item.description || item.description.trim() === "") && sellerSoldCount < 10) {
-            console.log(`Filtered out product with no description and low seller sales: '${item.title}'`);
-            return false;
-          }
+          if ((!item.description || item.description.trim() === "") && sellerSoldCount < 10) return false;
 
           const prohibitedKeywords = ["gun", "guns", "sex doll", "sex dolls"];
-          if (prohibitedKeywords.some(keyword => title.includes(keyword) || description.includes(keyword))) {
-            console.log(`Filtered out prohibited product: '${item.title}'`);
-            return false;
-          }
+          if (prohibitedKeywords.some(keyword => title.includes(keyword) || description.includes(keyword))) return false;
 
           const accessoryKeywords = [
-            "phone cover",
-            "phone case",
-            "screen protector",
-            "screen guard",
-            "tempered glass",
-            "protector film",
-            "phone skin",
-            "phone wrap"
+            "phone cover", "phone case", "screen protector", "screen guard", "tempered glass", "protector film",
+            "phone skin", "phone wrap", "case", "cover", "protector", "skin", "wrap", "sticker", "decal"
           ];
           const isAccessory = accessoryKeywords.some(keyword => title.includes(keyword) || description.includes(keyword));
-          // Define isPhoneCover for filtering phone covers/cases and screen protectors
           const phoneCoverKeywords = [
-            "phone cover",
-            "phone case",
-            "screen protector",
-            "screen guard",
-            "tempered glass",
-            "protector film"
+            "phone cover", "phone case", "screen protector", "screen guard", "tempered glass", "protector film"
           ];
           const isPhoneCover = phoneCoverKeywords.some(keyword => title.includes(keyword) || description.includes(keyword));
-          // Removed 4000 Ksh price filter block as per user request
-          console.log(`Product passed filter: '${item.title}' priced at ${priceInKsh} Ksh, isAccessory: ${isAccessory}, isPhoneCover: ${isPhoneCover}`);
 
-          // New filter: exclude products cheaper than minPriceUSD when sorting by priceAsc
           if (sortBy === "priceAsc" && minPriceUSD !== undefined) {
-            // Convert minPriceUSD to Ksh for comparison
             const minPriceKsh = minPriceUSD * 130;
-
-            // Additional check: exclude phone covers/cases and screen protectors below minPriceKsh
-            if (isPhoneCover && priceInKsh < minPriceKsh) {
-              console.log(`Filtered out phone cover/case or screen protector below minPrice filter: '${item.title}' priced at ${priceInKsh} Ksh, minPrice is ${minPriceKsh} Ksh`);
-              return false;
-            }
-
-            if (priceInKsh < minPriceKsh) {
-              console.log(`Filtered out product below minPrice filter: '${item.title}' priced at ${priceInKsh} Ksh, minPrice is ${minPriceKsh} Ksh`);
-              return false;
-            }
+            if (isPhoneCover && priceInKsh < minPriceKsh) return false;
+            if (priceInKsh < minPriceKsh) return false;
           }
 
-          // Additional filtering to ensure relevance to search query when sorting by price
           if (sortBy === "priceAsc" || sortBy === "priceDesc") {
-            // Split query into keywords
             const queryKeywords = lowerQuery.split(/\s+/).filter(k => k.length > 0);
-            // Check if any keyword is present in title or description
-            const matchesKeyword = queryKeywords.some(keyword => title.includes(keyword) || description.includes(keyword));
-            if (!matchesKeyword) {
-              console.log(`Filtered out unrelated product in price sorting: '${item.title}' does not match query keywords`);
-              return false;
-            }
+            const matchesAllKeywords = queryKeywords.every(keyword => title.includes(keyword) || description.includes(keyword));
+            const matchesExactPhrase = title.includes(lowerQuery) || description.includes(lowerQuery);
+            const queryIsAccessory = accessoryKeywords.some(keyword => lowerQuery.includes(keyword));
+            if (!queryIsAccessory && isAccessory) return false;
+            if (!matchesAllKeywords && !matchesExactPhrase) return false;
           }
 
           return true;
         });
-        console.log("Total items after filtering:", data.itemSummaries.length);
       }
 
-      // Light post-processing: filter out very cheap accessories when sorting by price
+      // Remove very cheap accessories for price sorting
       if (data.itemSummaries && (sortBy === "priceAsc" || sortBy === "priceDesc")) {
-        const filteredItems = data.itemSummaries.filter((item: EbayItemSummary) => {
+        data.itemSummaries = data.itemSummaries.filter((item: EbayItemSummary) => {
           const title = item.title?.toLowerCase() || "";
           const price = parseFloat(item.price?.value || "0");
-
-          let shouldFilter = false;
-
-          if (lowerQuery.includes("ps5") || lowerQuery.includes("playstation")) {
-            if ((title.includes("sticker") || title.includes("decal")) && price < 3) {
-              shouldFilter = true;
-            }
-          }
-
-          if (price < 2 && (title.includes("sticker") || title.includes("decal"))) {
-            shouldFilter = true;
-          }
-
-          return !shouldFilter;
+          if ((lowerQuery.includes("ps5") || lowerQuery.includes("playstation")) &&
+              (title.includes("sticker") || title.includes("decal")) && price < 3) return false;
+          if (price < 2 && (title.includes("sticker") || title.includes("decal"))) return false;
+          return true;
         });
+      }
 
-        console.log(`eBay API returned ${data.itemSummaries.length} items, filtered to ${filteredItems.length} relevant items`);
-        data.itemSummaries = filteredItems;
-      } else {
-        console.log("eBay API returned items:", data.itemSummaries.length);
+      // Final sort by price in backend for reliability
+      if (data.itemSummaries && (sortParam === "price+asc" || sortParam === "price+desc")) {
+        data.itemSummaries = data.itemSummaries.sort((a: EbayItemSummary, b: EbayItemSummary) => {
+          const priceA = parseFloat(a.price?.value || "0");
+          const priceB = parseFloat(b.price?.value || "0");
+          return sortParam === "price+asc"
+            ? priceA - priceB
+            : priceB - priceA;
+        });
+        console.log("Products sorted in backend by price:", sortParam);
       }
 
       return NextResponse.json(data);

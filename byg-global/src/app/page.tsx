@@ -14,7 +14,6 @@ import { useWishlist } from "@/contexts/WishlistContext";
 import { convertToKESWithProfitAndShipping } from "@/utils/pricing";
 import ModernFilters from "@/components/ModernFilters";
 
-
 // Types
 interface Seller {
   username: string;
@@ -60,7 +59,6 @@ export default function HomePage() {
   const [personalizedLoading, setPersonalizedLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [query, setQuery] = useState(() => {
-    // Initialize from URL if available
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);
       return urlParams.get('q') || "";
@@ -75,18 +73,17 @@ export default function HomePage() {
   const [priceRange, setPriceRange] = useState<{ min: number; max: number }>({ min: 0, max: 10000 });
   const [filterCondition, setFilterCondition] = useState<string[]>(["all"]);
   const [networkType, setNetworkType] = useState("all");
+  const [minPrice, setMinPrice] = useState(0); // <-- Add minPrice state
 
   const [error, setError] = useState<string | null>(null);
   const [isStarted, setIsStarted] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-
 
   const fetchProducts = async (resetProducts = false) => {
     setError(null);
     try {
       const currentPage = resetProducts ? 0 : pageNum;
 
-      // Clear products and set loading immediately on reset
       if (resetProducts || currentPage === 0) {
         setProducts([]);
         setLoading(true);
@@ -94,7 +91,7 @@ export default function HomePage() {
 
       // Convert KSh to USD for API (approximate rate: 1 USD = 130 KSh)
       const USD_TO_KSH_RATE = 130;
-      const minPriceUSD = priceRange.min > 0 ? Math.floor(priceRange.min / USD_TO_KSH_RATE) : undefined;
+      const minPriceUSD = minPrice > 0 ? minPrice : (priceRange.min > 0 ? Math.floor(priceRange.min / USD_TO_KSH_RATE) : undefined);
       const maxPriceUSD = priceRange.max > 0 ? Math.floor(priceRange.max / USD_TO_KSH_RATE) : undefined;
 
       // Build API URL with price range parameters
@@ -172,27 +169,24 @@ export default function HomePage() {
   }, [loading, products.length]);
 
   useEffect(() => {
-    // Only fetch products if there's a query (search term or category selected) and sort is selected
     if (query && sort) {
       const resetProducts = pageNum === 0;
       fetchProducts(resetProducts);
     } else if (!query) {
-      // Clear products if no query
       setProducts([]);
     }
-  }, [query, pageNum, sort, priceRange, filterCondition, networkType]);
+  }, [query, pageNum, sort, priceRange, minPrice, filterCondition, networkType]); // <-- Add minPrice
 
-  // Reset filters when no search query is present
   useEffect(() => {
     if (!query || query.trim() === "") {
       setFilterCondition(["all"]);
       setNetworkType("all");
       setPriceRange({ min: 0, max: 10000 });
       setSort("bestMatch");
+      setMinPrice(0); // <-- Reset minPrice
     }
   }, [query]);
 
-  // Separate effect to handle search changes without dependency issues
   useEffect(() => {
     if (query) {
       setProducts([]);
@@ -207,7 +201,6 @@ export default function HomePage() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Fetch user search history and personalized products
   useEffect(() => {
     if (user) {
       fetchUserSearchHistory();
@@ -220,8 +213,6 @@ export default function HomePage() {
       if (response.ok) {
         const data = await response.json();
         setRecentSearches(data.searchHistory || []);
-        
-        // Fetch personalized products based on search history
         if (data.searchHistory && data.searchHistory.length > 0) {
           fetchPersonalizedProducts(data.searchHistory);
         }
@@ -234,10 +225,8 @@ export default function HomePage() {
   const fetchPersonalizedProducts = async (searchHistory: string[]) => {
     setPersonalizedLoading(true);
     try {
-      // Use the most recent search terms to get personalized recommendations
-      const recentTerms = searchHistory.slice(0, 3); // Get top 3 recent searches
+      const recentTerms = searchHistory.slice(0, 3);
       const combinedQuery = recentTerms.join(' ');
-      
       const res = await fetch(`/api/products/ebay?q=${encodeURIComponent(combinedQuery)}&limit=12`);
       if (res.ok) {
         const data = await res.json();
@@ -252,7 +241,6 @@ export default function HomePage() {
 
   const saveSearchHistory = async (query: string) => {
     if (!user || !query.trim()) return;
-    
     try {
       await fetch('/api/user/search-history', {
         method: 'POST',
@@ -272,14 +260,12 @@ export default function HomePage() {
     const url = new URL(window.location.href);
     url.searchParams.set('q', searchTerm);
     window.history.pushState({}, '', url.toString());
-    
     setQuery(searchTerm);
     setPageNum(0);
     fetchProducts(true);
     saveSearchHistory(searchTerm);
   };
 
-  // Handle browser back/forward navigation
   useEffect(() => {
     const handlePopState = () => {
       const urlParams = new URLSearchParams(window.location.search);
@@ -289,12 +275,10 @@ export default function HomePage() {
         setPageNum(0);
       }
     };
-
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, [query]);
 
-  // Initial load from URL
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);
@@ -308,7 +292,6 @@ export default function HomePage() {
 
   if (initialLoading) return <LoadingAnimation />;
 
-  // Determine if we're in search mode or started mode
   const isSearchMode = (query && query.trim().length > 0) || isStarted;
 
   return (
@@ -316,22 +299,20 @@ export default function HomePage() {
         <Navbar
           onMenuOpenAction={() => setIsMenuOpen(true)}
           onSearchAction={(q: string) => {
-    // Update URL with search query
-    const url = new URL(window.location.href);
-    if (q) {
-      url.searchParams.set('q', q);
-    } else {
-      url.searchParams.delete('q');
-    }
-    window.history.pushState({}, '', url.toString());
-    
-    setQuery(q);
-    setPageNum(0);
-    fetchProducts(true);
-    saveSearchHistory(q);
+            const url = new URL(window.location.href);
+            if (q) {
+              url.searchParams.set('q', q);
+            } else {
+              url.searchParams.delete('q');
+            }
+            window.history.pushState({}, '', url.toString());
+            setQuery(q);
+            setPageNum(0);
+            fetchProducts(true);
+            saveSearchHistory(q);
           }}
         />
-        <div className="px-5 py-2">
+        <div className="px-5 py-4 sm:px-8 sm:py-6 md:px-12 md:py-8">
           <ModernFilters
             sortBy={sort}
             setSortByAction={setSort}
@@ -340,6 +321,8 @@ export default function HomePage() {
             onFilterChangeAction={() => setPageNum(0)}
             priceRange={priceRange}
             setPriceRangeAction={setPriceRange}
+            minPrice={minPrice} // <-- Pass minPrice
+            setMinPriceAction={setMinPrice} // <-- Pass setMinPrice
             rating={0}
             setRatingAction={() => {}}
             networkType={networkType}
@@ -439,7 +422,7 @@ export default function HomePage() {
           <div className={`block p-8 rounded-xl border text-center mx-auto mt-6 max-w-xl ${isDark ? "bg-gray-800 border-gray-700 text-gray-300" : "bg-white border-gray-200 text-gray-700"}`}>
             <div className="text-6xl mb-4">🔍</div>
             <h3 className="text-xl font-semibold mb-2">Welcome to Captyn Global!</h3>
-            <p>Use the search bar above to start exploring products. Enter keywords and press enter to find your desired items.</p>
+            <p>Click on the search box above to start exploring the market.</p>/
           </div>
         )}
 

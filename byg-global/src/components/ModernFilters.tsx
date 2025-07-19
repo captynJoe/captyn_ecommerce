@@ -11,6 +11,8 @@ interface ModernFiltersProps {
   onFilterChangeAction: () => void;
   priceRange: { min: number; max: number };
   setPriceRangeAction: (range: { min: number; max: number }) => void;
+  minPrice: number;
+  setMinPriceAction: (value: number) => void;
   rating: number;
   setRatingAction: (value: number) => void;
   networkType: string;
@@ -26,6 +28,8 @@ export default function ModernFilters({
   onFilterChangeAction,
   priceRange,
   setPriceRangeAction,
+  minPrice,
+  setMinPriceAction,
   rating,
   setRatingAction,
   networkType,
@@ -52,18 +56,19 @@ export default function ModernFilters({
   useEffect(() => {
     const filters = [];
     if (sortBy !== 'bestMatch') filters.push('sort');
-    // For filterCondition as array, check if not only 'all'
     if (!(filterCondition.length === 1 && filterCondition[0] === 'all')) filters.push('condition');
     if (priceRange.min > 0 || priceRange.max > 0) filters.push('price');
+    if (minPrice > 0) filters.push('minPrice');
     if (rating > 0) filters.push('rating');
     if (networkType !== 'all') filters.push('network');
     setActiveFilters(filters);
-  }, [sortBy, filterCondition, priceRange, rating, networkType]);
+  }, [sortBy, filterCondition, priceRange, minPrice, rating, networkType]);
 
   const clearAllFilters = () => {
     setSortByAction('bestMatch');
     setFilterConditionAction(['all']);
     setPriceRangeAction({ min: 0, max: 0 });
+    setMinPriceAction(0);
     setRatingAction(0);
     setNetworkTypeAction('all');
     onFilterChangeAction();
@@ -93,10 +98,8 @@ export default function ModernFilters({
   const networkOptions = [
     { value: 'all', label: 'All Networks' },
     { value: 'unlocked', label: 'Unlocked Only' },
-    
   ];
 
-  
   return (
     <div className="relative" ref={dropdownRef}>
       {/* Filter Button */}
@@ -192,7 +195,7 @@ export default function ModernFilters({
               }`}>
                 Condition
               </label>
-            <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 {conditionOptions.map((option) => {
                   const isSelected = filterCondition.includes(option.value);
                   return (
@@ -284,6 +287,27 @@ export default function ModernFilters({
                   Apply Price Range
                 </button>
               </div>
+            </div>
+
+            {/* Min Price (USD) */}
+            <div>
+              <label className={`block text-sm font-semibold mb-3 ${
+                isDark ? "text-gray-300" : "text-gray-700"
+              }`}>
+                Min Price (USD)
+              </label>
+              <input
+                type="number"
+                min="0"
+                value={minPrice || ''}
+                onChange={e => setMinPriceAction(Number(e.target.value))}
+                placeholder="Min Price"
+                className={`w-full px-3 py-2 rounded-lg border text-sm ${
+                  isDark 
+                    ? "border-gray-600 bg-gray-700 text-white placeholder-gray-400" 
+                    : "border-gray-300 bg-white text-gray-900 placeholder-gray-500"
+                } focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+              />
             </div>
 
             {/* Network Type */}

@@ -1,7 +1,5 @@
 "use client";
 
-import ModernFilters from "./ModernFilters";
-
 import { useState, FormEvent, useEffect, useRef } from "react";
 import { useApp } from "@/contexts/AppContext";
 import Image from "next/image";
@@ -24,66 +22,35 @@ export default function Navbar({
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
-  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
-  // Additional state and handlers for ModernFilters integration
-  const [sortBy, setSortBy] = useState("bestMatch");
-  const [filterCondition, setFilterCondition] = useState("all");
-  const [priceRange, setPriceRange] = useState({ min: 0, max: 0 });
-  const [rating, setRating] = useState(0);
-  const [networkType, setNetworkType] = useState("all");
-
-  const onFilterChange = () => {
-    // Implement filter change logic here, e.g., refetch products or update search results
-    if (onSearchAction) {
-      // Compose a query string based on filters (example: add filter params to search query)
-      let filterQuery = searchQuery;
-      if (sortBy && sortBy !== "bestMatch") {
-        filterQuery += ` sort:${sortBy}`;
-      }
-      if (filterCondition && filterCondition !== "all") {
-        filterQuery += ` condition:${filterCondition}`;
-      }
-      if (priceRange.min > 0) {
-        filterQuery += ` priceMin:${priceRange.min}`;
-      }
-      if (priceRange.max > 0) {
-        filterQuery += ` priceMax:${priceRange.max}`;
-      }
-      if (rating > 0) {
-        filterQuery += ` rating:${rating}`;
-      }
-      if (networkType && networkType !== "all") {
-        filterQuery += ` network:${networkType}`;
-      }
-      onSearchAction(filterQuery.trim());
-    }
-  };
-
-  const fetchSuggestions = async (query: string) => {
-    if (!query.trim()) {
-      setSuggestions([]);
-      return;
-    }
-    // Make suggestions more general by increasing limit and modifying query to lowercase
-    setIsLoadingSuggestions(true);
-    try {
-      // Using a broader search by increasing limit to 50 and converting query to lowercase
-      const res = await fetch(`/api/products/ebay?q=${encodeURIComponent(query.toLowerCase())}&limit=50`);
-      if (res.ok) {
-        const data = await res.json();
-        const titles = data.itemSummaries?.map((item: any) => item.title) || [];
-        setSuggestions(titles);
-      } else {
+  useEffect(() => {
+    if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
+    debounceTimeout.current = setTimeout(() => {
+      const input = searchQuery.trim();
+      if (!input) {
         setSuggestions([]);
+        return;
       }
-    } catch (error) {
-      setSuggestions([]);
-    } finally {
-      setIsLoadingSuggestions(false);
-    }
-  };
+      // Fetch dynamic suggestions from API
+      fetch(`/api/products/ebay?q=${encodeURIComponent(input)}&limit=10`)
+        .then(res => res.json())
+        .then(data => {
+          // Get unique product titles that match the input
+          const apiTitles = (data.itemSummaries || [])
+            .map((item: any) => item.title)
+            .filter((title: string, i: number, arr: string[]) =>
+              title.toLowerCase().includes(input.toLowerCase()) &&
+              arr.findIndex(t => t.toLowerCase() === title.toLowerCase()) === i
+            );
+          setSuggestions(apiTitles);
+        })
+        .catch(() => setSuggestions([]));
+    }, 200);
+    return () => {
+      if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
+    };
+  }, [searchQuery]);
 
   const handleSearch = (e: FormEvent) => {
     e.preventDefault();
@@ -117,21 +84,6 @@ export default function Navbar({
   };
 
   useEffect(() => {
-    if (debounceTimeout.current) {
-      clearTimeout(debounceTimeout.current);
-    }
-    debounceTimeout.current = setTimeout(() => {
-      fetchSuggestions(searchQuery);
-    }, 300);
-
-    return () => {
-      if (debounceTimeout.current) {
-        clearTimeout(debounceTimeout.current);
-      }
-    };
-  }, [searchQuery]);
-
-  useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const searchForm = document.querySelector('.search-form');
       const searchButton = document.querySelector('.search-button');
@@ -147,7 +99,6 @@ export default function Navbar({
         setSuggestions([]);
       }
     };
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isSearchOpen]);
@@ -156,9 +107,8 @@ export default function Navbar({
     <header className={`sticky top-0 z-50 ${className}`}>
       <div className={`w-full ${isDark ? "bg-black" : "bg-white"} shadow-md`}>
         <div className="max-w-7xl mx-auto">
-          {/* Header with Menu, Logo, and Search */}
           <div className="flex flex-col w-full">
-          <div className="h-32 sm:h-36 md:h-40 flex items-center justify-between px-5 sm:px-6 md:px-8">
+            <div className="h-32 sm:h-36 md:h-40 flex items-center justify-between px-5 sm:px-6 md:px-8">
               {/* Menu Button */}
               <div className="flex items-center min-w-0">
                 {onMenuOpenAction && (
@@ -171,8 +121,7 @@ export default function Navbar({
                   </button>
                 )}
               </div>
-
-              {/* Logo - Centered */} 
+              {/* Logo */}
               <div className="flex items-center justify-center flex-1">
                 <a
                   href="/"
@@ -190,17 +139,13 @@ export default function Navbar({
                     className={`drop-shadow-lg w-24 h-auto sm:w-28 md:w-32 lg:w-36 select-none pointer-events-none`}
                     priority
                     quality={100}
-                    style={{ 
-                      objectFit: 'contain',
-                      imageRendering: 'crisp-edges'
-                    }}
+                    style={{ objectFit: 'contain', imageRendering: 'crisp-edges' }}
                     draggable={false}
                     onContextMenu={(e) => e.preventDefault()}
                     onDragStart={(e) => e.preventDefault()}
                   />
                 </a>
               </div>
-
               {/* Search Button */}
               <div className="flex items-center min-w-0">
                 {showSearch && (
@@ -214,9 +159,8 @@ export default function Navbar({
                 )}
               </div>
             </div>
-
-            {/* Search Form - appears below header when open */}
-              {showSearch && isSearchOpen && (
+            {/* Search Form */}
+            {showSearch && isSearchOpen && (
               <div className="flex flex-col justify-center items-center pb-6 sm:pb-7 px-4 sm:px-6 relative">
                 <form onSubmit={handleSearch} className="w-full max-w-sm search-form" autoComplete="off">
                   <div className={`relative rounded-xl shadow-sm ${isDark ? "bg-gray-900/80" : "bg-white/95"}`}>
@@ -238,7 +182,6 @@ export default function Navbar({
                       inputMode="search"
                       style={{ fontSize: '16px' }}
                       onBlur={(e) => {
-                        // Prevent blur from closing search when clicking buttons inside
                         const relatedTarget = e.relatedTarget as HTMLElement;
                         if (relatedTarget && relatedTarget.closest('.search-form')) {
                           e.target.focus();
@@ -276,7 +219,10 @@ export default function Navbar({
                         className={`cursor-pointer px-4 py-2 text-sm hover:bg-blue-600 hover:text-white focus:bg-blue-600 focus:text-white ${
                           isDark ? "text-gray-300" : "text-gray-900"
                         }`}
-                        onClick={() => handleSuggestionClick(suggestion)}
+                        onMouseDown={e => {
+                          e.preventDefault();
+                          handleSuggestionClick(suggestion);
+                        }}
                         onKeyDown={(e) => {
                           if (e.key === "Enter" || e.key === " ") {
                             e.preventDefault();
@@ -289,16 +235,9 @@ export default function Navbar({
                     ))}
                   </ul>
                 )}
-                {/* Removed loading text as per request */}
-                {/* {isLoadingSuggestions && (
-                  <div className={`absolute right-3 top-3 ${isDark ? "text-gray-300" : "text-gray-600"}`}>
-                    Loading...
-                  </div>
-                )} */}
               </div>
             )}
           </div>
-
         </div>
       </div>
     </header>
